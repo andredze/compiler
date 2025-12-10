@@ -1,4 +1,4 @@
-#include "lang_ctx.h"
+#include "lang_funcs.h"
 
 //------------------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
     lang_ctx->code         = NULL;
     lang_ctx->current_line = 1;
 
-    if (TreeCtor(lang_ctx->tree))
+    if (TreeCtor(&lang_ctx->tree))
     {
         PRINTERR("Language tree construct failed");
         return LANG_TREE_ERROR;
@@ -99,7 +99,7 @@ LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const char* id_name_buf, size_t* 
     assert(lang_ctx    != NULL);
     assert(id_index    != NULL);
 
-    IdTable_t* id_table = lang_ctx->id_table;
+    IdTable_t* id_table = &lang_ctx->id_table;
 
     char* id_name = strdup(id_name_buf);
 
@@ -117,6 +117,7 @@ LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const char* id_name_buf, size_t* 
             return error;
     }
 
+    *id_index = id_table->size;
     id_table->data[id_table->size++] = id_name;
 
     return LANG_SUCCESS;

@@ -5,6 +5,7 @@
 
 #include "tree_types.h"
 #include "stack.h"
+#include <stdio.h>
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -61,15 +62,6 @@ typedef enum LangErr
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 const size_t DEFAULT_ID_TABLE_CAPACITY = 64;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-LangErr_t   LangCtxCtor           (LangCtx_t* lang_ctx);
-void        LangCtxDtor           (LangCtx_t* lang_ctx);
-
-LangErr_t   LangIdTableCtor       (IdTable_t* id_table);
-void        LangIdTableDtor       (IdTable_t* id_table);
-LangErr_t   LangIdTablePush       (LangCtx_t* lang_ctx, const char* id_name_buf, size_t* id_index);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

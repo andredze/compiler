@@ -22,7 +22,7 @@ CXXFLAGS += -I include -I ../common/lang_ctx -I ../common/stack -I ../common/col
 SOURCES = src/main.cpp 						\
           src/lexer.cpp 					\
           ../common/colors/colors.cpp		\
-          ../common/lang_ctx/lang_ctx.cpp	\
+          ../common/lang_ctx/lang_funcs.cpp	\
           ../common/stack/stack.cpp			\
           ../common/tree/tree_commands.cpp	\
           ../common/tree/tree_dump.cpp		\

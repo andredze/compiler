@@ -82,18 +82,6 @@ void      DumpGraphTitle      (FILE* dot_file);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-void DumpTreeSingleNode(NodeDumpParams_t* params, FILE* fp, LangCtx_t* lang_ctx);
-
-void DumpNode(NodeDumpParams_t* params, FILE* fp);
-void DumpEdge(EdgeDumpParams_t* params, FILE* fp);
-
-void PrintArg(const char* arg_name,
-              const char* arg_value,
-              int*        is_first_arg,
-              FILE*       fp);
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
 const char* const DEFAULT_EDGE_COLOR = "#404040";
 const char* const IMAGE_FILE_TYPE    = "svg";
 

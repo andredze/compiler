@@ -63,7 +63,7 @@ TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t id_index)
     token_data.type           = TYPE_ID;
     token_data.value.id_index = id_index;
 
-    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL);
+    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
 }
 
 //------------------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ TreeNode_t* LangNumberNodeCtor(LangCtx_t* lang_ctx, double number)
     token_data.type         = TYPE_NUM;
     token_data.value.number = number;
 
-    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL);
+    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
 }
 
 //==========================================================================================
@@ -295,8 +295,8 @@ TreeErr_t TreeSingleNodeDtor(TreeNode_t* node, Tree_t* tree)
     if (node == NULL)
         return TREE_NULL;
 
-    node->data.type      = TYPE_NUM;
-    node->data.value.num = 0;
+    node->data.type         = TYPE_NUM;
+    node->data.value.number = 0;
 
     node->left   = NULL;
     node->right  = NULL;

@@ -153,7 +153,7 @@ LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, const char* fmt, ...)
 
     for (size_t i = 0; i < lang_ctx->id_table.capacity; i++)
     {
-        fprintf(fp, "%12s |", lang_ctx->id_table.data[i].str);
+        fprintf(fp, "%12s |", lang_ctx->id_table.data[i]);
     }
 
     va_end(args);
@@ -169,7 +169,7 @@ TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...)
 {
     assert(fmt != NULL);
 
-    size_t pos   = lang_ctx->code - lang_ctx->buffer;
+    int   pos    = lang_ctx->code - lang_ctx->buffer;
     char* buffer = lang_ctx->buffer;
 
     va_list args = {};
@@ -290,6 +290,11 @@ void TreeCloseLogFile(LangCtx_t* lang_ctx)
 
 //------------------------------------------------------------------------------------------
 
+static void ASTNodeDump(const TreeNode_t* node,     FILE*          fp,
+                        LangCtx_t*        lang_ctx, NodeDumpType_t dump_type);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 TreeErr_t TreeGraphDumpSubtree(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
     assert(lang_ctx != NULL);
@@ -317,10 +322,7 @@ TreeErr_t TreeGraphDumpSubtree(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     DumpGraphTitle(dot_file);
 
-    if (DumpTreeEdges(node, dot_file))
-        return TREE_DUMP_ERROR;
-
-    if ((error = TreeNodeDump(node, dot_file, lang_ctx)))
+    if ((error = ASTNodeDump(node, dot_file, lang_ctx, dump_type)))
         return error;
 
     fprintf(dot_file, "}\n");
@@ -335,7 +337,7 @@ TreeErr_t TreeGraphDumpSubtree(LangCtx_t* lang_ctx, TreeNode_t* node)
     fprintf(lang_ctx->debug.fp, "\n<img src = svg/%s.svg width = %d%%>\n\n"
                         "============================================================="
                         "=============================================================\n\n",
-                         debug.graph_file_name, image_width);
+                         lang_ctx->debug.graph_file_name, image_width);
 
     return TREE_SUCCESS;
 }
@@ -343,9 +345,6 @@ TreeErr_t TreeGraphDumpSubtree(LangCtx_t* lang_ctx, TreeNode_t* node)
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 static void DumpDefaultTreeNode(NodeDumpParams_t* params, FILE* fp);
-
-static void ASTNodeDump(const TreeNode_t* node,     FILE*          fp,
-                        LangCtx_t*        lang_ctx, NodeDumpType_t dump_type);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -362,11 +361,11 @@ TreeErr_t TreeGraphDump(LangCtx_t* lang_ctx)
         return    TREE_NULL;
     }
 
-    SetGraphFilepaths();
+    SetGraphFilepaths(lang_ctx);
 
     FILE* dot_file = fopen(lang_ctx->debug.dot_file_path, "w");
 
-    debug.graphs_count++;
+    lang_ctx->debug.graphs_count++;
 
     if (dot_file == NULL)
     {
@@ -376,15 +375,12 @@ TreeErr_t TreeGraphDump(LangCtx_t* lang_ctx)
 
     DumpGraphTitle(dot_file);
 
-    if (DumpTreeDefaultNode(tree->dummy, "type = PZN | value = PZN", "#3E3A22", "#ecede8", "#3E3A22", "record", dot_file))
-        return TREE_DUMP_ERROR;
-
-    if (DumpTreeEdges(tree->dummy, dot_file))
+    if (DumpDefaultTreeNode(tree->dummy, "type = PZN | value = PZN", "#3E3A22", "#ecede8", "#3E3A22", "record", dot_file))
         return TREE_DUMP_ERROR;
 
     if (tree->dummy->right != NULL)
     {
-        if ((error = TreeNodeDump(tree->dummy->right, dot_file, lang_ctx)))
+        if ((error = ASTNodeDump(tree->dummy->right, dot_file, lang_ctx)))
             return error;
     }
 
