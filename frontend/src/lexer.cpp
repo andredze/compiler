@@ -1,4 +1,4 @@
-#include "lexical_analysis.h"
+#include "lexer.h"
 #include "lang_ctx.h"
 #include <ctype.h>
 #include <assert.h>
@@ -155,10 +155,13 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
 
     char buf[MAX_OPERATOR_NAME_LEN] = "";
 
-    for (size_t i = 0; IsAcceptableSymbol(*lang_ctx->code); i++)
+    size_t i = 0;
+
+    do
     {
-        buf[i] = *(lang_ctx->code++);
+        buf[i++] = *(lang_ctx->code++);
     }
+    while (IsAcceptableSymbol(*lang_ctx->code));
 
     size_t id_index = 0;
 

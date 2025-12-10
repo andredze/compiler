@@ -1,14 +1,11 @@
-#ifndef TEXT_PARSE_H
-#define TEXT_PARSE_H
+#ifndef PARSER_H
+#define PARSER_H
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "math_types.h"
-#include "funcs.h"
-#include "tex.h"
 #include "tree_types.h"
 #include "tree_commands.h"
 
@@ -31,4 +28,4 @@ MathErr_t MathParseText(Tree_t* tree, Expr_t* expr);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#endif /* TEXT_PARSE_H */
+#endif /* PARSER_H */

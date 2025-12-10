@@ -2,10 +2,6 @@
 
 //------------------------------------------------------------------------------------------
 
-static MathErr_t MathParseFuncParams(Expr_t* expr, FuncParams_t* params);
-
-//------------------------------------------------------------------------------------------
-
 MathErr_t TreeReadInputData(Tree_t* tree, FuncParams_t* params)
 {
     char file_path[MAX_FILENAME_LEN] = {};
@@ -56,48 +52,7 @@ MathErr_t TreeReadData(Tree_t* tree, const char* data_file_path, FuncParams_t* p
         return error;
     }
 
-    if (MathParseFuncParams(&expr, params))
-    {
-        free(expr.buffer);
-        return MATH_FILE_ERROR;
-    }
-
     free(expr.buffer);
-
-    return MATH_SUCCESS;
-}
-
-//------------------------------------------------------------------------------------------
-
-static MathErr_t MathParseFuncParams(Expr_t* expr, FuncParams_t* params)
-{
-    assert(params != NULL);
-    assert(expr   != NULL);
-
-    DPRINTF("expr->buffer = %p;\nexpr->cur_p = %p;\n", expr->buffer, expr->cur_p);
-    DPRINTF("expr->cur_p = %s;\n", expr->cur_p);
-    int result = 0;
-
-    if ((result = sscanf(expr->cur_p,
-               " taylor around %lg to a %d power\n"
-               "graphic %s from %lg to %lg\n"
-               "graphic f from %lg to %lg ",
-               &params->taylor_point,
-               &params->taylor_degree,
-               params->diff_var,
-               &params->x_left,
-               &params->x_right,
-               &params->y_left,
-               &params->y_right)) != 7)
-    {
-        PRINTERR("File doesn't match format:"
-                 "taylor around <point> to a <degree> power\n"
-                 "graphic <arg> from <left_boundary> to <right_boundary>\n"
-                 "graphic f(<arg>) from <left_boundary> to <right_boundary>\n"
-                 "read: %s\nresult = %d\n", expr->cur_p, result);
-
-        return MATH_FILE_ERROR;
-    }
 
     return MATH_SUCCESS;
 }
