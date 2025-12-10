@@ -23,12 +23,9 @@ const int FMT_BUFFER_SIZE = 4096;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-int cprintf (const char * const color, const char* fmt, ...);
-
-int vcprintf(const char * const color, const char* fmt, va_list args);
-
-int fcprintf(FILE* stream, const char * const color, const char* fmt, ...);
-
+int cprintf  (const char * const color, const char* fmt, ...);
+int vcprintf (const char * const color, const char* fmt, va_list args);
+int fcprintf (FILE* stream, const char * const color, const char* fmt, ...);
 int vfcprintf(FILE* stream, const char * const color, const char* fmt, va_list args);
 
 //——————————————————————————————————————————————————————————————————————————————————————————

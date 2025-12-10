@@ -27,7 +27,7 @@ const int  MAX_SYNTAX_ERR_MESSAGE_LEN = 128;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-MathErr_t MathParseText(MathCtx_t* math_ctx, Expr_t* expr);
+MathErr_t MathParseText(Tree_t* tree, Expr_t* expr);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

@@ -4,6 +4,8 @@
 
 static TreeDebugData_t debug = {};
 
+//------------------------------------------------------------------------------------------
+
 static TreeErr_t TreeDumpSetDebugFilePaths  ();
 static TreeErr_t TreeDumpSetDirs            ();
 static TreeErr_t TreeDumpSetLogFilePath     ();
@@ -11,29 +13,6 @@ static TreeErr_t TreeDumpMakeDirs           ();
 static void      TreeDumpSetTime            ();
 
 //——————————————————————————————————————————————————————————————————————————————————————————
-
-int TreePrintElement(const TreeElem_t* data)
-{
-    switch (data->type)
-    {
-        case TYPE_OP:
-            printf("{OP, {%s}}", OP_CASES_TABLE[data->value.op].str);
-            break;
-        case TYPE_NUM:
-            printf("{NUM, {%lg}}", data->value.num);
-            break;
-        case TYPE_VAR:
-            printf("{VAR, {%zu}}", data->value.var);
-            break;
-        default:
-            printf("NaN");
-            return -1;
-    }
-
-    return 0;
-}
-
-//------------------------------------------------------------------------------------------
 
 static TreeErr_t TreeDumpSetDebugFilePaths()
 {
@@ -127,14 +106,14 @@ static TreeErr_t TreeDumpSetLogFilePath()
 
 //------------------------------------------------------------------------------------------
 
-TreeErr_t TreeDump(MathCtx_t*            math_ctx,
+TreeErr_t TreeDump(LangCtx_t*            lang_ctx,
                    const TreeDumpInfo_t* dump_info,
                    const char* fmt, ...)
 {
     va_list args = {};
     va_start(args, fmt);
 
-    TreeErr_t result = vTreeDump(math_ctx, dump_info, fmt, args);
+    TreeErr_t result = vTreeDump(lang_ctx, dump_info, fmt, args);
 
     va_end(args);
 
@@ -143,7 +122,7 @@ TreeErr_t TreeDump(MathCtx_t*            math_ctx,
 
 //------------------------------------------------------------------------------------------
 
-MathErr_t MathVarsTableDump(const MathCtx_t* math_ctx, const char* fmt, ...)
+MathErr_t MathVarsTableDump(const Tree_t* tree, const char* fmt, ...)
 {
     assert(fmt != NULL);
 
@@ -229,12 +208,12 @@ TreeErr_t TreeReadBufferDump(const char* buffer, ssize_t pos, const char* fmt, .
 
 //------------------------------------------------------------------------------------------
 
-TreeErr_t vTreeDump(MathCtx_t*      math_ctx,
+TreeErr_t vTreeDump(const Tree_t*         tree,
                     const TreeDumpInfo_t* dump_info,
                     const char* fmt, va_list args)
 {
-    assert(math_ctx  != NULL);
     assert(dump_info != NULL);
+    assert(tree      != NULL);
 
     Tree_t* tree = &math_ctx->tree;
     FILE*   fp   = debug.fp;
@@ -310,7 +289,7 @@ void TreeCloseLogFile()
 
 //------------------------------------------------------------------------------------------
 
-TreeErr_t TreeGraphDumpSubtree(MathCtx_t* math_ctx, TreeNode_t* node)
+TreeErr_t TreeGraphDumpSubtree(Tree_t* tree, TreeNode_t* node)
 {
     assert(math_ctx != NULL);
 
@@ -362,7 +341,7 @@ TreeErr_t TreeGraphDumpSubtree(MathCtx_t* math_ctx, TreeNode_t* node)
 
 //------------------------------------------------------------------------------------------
 
-TreeErr_t TreeGraphDump(MathCtx_t* math_ctx)
+TreeErr_t TreeGraphDump(Tree_t* tree)
 {
     assert(math_ctx != NULL);
 
@@ -485,7 +464,7 @@ TreeErr_t TreeConvertGraphFile()
 
 //------------------------------------------------------------------------------------------
 
-TreeErr_t TreeNodeDump(const TreeNode_t* node, FILE* fp, MathCtx_t* math_ctx)
+TreeErr_t TreeNodeDump(const TreeNode_t* node, FILE* fp, Tree_t* tree)
 {
     assert(node != NULL);
     assert(fp   != NULL);
@@ -537,7 +516,7 @@ void TreeNodePrint(const TreeNode_t* node)
 
 //------------------------------------------------------------------------------------------
 
-TreeErr_t DumpTreeNodeAndEdges(const TreeNode_t* node, FILE* fp, MathCtx_t* math_ctx)
+TreeErr_t DumpTreeNodeAndEdges(const TreeNode_t* node, FILE* fp, Tree_t* tree)
 {
     if (DumpTreeSingleNode(node, fp, math_ctx))
     {
@@ -585,7 +564,7 @@ int DumpTreeEdges(const TreeNode_t* node, FILE* fp)
 
 //------------------------------------------------------------------------------------------
 
-int DumpTreeSingleNode(const TreeNode_t* node, FILE* fp, MathCtx_t* math_ctx)
+int DumpTreeSingleNode(const TreeNode_t* node, FILE* fp, Tree_t* tree)
 {
     assert(node != NULL);
     assert(fp   != NULL);
@@ -634,7 +613,7 @@ int DumpTreeOpNode(const TreeNode_t* node, FILE* fp)
 
 //------------------------------------------------------------------------------------------
 
-int DumpTreeVarNode(const TreeNode_t* node, FILE* fp, MathCtx_t* math_ctx)
+int DumpTreeVarNode(const TreeNode_t* node, FILE* fp, Tree_t* tree)
 {
     assert(math_ctx != NULL);
     assert(node     != NULL);

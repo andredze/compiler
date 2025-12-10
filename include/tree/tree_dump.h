@@ -1,5 +1,5 @@
-#ifndef TREE_GRAPH_H
-#define TREE_GRAPH_H
+#ifndef TREE_DUMP_H
+#define TREE_DUMP_H
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -15,31 +15,31 @@ int TreePrintElement(const TreeElem_t* data);
 
 TreeErr_t TreeReadBufferDump(const char* buffer, ssize_t pos, const char* fmt, ...);
 
-MathErr_t MathVarsTableDump(const MathCtx_t* math_ctx, const char* fmt, ...);
+// MathErr_t MathVarsTableDump(const Tree_t* tree, const char* fmt, ...);
 
-TreeErr_t TreeDump(MathCtx_t*      math_ctx,
+TreeErr_t TreeDump(Tree_t* tree,
                    const TreeDumpInfo_t* dump_info,
                    const char* fmt, ...);
 
-TreeErr_t vTreeDump(MathCtx_t*      math_ctx,
+TreeErr_t vTreeDump(Tree_t* tree,
                     const TreeDumpInfo_t* dump_info,
                     const char* fmt, va_list args);
 
 TreeErr_t TreeOpenLogFile   ();
 void      TreeCloseLogFile  ();
 
-TreeErr_t TreeGraphDump        (MathCtx_t*       math_ctx);
+TreeErr_t TreeGraphDump        (Tree_t* tree);
 void      SetGraphFilepaths    ();
 TreeErr_t TreeConvertGraphFile ();
 
-TreeErr_t TreeGraphDumpSubtree(MathCtx_t* math_ctx, TreeNode_t* node);
+TreeErr_t TreeGraphDumpSubtree(Tree_t* tree, TreeNode_t* node);
 
 void      DumpGraphTitle      (FILE* dot_file);
 void      TreeNodePrint       (const TreeNode_t* node          );
-TreeErr_t TreeNodeDump        (const TreeNode_t* node, FILE* fp, MathCtx_t* math_ctx);
-TreeErr_t DumpTreeNodeAndEdges(const TreeNode_t* node, FILE* fp, MathCtx_t* math_ctx);
-int       DumpTreeSingleNode  (const TreeNode_t* node, FILE* fp, MathCtx_t* math_ctx);
-int       DumpTreeVarNode     (const TreeNode_t* node, FILE* fp, MathCtx_t* math_ctx);
+TreeErr_t TreeNodeDump        (const TreeNode_t* node, FILE* fp, Tree_t* tree);
+TreeErr_t DumpTreeNodeAndEdges(const TreeNode_t* node, FILE* fp, Tree_t* tree);
+int       DumpTreeSingleNode  (const TreeNode_t* node, FILE* fp, Tree_t* tree);
+int       DumpTreeVarNode     (const TreeNode_t* node, FILE* fp, Tree_t* tree);
 int       DumpTreeEdges       (const TreeNode_t* node, FILE* fp);
 int       DumpTreeOpNode      (const TreeNode_t* node, FILE* fp);
 int       DumpTreeNumNode     (const TreeNode_t* node, FILE* fp);
@@ -92,4 +92,4 @@ const char* const IMAGE_FILE_TYPE = "svg";
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#endif /* TREE_GRAPH_H */
+#endif /* TREE_DUMP_H */

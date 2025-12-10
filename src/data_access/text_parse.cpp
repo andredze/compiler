@@ -33,23 +33,23 @@
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseGrammar     (MathCtx_t* math_ctx, Expr_t* expr);
-static TreeNode_t* ParseExpr        (MathCtx_t* math_ctx, Expr_t* expr);
-static TreeNode_t* ParseTerm        (MathCtx_t* math_ctx, Expr_t* expr);
-static TreeNode_t* ParseDegree      (MathCtx_t* math_ctx, Expr_t* expr);
-static TreeNode_t* ParseElement     (MathCtx_t* math_ctx, Expr_t* expr);
-static TreeNode_t* ParseInBrackets  (MathCtx_t* math_ctx, Expr_t* expr);
-static TreeNode_t* ParseNumber      (MathCtx_t* math_ctx, Expr_t* expr);
+static TreeNode_t* ParseGrammar     (Tree_t* tree, Expr_t* expr);
+static TreeNode_t* ParseExpr        (Tree_t* tree, Expr_t* expr);
+static TreeNode_t* ParseTerm        (Tree_t* tree, Expr_t* expr);
+static TreeNode_t* ParseDegree      (Tree_t* tree, Expr_t* expr);
+static TreeNode_t* ParseElement     (Tree_t* tree, Expr_t* expr);
+static TreeNode_t* ParseInBrackets  (Tree_t* tree, Expr_t* expr);
+static TreeNode_t* ParseNumber      (Tree_t* tree, Expr_t* expr);
 static int         ParseFractalPart (Expr_t*    expr,     double* value);
-static TreeNode_t* ParseIdentifier  (MathCtx_t* math_ctx, Expr_t* expr);
+static TreeNode_t* ParseIdentifier  (Tree_t* tree, Expr_t* expr);
 
-static TreeNode_t* ParseUnaryOp     (MathCtx_t* math_ctx,     Expr_t*     expr,
+static TreeNode_t* ParseUnaryOp     (Tree_t* tree,     Expr_t*     expr,
                                      char*      word_start_p, size_t      word_len);
 
-static TreeNode_t* ParseVariable    (MathCtx_t* math_ctx,     Expr_t*     expr,
+static TreeNode_t* ParseVariable    (Tree_t* tree,     Expr_t*     expr,
                                      char*      word_start_p, size_t      word_len);
 
-static MathErr_t   PutVarInTable    (MathCtx_t* math_ctx,     char*       str,
+static MathErr_t   PutVarInTable    (Tree_t* tree,     char*       str,
                                      size_t     str_len,      MathData_t* data);
 
 static void SkipSpaces              (Expr_t* expr);
@@ -73,7 +73,7 @@ static void PrintSyntaxError        (Expr_t* expr,     const char* file,
 
 //------------------------------------------------------------------------------------------
 
-MathErr_t MathParseText(MathCtx_t* math_ctx, Expr_t* expr)
+MathErr_t MathParseText(Tree_t* tree, Expr_t* expr)
 {
     assert(expr != NULL);
 
@@ -134,7 +134,7 @@ static void PrintSyntaxError(Expr_t* expr, const char* file, const char* func, c
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseGrammar(MathCtx_t* math_ctx, Expr_t* expr)
+static TreeNode_t* ParseGrammar(Tree_t* tree, Expr_t* expr)
 {
     TreeNode_t* node = ParseExpr(math_ctx, expr);
 
@@ -153,7 +153,7 @@ static TreeNode_t* ParseGrammar(MathCtx_t* math_ctx, Expr_t* expr)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseExpr(MathCtx_t* math_ctx, Expr_t* expr)
+static TreeNode_t* ParseExpr(Tree_t* tree, Expr_t* expr)
 {
     TreeNode_t* node1 = ParseTerm(math_ctx, expr);
 
@@ -187,7 +187,7 @@ static TreeNode_t* ParseExpr(MathCtx_t* math_ctx, Expr_t* expr)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseTerm(MathCtx_t* math_ctx, Expr_t* expr)
+static TreeNode_t* ParseTerm(Tree_t* tree, Expr_t* expr)
 {
     TreeNode_t* node1 = ParseDegree(math_ctx, expr);
 
@@ -225,7 +225,7 @@ static TreeNode_t* ParseTerm(MathCtx_t* math_ctx, Expr_t* expr)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseDegree(MathCtx_t* math_ctx, Expr_t* expr)
+static TreeNode_t* ParseDegree(Tree_t* tree, Expr_t* expr)
 {
     TreeNode_t* node1 = ParseElement(math_ctx, expr);
 
@@ -258,7 +258,7 @@ static TreeNode_t* ParseDegree(MathCtx_t* math_ctx, Expr_t* expr)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseElement(MathCtx_t* math_ctx, Expr_t* expr)
+static TreeNode_t* ParseElement(Tree_t* tree, Expr_t* expr)
 {
     TreeNode_t* node = 0;
 
@@ -276,7 +276,7 @@ static TreeNode_t* ParseElement(MathCtx_t* math_ctx, Expr_t* expr)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseInBrackets(MathCtx_t* math_ctx, Expr_t* expr)
+static TreeNode_t* ParseInBrackets(Tree_t* tree, Expr_t* expr)
 {
     expr->cur_p++;
     TREE_READ_BUFFER_DUMP(expr, "GET P: READ \"(\"");
@@ -299,7 +299,7 @@ static TreeNode_t* ParseInBrackets(MathCtx_t* math_ctx, Expr_t* expr)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseNumber(MathCtx_t* math_ctx, Expr_t* expr)
+static TreeNode_t* ParseNumber(Tree_t* tree, Expr_t* expr)
 {
     DPRINTF("\tGetN\n");
 
@@ -359,7 +359,7 @@ static int ParseFractalPart(Expr_t* expr, double* value)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseElement(MathCtx_t* math_ctx, Expr_t* expr)
+static TreeNode_t* ParseElement(Tree_t* tree, Expr_t* expr)
 {
     DPRINTF("\tGetString:\n");
     SkipSpaces(expr);
@@ -395,7 +395,7 @@ static TreeNode_t* ParseElement(MathCtx_t* math_ctx, Expr_t* expr)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseUnaryOp(MathCtx_t* math_ctx, Expr_t* expr, char* word_start_p, size_t word_len)
+static TreeNode_t* ParseUnaryOp(Tree_t* tree, Expr_t* expr, char* word_start_p, size_t word_len)
 {
 //     uint64_t hash = GetHash();
 //
@@ -452,7 +452,7 @@ static int IsAcceptableSymbol(char ch)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseVariable(MathCtx_t* math_ctx, Expr_t* expr, char* word_start_p, size_t word_len)
+static TreeNode_t* ParseVariable(Tree_t* tree, Expr_t* expr, char* word_start_p, size_t word_len)
 {
     TreeNode_t* node = MathNodeCtor(math_ctx, {.type = TYPE_VAR}, NULL, NULL);
 
@@ -471,7 +471,7 @@ static TreeNode_t* ParseVariable(MathCtx_t* math_ctx, Expr_t* expr, char* word_s
 
 //------------------------------------------------------------------------------------------
 
-static MathErr_t PutVarInTable(MathCtx_t* math_ctx, char* str, size_t str_len, MathData_t* data)
+static MathErr_t PutVarInTable(Tree_t* tree, char* str, size_t str_len, MathData_t* data)
 {
     assert(math_ctx != NULL);
     assert(data     != NULL);

@@ -13,97 +13,29 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-typedef enum MathDataType
+typedef union TokenValue
 {
-    TYPE_VAR,
-    TYPE_NUM,
-    TYPE_OP
-} MathDataType_t;
+    int        fake;
+
+    Operator_t op;
+    double     num;
+    size_t     var;
+
+} TokenValue_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-typedef enum MathOperations
+typedef struct TokenData
 {
-    OP_ADD,  OP_SUB,  OP_MUL,  OP_DIV,
-    OP_LOG,  OP_LN,
-    OP_DEG,  OP_EXP,  OP_SQRT,
-    OP_SIN,  OP_COS,  OP_TG,   OP_CTG,
-    OP_SH,   OP_CH,   OP_TH,   OP_CTH,
-    OP_ASIN, OP_ACOS, OP_ATG,  OP_ACTG,
-    OP_UNKNOWN
-} MathOp_t;
+    TokenType_t  type;
+    TokenValue_t value;
+} TokenData_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-typedef struct OpCase
-{
-    MathOp_t    code;
-    const char* str;
-    const char* tex_str;
-    int         args_count;
-    const char* color;
-    const char* fillcolor;
-    const char* fontcolor;
-} OpCase_t;
+typedef TokenData_t TreeElem_t;
 
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-const OpCase_t OP_CASES_TABLE[] =
-{
-    [OP_ADD]  = {OP_ADD,  "+",      "+",         2, "#0d5854ff", "#4efabbff", "#0d4235ff"},
-    [OP_SUB]  = {OP_SUB,  "-",      "-",         2, "#0d5854ff", "#4efabbff", "#0d4235ff"},
-    [OP_MUL]  = {OP_MUL,  "*",      "\\cdot",    2, "#0d5854ff", "#4efabbff", "#0d4235ff"},
-    [OP_DIV]  = {OP_DIV,  "/",      "\\frac",    2, "#0d5854ff", "#4efabbff", "#0d4235ff"},
-
-    [OP_LOG]  = {OP_LOG,  "log",    "\\log",     2, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_LN ]  = {OP_LN,   "ln",     "\\ln",      1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-
-    [OP_DEG ] = {OP_DEG,  "^",      "^",         2, "#0d5854ff", "#4efabbff", "#0d4235ff"},
-    [OP_EXP ] = {OP_EXP,  "exp",    "\\exp",     1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_SQRT] = {OP_SQRT, "sqrt",   "\\sqrt",    1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-
-    [OP_SIN]  = {OP_SIN,  "sin",    "\\sin",     1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_COS]  = {OP_COS,  "cos",    "\\cos",     1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_TG ]  = {OP_TG,   "tg",     "\\tan",     1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_CTG]  = {OP_CTG,  "ctg",    "\\cot",     1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-
-    [OP_SH ]  = {OP_SH,   "sh",     "\\sh",      1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_CH ]  = {OP_CH,   "ch",     "\\ch",      1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_TH ]  = {OP_TH,   "th",     "\\th",      1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_CTH]  = {OP_CTH,  "cth",    "\\cth",     1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-
-    [OP_ASIN] = {OP_ASIN, "arcsin", "\\arcsin",  1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_ACOS] = {OP_ACOS, "arccos", "\\arccos",  1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_ATG ] = {OP_ATG,  "arctg",  "\\arctan",  1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-    [OP_ACTG] = {OP_ACTG, "arcctg", "\\arccot",  1, "#065f96ff", "#58bbf8ff", "#043351ff"},
-};
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-const size_t OP_CASES_TABLE_SIZE = sizeof(OP_CASES_TABLE) / sizeof(OP_CASES_TABLE[0]);
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef union MathValue
-{
-    MathOp_t op;
-    double   num;
-    size_t   var;
-} MathValue_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef struct MathData
-{
-    MathDataType_t type;
-    MathValue_t    value;
-} MathData_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef MathData_t TreeElem_t;
-
-const TreeElem_t TREE_POISON = {TYPE_NUM, { .num = 0 }};
+const TreeElem_t TREE_POISON = {TYPE_NONE, { .fake = 0 }};
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -211,20 +143,32 @@ typedef struct TypeCase
 {
     MathDataType_t type;
     const char*    name;
+
     const char*    shape;
+
     const char*    color;
     const char*    fillcolor;
     const char*    fontcolor;
+
 } TypeCase_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#define SET_TYPE_CASE_(code,   name,   shape,   color,   fillcolor,   fontcolor) \
+        [(code)]   = {(code), (name), (shape), (color), (fillcolor), (fontcolor)}
+
+//------------------------------------------------------------------------------------------
+
 const TypeCase_t TYPE_CASES_TABLE[] =
 {
-    [TYPE_VAR] = {TYPE_VAR, "VAR",  "Mrecord", "#006400", "#C0FFC0", "#006400"},
-    [TYPE_NUM] = {TYPE_NUM, "NUM",  "Mrecord", "#990000", "#FFC0C0", "#990000"},
-    [TYPE_OP ] = {TYPE_OP , "OPER", "record" , "#000064", "#C0C0FF", "#000064"}
+    SET_TYPE_CASE(TYPE_OP , "OP" , "rectangle", "#000064", "#C0C0FF", "#000064"),
+    SET_TYPE_CASE(TYPE_ID , "ID" , "octagon"  , "#006400", "#C0FFC0", "#006400"),
+    SET_TYPE_CASE(TYPE_NUM, "NUM", "ellipse"  , "#990000", "#FFC0C0", "#990000")
 };
+
+//------------------------------------------------------------------------------------------
+
+#undef SET_TYPE_CASE_
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

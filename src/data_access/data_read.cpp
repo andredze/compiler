@@ -6,7 +6,7 @@ static MathErr_t MathParseFuncParams(Expr_t* expr, FuncParams_t* params);
 
 //------------------------------------------------------------------------------------------
 
-MathErr_t TreeReadInputData(MathCtx_t* math_ctx, FuncParams_t* params)
+MathErr_t TreeReadInputData(Tree_t* tree, FuncParams_t* params)
 {
     char file_path[MAX_FILENAME_LEN] = {};
 
@@ -25,7 +25,7 @@ MathErr_t TreeReadInputData(MathCtx_t* math_ctx, FuncParams_t* params)
 
 //------------------------------------------------------------------------------------------
 
-MathErr_t TreeReadData(MathCtx_t* math_ctx, const char* data_file_path, FuncParams_t* params)
+MathErr_t TreeReadData(Tree_t* tree, const char* data_file_path, FuncParams_t* params)
 {
     DEBUG_TREE_CHECK(math_ctx, "ERROR BEFORE TREE READ DATA");
 
