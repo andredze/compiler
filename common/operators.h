@@ -30,15 +30,17 @@ typedef enum Operator
     OP_DIV            = 13,
     OP_NEWLINE        = 14,
     OP_SEPARATOR      = 15,
-    OP_ABORT          = 16
+    OP_ABORT          = 16,
+    OP_OUTPUT         = 17,
+    OP_INPUT          = 18
 } Operator_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 typedef struct OperatorCase
 {
-    MathOp_t    code;
-s
+    Operator_t  code;
+
     const char* name;
     size_t      name_len;
 
@@ -48,30 +50,32 @@ s
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define SET_OP_CASE_(code,   name,                 child_count,) \
+#define SET_OP_CASE_(code,   name,                 child_count) \
         [(code)] = {(code), (name), sizeof(name), (child_count)}
 
 //------------------------------------------------------------------------------------------
 
-const OpCase_t OP_CASES_TABLE[] =
+const OperatorCase_t OP_CASES_TABLE[] =
 {
-    SET_OP_CASE_(OP_NONE,          NULL,    0),
-    SET_OP_CASE_(OP_BRACKET_OPEN,  "(",     0),
-    SET_OP_CASE_(OP_BRACKET_CLOSE, ")",     0),
-    SET_OP_CASE_(OP_IF,            "if",    2),
-    SET_OP_CASE_(OP_WHILE,         "while", 2),
-    SET_OP_CASE_(OP_ELSE,          "else",  1),
-    SET_OP_CASE_(OP_BLOCK_BEGIN,   "{",     2),
-    SET_OP_CASE_(OP_BLOCK_END,     "}",     0),
-    SET_OP_CASE_(OP_PARAM,         "param", 1),
-    SET_OP_CASE_(OP_FUNCTION,      "func",  2),
-    SET_OP_CASE_(OP_ADD,           "+",     2),
-    SET_OP_CASE_(OP_SUB,           "-",     2),
-    SET_OP_CASE_(OP_MUL,           "*",     2),
-    SET_OP_CASE_(OP_DIV,           "/",     2),
-    SET_OP_CASE_(OP_NEWLINE,       ";",     2),
-    SET_OP_CASE_(OP_SEPARATOR,     ",",     2),
-    SET_OP_CASE_(OP_ABORT,         "abort", 2)
+    SET_OP_CASE_(OP_NONE,          NULL,       0),
+    SET_OP_CASE_(OP_BRACKET_OPEN,  "(",        0),
+    SET_OP_CASE_(OP_BRACKET_CLOSE, ")",        0),
+    SET_OP_CASE_(OP_IF,            "если",     2),
+    SET_OP_CASE_(OP_ELSE,          "иначе",    1),
+    SET_OP_CASE_(OP_WHILE,         "пока",     2),
+    SET_OP_CASE_(OP_BLOCK_BEGIN,   "{",        2),
+    SET_OP_CASE_(OP_BLOCK_END,     "}",        0),
+    SET_OP_CASE_(OP_PARAM,         "параметр", 1),
+    SET_OP_CASE_(OP_FUNCTION,      "функция",  2),
+    SET_OP_CASE_(OP_ADD,           "+",        2),
+    SET_OP_CASE_(OP_SUB,           "-",        2),
+    SET_OP_CASE_(OP_MUL,           "*",        2),
+    SET_OP_CASE_(OP_DIV,           "/",        2),
+    SET_OP_CASE_(OP_NEWLINE,       ";",        2),
+    SET_OP_CASE_(OP_SEPARATOR,     ",",        2),
+    SET_OP_CASE_(OP_ABORT,         "аборт",    2), // hlt
+    SET_OP_CASE_(OP_OUTPUT,        "печать",   2),
+    SET_OP_CASE_(OP_INPUT,         "читать",   2)
 };
 
 //------------------------------------------------------------------------------------------
@@ -80,8 +84,8 @@ const OpCase_t OP_CASES_TABLE[] =
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-size_t OPERATORS_COUNT       = sizeof(OP_CASES_TABLE) / sizeof(OP_CASES_TABLE[0]);
-size_t MAX_OPERATOR_NAME_LEN = 128;
+const size_t OPERATORS_COUNT       = sizeof(OP_CASES_TABLE) / sizeof(OP_CASES_TABLE[0]);
+const size_t MAX_OPERATOR_NAME_LEN = 128;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

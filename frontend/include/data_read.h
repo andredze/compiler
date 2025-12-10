@@ -4,18 +4,15 @@
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #include "tree_commands.h"
-#include "tree_debug.h"
+#include "tree_dump.h"
 #include <sys/stat.h>
-#include "funcs.h"
-#include "text_parse.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-MathErr_t TreeReadInputData(Tree_t* tree, FuncParams_t* params);
+LangErr_t TreeReadInputData(Tree_t* tree);
 
-MathErr_t TreeReadData      (MathCtx_t*     math_ctx,
-                             const char*    data_file_path,
-                             FuncParams_t*  params);
+LangErr_t TreeReadData      (LangCtx_t*     lang_ctx,
+                             const char*    data_file_path);
 
 int       ReadFile          (FILE*          fp,
                              char**         buffer_ptr,

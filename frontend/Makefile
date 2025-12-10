@@ -17,14 +17,17 @@ CXXFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Wsign-convers
 
 CXXFLAGS += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-CXXFLAGS += -I include -I include/tree -I include/data_access -I include/math
+CXXFLAGS += -I include -I ../common/lang_ctx -I ../common/stack -I ../common/colors -I ../common/tree -I ../common
 
 SOURCES = src/main.cpp 						\
-          src/data_access/data_read.cpp 	\
-          src/tree/tree_commands.cpp 		\
-          src/tree/tree_debug.cpp 			\
-          src/colors.cpp					\
-		  src/data_access/text_parse.cpp
+          src/lexer.cpp 					\
+          ../common/colors/colors.cpp		\
+          ../common/lang_ctx/lang_ctx.cpp	\
+          ../common/stack/stack.cpp			\
+          ../common/tree/tree_commands.cpp	\
+          ../common/tree/tree_dump.cpp		\
+#           src/parser.cpp 					\
+#           src/data_read.cpp 				\
 
 ifdef DEBUG
 CXXFLAGS += -D TREE_DEBUG
@@ -34,7 +37,7 @@ OBJS = $(SOURCES:src/%.cpp=obj/%.o)
 
 TARGET = run
 
-$(shell mkdir -p obj obj/data_access obj/tree)
+$(shell mkdir -p obj obj/colors obj/tree obj/stack)
 
 all: $(TARGET)
 
@@ -44,8 +47,8 @@ $(TARGET): $(OBJS)
 obj/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-clean:
-	rm -rf $(OBJS) $(TARGET)
+# clean:
+# 	rm -rf $(OBJS) $(TARGET)
 
 dlog:
 	rm -rf log/*

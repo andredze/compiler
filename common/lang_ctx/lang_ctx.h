@@ -21,13 +21,16 @@ typedef struct IdTable
 
 typedef struct LangCtx
 {
-    char*       code;
-    size_t      current_line;
+    char*         code;
+    char*         buffer;
+    size_t        current_line;
 
-    Stack_t     tokens;
-    Tree_t      tree;
+    Stack_t       tokens;
+    Tree_t        tree;
 
-    IdTable_t   id_table;
+    IdTable_t     id_table;
+
+    TreeDebugData debug;
 
 } LangCtx_t;
 
@@ -61,12 +64,12 @@ const size_t DEFAULT_ID_TABLE_CAPACITY = 64;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t LangCtxCtor       (LangCtx_t* lang_ctx);
-void      LangCtxDtor       (LangCtx_t* lang_ctx);
+LangErr_t   LangCtxCtor           (LangCtx_t* lang_ctx);
+void        LangCtxDtor           (LangCtx_t* lang_ctx);
 
-LangErr_t LangIdTableCtor   (IdTable_t* id_table);
-void      LangIdTableDtor   (IdTable_t* id_table);
-LangErr_t LangIdTablePush   (LangCtx_t* lang_ctx, const char* id_name_buf, size_t* id_index);
+LangErr_t   LangIdTableCtor       (IdTable_t* id_table);
+void        LangIdTableDtor       (IdTable_t* id_table);
+LangErr_t   LangIdTablePush       (LangCtx_t* lang_ctx, const char* id_name_buf, size_t* id_index);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

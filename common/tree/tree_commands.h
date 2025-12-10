@@ -5,7 +5,7 @@
 
 #include "tree_types.h"
 #include <stdarg.h>
-#include "tree_debug.h"
+#include "tree_dump.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -42,11 +42,15 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+TreeNode_t* LangOperatorNodeCtor  (LangCtx_t* lang_ctx, Operator_t opcode  );
+TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t     id_index);
+TreeNode_t* LangNumberNodeCtor    (LangCtx_t* lang_ctx, double     number  );
+
 TreeErr_t TreeVerify           (const Tree_t* tree);
 TreeErr_t TreeCtor             (Tree_t*     tree);
 
-TreeNode_t* TreeNodeCtor       (Tree_t* tree, MathData_t data, TreeNode_t* left, TreeNode_t* right, TreeNode_t* parent);
-TreeErr_t   TreeGetData        (TreeNode_t* node, MathDataType_t type, MathData_t data);
+TreeNode_t* TreeNodeCtor       (Tree_t* tree, TokenData_t data, TreeNode_t* left, TreeNode_t* right, TreeNode_t* parent);
+TreeErr_t   TreeGetData        (TreeNode_t* node, TokenType_t type, TokenData_t data);
 TreeNode_t* TreeCopySubtree    (Tree_t* dest_tree, TreeNode_t* node, TreeNode_t* parent);
 TreeErr_t   TreeDtor           (Tree_t*     tree);
 

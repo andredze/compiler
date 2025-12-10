@@ -1,0 +1,17 @@
+digraph BST {
+  node [shape=plaintext];
+  "0x1234" [label=<
+    <table cellspacing="0" border="0" cellborder="1">
+      <tr><td colspan="2">parent 0xNULL</td></tr>
+      <tr><td colspan="2">addr: 0x1234</td></tr>
+      <tr><td colspan="2">type: int</td></tr>
+      <tr><td colspan="2">val: 42</td></tr>
+      <tr>
+        <td bgcolor="#ffcccc">L: 0x5678</td>
+        <td bgcolor="#cce5ff">R: 0x9abc</td>
+      </tr>
+    </table>
+  >];
+  "0x1234" -> "0x5678";
+  "0x1234" -> "0x9abc";
+}

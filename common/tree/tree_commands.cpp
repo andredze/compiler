@@ -40,6 +40,48 @@ TreeErr_t TreeCheck(MathCtx_t*  math_ctx,
 
 //------------------------------------------------------------------------------------------
 
+TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode)
+{
+    assert(lang_ctx != NULL);
+
+    TokenData_t token_data = {};
+
+    token_data.type         = TYPE_OP;
+    token_data.value.opcode = opcode;
+
+    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
+}
+
+//------------------------------------------------------------------------------------------
+
+TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t id_index)
+{
+    assert(lang_ctx != NULL);
+
+    TokenData_t token_data = {};
+
+    token_data.type           = TYPE_ID;
+    token_data.value.id_index = id_index;
+
+    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL);
+}
+
+//------------------------------------------------------------------------------------------
+
+TreeNode_t* LangNumberNodeCtor(LangCtx_t* lang_ctx, double number)
+{
+    assert(lang_ctx != NULL);
+
+    TokenData_t token_data = {};
+
+    token_data.type         = TYPE_NUM;
+    token_data.value.number = number;
+
+    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL);
+}
+
+//==========================================================================================
+
 TreeErr_t TreeCtor(Tree_t* tree)
 {
     if (tree == NULL)
@@ -48,7 +90,7 @@ TreeErr_t TreeCtor(Tree_t* tree)
         return TREE_NULL;
     }
 
-    tree->dummy = TreeNodeCtor(tree, {TYPE_NUM, { .num = 0 }}, NULL, NULL, NULL);
+    tree->dummy = TreeNodeCtor(tree, {TYPE_NUM, { .number = 0.0 }}, NULL, NULL, NULL);
 
     if (tree->dummy == NULL)
     {

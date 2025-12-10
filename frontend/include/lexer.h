@@ -1,5 +1,5 @@
-#ifndef LEXICAL_ANALYSIS_H
-#define LEXICAL_ANALYSIS_H
+#ifndef LEXER_H
+#define LEXER_H
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -14,4 +14,4 @@ LangErr_t LexicallyAnalyze(LangCtx_t* lang_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#endif /* LEXICAL_ANALYSIS_H */
+#endif /* LEXER_H */

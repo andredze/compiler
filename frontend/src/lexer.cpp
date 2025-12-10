@@ -34,7 +34,7 @@ LangErr_t LexicallyAnalyze(LangCtx_t* lang_ctx)
 static LangErr_t ProcessOperatorTokenCase   (LangCtx_t* lang_ctx, bool* do_continue);
 static LangErr_t ProcessNumberTokenCase     (LangCtx_t* lang_ctx, bool* do_continue);
 static LangErr_t ProcessIdentifierTokenCase (LangCtx_t* lang_ctx, bool* do_continue);
-static void      ProcessSpaceCase           (LangCtx_t* lang_ctx, bool* do_continue);
+static void      ProcessSpacesCase          (LangCtx_t* lang_ctx, bool* do_continue);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -74,6 +74,15 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
     return LANG_SYNTAX_ERROR;
 }
 
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+#define PUSH_TOKEN_(_token)                         \
+        if (StackPush(&lang_ctx->tokens, _token))   \
+        {                                           \
+            PRINTERR("Failed stack push token");    \
+            return LANG_STACK_ERROR;                \
+        }
+
 //------------------------------------------------------------------------------------------
 
 static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
@@ -81,21 +90,15 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
     assert(do_continue);
     assert(lang_ctx);
 
-    for (size_t op_code = 0; op_code < OP_COUNT; op_code++)
+    for (size_t op_code = 0; op_code < OPERATORS_COUNT; op_code++)
     {
-        if (strncmp(*lang_ctx->code,
+        if (strncmp(lang_ctx->code,
                     OP_CASES_TABLE[op_code].name,
                     OP_CASES_TABLE[op_code].name_len) == 0)
         {
             *do_continue = true;
 
-            TreeNode_t* token = OPERATOR_(op_code);
-
-            if (StackPush(lang_ctx->tokens, token))
-            {
-                PRINTERR("Failed stack push token");
-                return LANG_STACK_ERROR;
-            }
+            PUSH_TOKEN_(OPERATOR_((Operator_t) op_code));
 
             lang_ctx->code += OP_CASES_TABLE[op_code].name_len;
 
@@ -121,17 +124,11 @@ static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
     double value        = 0.0;
     char*  num_code_end = NULL;
 
-    value = strtod(*lang_ctx->code, &num_code_end);
+    value = strtod(lang_ctx->code, &num_code_end);
 
     lang_ctx->code = num_code_end;
 
-    TreeNode_t* token = NUMBER_(id_index);
-
-    if (StackPush(lang_ctx->tokens, token))
-    {
-        PRINTERR("Failed stack push token");
-        return LANG_STACK_ERROR;
-    }
+    PUSH_TOKEN_(NUMBER_(value));
 
     return LANG_SUCCESS;
 }
@@ -165,19 +162,19 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
 
     size_t id_index = 0;
 
+    LangErr_t status = LANG_SUCCESS;
+
     if ((status = LangIdTablePush(lang_ctx, buf, &id_index)))
         return status;
 
-    TreeNode_t* token = IDENTIFIER_(id_index);
-
-    if (StackPush(lang_ctx->tokens, token))
-    {
-        PRINTERR("Failed stack push token");
-        return LANG_STACK_ERROR;
-    }
+    PUSH_TOKEN_(IDENTIFIER_(id_index));
 
     return LANG_SUCCESS;
 }
+
+//------------------------------------------------------------------------------------------
+
+#undef PUSH_TOKEN_
 
 //------------------------------------------------------------------------------------------
 
@@ -195,7 +192,7 @@ static inline int IsAcceptableFirstSymbol(char ch)
 
 //------------------------------------------------------------------------------------------
 
-static void ProcessSpaceCase(LangCtx_t* lang_ctx, bool* do_continue)
+static void ProcessSpacesCase(LangCtx_t* lang_ctx, bool* do_continue)
 {
     assert(do_continue);
     assert(lang_ctx);
@@ -205,14 +202,15 @@ static void ProcessSpaceCase(LangCtx_t* lang_ctx, bool* do_continue)
 
     *do_continue = true;
 
-    do {
+    do
+    {
         if (*lang_ctx->code == '\n')
         {
             lang_ctx->current_line++;
         }
         lang_ctx->code++;
-
-    } while (isspace(*lang_ctx->code));
+    }
+    while (isspace(*lang_ctx->code));
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————

@@ -6,7 +6,7 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx != NULL);
 
-    if (StackCtor(&lang_ctx->tokens))
+    if (StackCtor(&lang_ctx->tokens, 0))
     {
         PRINTERR("Tokens stack construct failed");
         return LANG_STACK_ERROR;
@@ -109,6 +109,8 @@ LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const char* id_name_buf, size_t* 
         return LANG_MEMALLOC_ERROR;
     }
 
+    LangErr_t error = LANG_SUCCESS;
+
     if (id_table->size >= id_table->capacity)
     {
         if ((error = LangIdTableRealloc(id_table)))
@@ -128,7 +130,7 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table)
 
     size_t new_capacity = id_table->capacity * 2 + 1;
 
-    char* new_data = realloc(id_table->data, new_capacity * sizeof(*id_table->data));
+    char** new_data = (char**) realloc(id_table->data, new_capacity * sizeof(*id_table->data));
 
     if (new_data == NULL)
     {

@@ -10,16 +10,15 @@
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #include "common.h"
+#include "operators.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 typedef union TokenValue
 {
-    int        fake;
-
-    Operator_t op;
-    double     num;
-    size_t     var;
+    Operator_t opcode;
+    double     number;
+    size_t     id_index;
 
 } TokenValue_t;
 
@@ -29,13 +28,14 @@ typedef struct TokenData
 {
     TokenType_t  type;
     TokenValue_t value;
+
 } TokenData_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 typedef TokenData_t TreeElem_t;
 
-const TreeElem_t TREE_POISON = {TYPE_NONE, { .fake = 0 }};
+const TreeElem_t TREE_POISON = {TYPE_NUM, { .number = 0 }};
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -141,7 +141,7 @@ typedef struct TreeDumpInfo
 
 typedef struct TypeCase
 {
-    MathDataType_t type;
+    TokenType_t    type;
     const char*    name;
 
     const char*    shape;
@@ -161,9 +161,9 @@ typedef struct TypeCase
 
 const TypeCase_t TYPE_CASES_TABLE[] =
 {
-    SET_TYPE_CASE(TYPE_OP , "OP" , "rectangle", "#000064", "#C0C0FF", "#000064"),
-    SET_TYPE_CASE(TYPE_ID , "ID" , "octagon"  , "#006400", "#C0FFC0", "#006400"),
-    SET_TYPE_CASE(TYPE_NUM, "NUM", "ellipse"  , "#990000", "#FFC0C0", "#990000")
+    SET_TYPE_CASE_(TYPE_OP , "OP" , "rectangle", "#000064", "#C0C0FF", "#000064"),
+    SET_TYPE_CASE_(TYPE_ID , "ID" , "octagon"  , "#006400", "#C0FFC0", "#006400"),
+    SET_TYPE_CASE_(TYPE_NUM, "NUM", "ellipse"  , "#990000", "#FFC0C0", "#990000")
 };
 
 //------------------------------------------------------------------------------------------

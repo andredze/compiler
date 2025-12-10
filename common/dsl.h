@@ -1,10 +1,15 @@
 #ifdef _DSL_DEFINE_
 
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+#include "tree_types.h"
+#include "tree_commands.h"
+
 //------------------------------------------------------------------------------------------
 
-#define OPERATOR_(op_code)   TreeNodeCtor(lang_ctx->tree, { TYPE_OP , {.op  = (op_code) } }, NULL, NULL)
-#define IDENTIFIER_(var_ind) TreeNodeCtor(lang_ctx->tree, { TYPE_ID , {.var = (var_ind) } }, NULL, NULL)
-#define NUMBER_(number)      TreeNodeCtor(lang_ctx->tree, { TYPE_NUM, {.num = (number)  } }, NULL, NULL)
+#define OPERATOR_(op_code)    LangOperatorNodeCtor      (lang_ctx, (op_code ))
+#define IDENTIFIER_(id_index) LangIdentifierNodeCtor    (lang_ctx, (id_index))
+#define NUMBER_(number)       LangNumberNodeCtor        (lang_ctx, (number  ))
 
 //------------------------------------------------------------------------------------------
 
