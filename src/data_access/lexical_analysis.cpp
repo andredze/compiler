@@ -31,9 +31,10 @@ LangErr_t LexicallyAnalyze(LangCtx_t* lang_ctx)
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static LangErr_t ProcessOperatorTokenCase   (LangCtx_t* lang_ctx, bool* got_token);
-static LangErr_t ProcessNumberTokenCase     (LangCtx_t* lang_ctx, bool* got_token);
-static LangErr_t ProcessIdentifierTokenCase (LangCtx_t* lang_ctx, bool* got_token);
+static LangErr_t ProcessOperatorTokenCase   (LangCtx_t* lang_ctx, bool* do_continue);
+static LangErr_t ProcessNumberTokenCase     (LangCtx_t* lang_ctx, bool* do_continue);
+static LangErr_t ProcessIdentifierTokenCase (LangCtx_t* lang_ctx, bool* do_continue);
+static void      ProcessSpaceCase           (LangCtx_t* lang_ctx, bool* do_continue);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -41,25 +42,32 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
 
-    LangErr_t status    = LANG_SUCCESS;
-    bool      got_token = false;
+    LangErr_t status = LANG_SUCCESS;
+    bool do_continue = false;
 
-    status = ProcessOperatorTokenCase(lang_ctx, &got_token);
+    ProcessSpacesCase(lang_ctx, &do_continue);
 
-    if (status != LANG_SUCCESS || got_token)
+    if (do_continue)
         return status;
 
-    status = ProcessNumberTokenCase(lang_ctx, &got_token);
+    status = ProcessOperatorTokenCase(lang_ctx, &do_continue);
 
-    if (status != LANG_SUCCESS || got_token)
+    if (status != LANG_SUCCESS || do_continue)
         return status;
 
-    status = ProcessIdentifierTokenCase(lang_ctx, &got_token);
+    status = ProcessNumberTokenCase(lang_ctx, &do_continue);
 
-    if (status != LANG_SUCCESS || got_token)
+    if (status != LANG_SUCCESS || do_continue)
         return status;
 
-    SyntaxError();
+    status = ProcessIdentifierTokenCase(lang_ctx, &do_continue);
+
+    if (status != LANG_SUCCESS || do_continue)
+        return status;
+
+    // TODO: SyntaxError(); with lines and |
+                                        // |
+                                        // |
 
     PRINTERR("Unknown symbol");
 
@@ -68,9 +76,9 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
 
 //------------------------------------------------------------------------------------------
 
-static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* got_token)
+static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
 {
-    assert(got_token);
+    assert(do_continue);
     assert(lang_ctx);
 
     for (size_t op_code = 0; op_code < OP_COUNT; op_code++)
@@ -79,6 +87,8 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* got_token)
                     OP_CASES_TABLE[op_code].name,
                     OP_CASES_TABLE[op_code].name_len) == 0)
         {
+            *do_continue = true;
+
             TreeNode_t* token = OPERATOR_(op_code);
 
             if (StackPush(lang_ctx->tokens, token))
@@ -98,13 +108,15 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* got_token)
 
 //------------------------------------------------------------------------------------------
 
-static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* got_token)
+static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
 {
-    assert(got_token);
+    assert(do_continue);
     assert(lang_ctx);
 
     if (!isdigit(*lang_ctx->code))
         return LANG_SUCCESS;
+
+    *do_continue = true;
 
     double value        = 0.0;
     char*  num_code_end = NULL;
@@ -131,13 +143,15 @@ static inline int IsAcceptableSymbol     (char ch);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* got_token)
+static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
 {
-    assert(got_token);
+    assert(do_continue);
     assert(lang_ctx);
 
     if (!IsAcceptableFirstSymbol(*lang_ctx->code))
         return LANG_SUCCESS;
+
+    *do_continue = true;
 
     char buf[MAX_OPERATOR_NAME_LEN] = "";
 
@@ -174,6 +188,28 @@ static inline int IsAcceptableSymbol(char ch)
 static inline int IsAcceptableFirstSymbol(char ch)
 {
     return isalpha(ch) || ch == '_';
+}
+
+//------------------------------------------------------------------------------------------
+
+static void ProcessSpaceCase(LangCtx_t* lang_ctx, bool* do_continue)
+{
+    assert(do_continue);
+    assert(lang_ctx);
+
+    if (!isspace(*lang_ctx->code))
+        return;
+
+    *do_continue = true;
+
+    do {
+        if (*lang_ctx->code == '\n')
+        {
+            lang_ctx->current_line++;
+        }
+        lang_ctx->code++;
+
+    } while (isspace(*lang_ctx->code));
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————

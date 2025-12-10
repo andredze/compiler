@@ -12,7 +12,8 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
         return LANG_STACK_ERROR;
     }
 
-    lang_ctx->code = NULL;
+    lang_ctx->code         = NULL;
+    lang_ctx->current_line = 1;
 
     if (TreeCtor(lang_ctx->tree))
     {

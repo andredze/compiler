@@ -22,8 +22,9 @@ typedef struct IdTable
 typedef struct LangCtx
 {
     char*       code;
-    Stack_t     tokens;
+    size_t      current_line;
 
+    Stack_t     tokens;
     Tree_t      tree;
 
     IdTable_t   id_table;
