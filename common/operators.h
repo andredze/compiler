@@ -50,8 +50,8 @@ typedef struct OperatorCase
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define SET_OP_CASE_(code,   name,                 child_count) \
-        [(code)] = {(code), (name), sizeof(name), (child_count)}
+#define SET_OP_CASE_(code,   name,                                    child_count) \
+        [(code)] = {(code), (name), sizeof(name) / sizeof(char) - 1, (child_count)}
 
 //------------------------------------------------------------------------------------------
 

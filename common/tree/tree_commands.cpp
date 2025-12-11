@@ -4,7 +4,7 @@
 
 #ifdef TREE_DEBUG
 
-TreeErr_t TreeCheck(MathCtx_t*  math_ctx,
+TreeErr_t TreeCheck(LangCtx_t*  lang_ctx,
                     const char* func,
                     const char* file,
                     int         line,
@@ -16,7 +16,7 @@ TreeErr_t TreeCheck(MathCtx_t*  math_ctx,
 
     TreeErr_t verify_status = TREE_SUCCESS;
 
-    if ((verify_status = TreeVerify(&math_ctx->tree)))
+    if ((verify_status = TreeVerify(&lang_ctx->tree)))
     {
         PRINTERR("%s (TreeVerify not passed! Check \"tree.html\")", TREE_STR_ERRORS[verify_status]);
 
@@ -25,7 +25,7 @@ TreeErr_t TreeCheck(MathCtx_t*  math_ctx,
         va_list args = {};
         va_start(args, fmt);
 
-        if (vTreeDump(math_ctx, &dump_info, fmt, args))
+        if (vTreeDump(lang_ctx, &dump_info, DUMP_FULL, fmt, args))
         {
             return TREE_DUMP_ERROR;
         }
@@ -128,6 +128,7 @@ TreeNode_t* TreeNodeCtor(Tree_t*        tree,
         PRINTERR("Memory allocation for a new node failed");
         return NULL;
     }
+    DPRINTF("Allocated %p\n", node);
 
     node->parent = parent;
 
@@ -302,7 +303,7 @@ TreeErr_t TreeSingleNodeDtor(TreeNode_t* node, Tree_t* tree)
     node->right  = NULL;
     node->parent = NULL;
 
-    // cprintf(BLUE, "\t\tfreed ptr %p\n", node);
+    cprintf(BLUE, "\t\tfreed ptr %p\n", node);
 
     free(node);
 

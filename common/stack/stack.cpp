@@ -347,6 +347,9 @@ int StackErrToStr(StackErr_t error, const char** line)
         case STACK_HASH_CHANGED:
             *line = "Hash changed it's value";
             return 0;
+        case STACK_INDEX_TOOBIG:
+            *line = "Given index exceeds size";
+            return 0;
         default:
             return 1;
     }
@@ -363,7 +366,7 @@ StackErr_t StackDump(Stack_t* stack, StackErr_t error,
 
     DPRINTF("Dumping...\n");
 
-    FILE* stream = fopen(STACK_LOGFILENAME, "w");
+    FILE* stream = fopen(STACK_LOGFILENAME, "a");
     if (stream == NULL)
     {
         DPRINTF("Can not open stream: stack.log");
@@ -599,7 +602,7 @@ StackErr_t StackPrint(Stack_t* stack)
     if (stack->data[0] == CANARY_VALUE)
         printf("[cnry, ");
     else
-        printf("[%d, ", stack->data[0]);
+        printf("[" SPEC ", ", stack->data[0]);
     end_index += 2;
 #else
     if (stack->data[0] == POISON)
@@ -608,7 +611,7 @@ StackErr_t StackPrint(Stack_t* stack)
     }
     else
     {
-        printf("[%d, ", stack->data[0]);
+        printf("[" SPEC ", ", stack->data[0]);
     }
 #endif /* CANARY */
 
@@ -617,14 +620,14 @@ StackErr_t StackPrint(Stack_t* stack)
         if (stack->data[i] == POISON)
             printf("*, ");
         else
-            printf("%d, ", stack->data[i]);
+            printf(SPEC ", ", stack->data[i]);
     }
 
 #ifdef CANARY
     if (stack->data[stack->capacity + 1] == CANARY_VALUE)
         printf("cnry]\n");
     else
-        printf("%d]\n", stack->data[end_index]);
+        printf(SPEC "]\n", stack->data[end_index]);
 #else
     if (stack->data[end_index] == POISON)
     {
@@ -632,7 +635,7 @@ StackErr_t StackPrint(Stack_t* stack)
     }
     else
     {
-        printf("%d]\n", stack->data[end_index]);
+        printf(SPEC "]\n", stack->data[end_index]);
     }
 #endif /* CANARY */
 

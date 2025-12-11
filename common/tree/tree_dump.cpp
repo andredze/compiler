@@ -35,7 +35,7 @@ static TreeErr_t TreeDumpSetDebugFilePaths(LangCtx_t* lang_ctx)
     if (TreeDumpSetLogFilePath(lang_ctx))
         return TREE_FILE_ERROR;
 
-    DPRINTF("> TREE LOG file path: \"%s\"", lang_ctx->debug.log_file_path);
+    DPRINTF("> TREE LOG file path: \"%s\"\n", lang_ctx->debug.log_file_path);
 
     return TREE_SUCCESS;
 }
@@ -446,14 +446,12 @@ void DumpGraphTitle(FILE* dot_file)
 
 TreeErr_t TreeConvertGraphFile(LangCtx_t* lang_ctx)
 {
-    TreeDebugData_t debug = lang_ctx->debug;
-
     char command[MAX_COMMAND_LEN] = {};
 
     snprintf(command, sizeof(command), "dot %s -T %s -o %s",
-                                       debug.dot_file_path,
+                                       lang_ctx->debug.dot_file_path,
                                        IMAGE_FILE_TYPE,
-                                       debug.img_file_path);
+                                       lang_ctx->debug.img_file_path);
 
     int result = system(command);
 
@@ -637,8 +635,8 @@ static void DumpDefaultTreeNode(NodeDumpParams_t* params, FILE* fp)
 
 static inline int DumpAllowsRecordLabel(NodeDumpParams_t* params)
 {
-    return params->shape && strcmp(params->shape, "record" ) != 0
-                         && strcmp(params->shape, "Mrecord") != 0;
+    return ((params->shape != NULL) && (strcmp(params->shape, "record" ) == 0
+                                    ||  strcmp(params->shape, "Mrecord") == 0));
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————

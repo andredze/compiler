@@ -110,30 +110,6 @@ static void SkipSpaces(Expr_t* expr)
 
 //------------------------------------------------------------------------------------------
 
-static void PrintSyntaxError(Expr_t* expr, const char* file, const char* func, const int line, const char* fmt, ...)
-{
-    char message[MAX_SYNTAX_ERR_MESSAGE_LEN] = {};
-
-    va_list args = {};
-    va_start(args, fmt);
-
-    vsnprintf(message, sizeof(message), fmt, args);
-
-    va_end(args);
-
-    fcprintf(stderr, RED, "ERROR from %s at %s:%d\n\tSyntax error: %s (\"%c\" at expr->cur_p[%d])\n\tbuffer: ",
-                           func, file, line, message, *expr->cur_p, expr->cur_p - expr->buffer);
-
-    for (int i = 0; i < expr->cur_p - expr->buffer; i++)
-        fcprintf(stderr, GRAY, "%c", expr->buffer[i]);
-
-    fcprintf(stderr, RED, "%c", *expr->cur_p);
-
-    fcprintf(stderr, BLUE, "%s\n", expr->cur_p + 1);
-}
-
-//------------------------------------------------------------------------------------------
-
 static TreeNode_t* ParseGrammar(Tree_t* tree, Expr_t* expr)
 {
     TreeNode_t* node = ParseExpr(math_ctx, expr);

@@ -99,13 +99,15 @@
 const size_t STACK_SIZE_LIMIT   = SIZE_MAX / 32 * 30;
 const size_t STACK_MIN_CAPACITY = 32;
 
+const char * const STACK_LOGFILENAME = "stack.log";
+
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 typedef TreeNode_t* item_t;
 
 const item_t POISON = NULL;
 
-#define STACK_SPEC "%p"
+#define SPEC "%p"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

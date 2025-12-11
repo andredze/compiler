@@ -11,9 +11,62 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* func,
+                             const int  line,     const char* fmt, ...);
+
+//------------------------------------------------------------------------------------------
+
+#define SYNTAX_ERROR(lang_ctx, fmt, ...)                                                                \
+        {   TreeDumpInfo_t dump_info = {TREE_SUCCESS, __PRETTY_FUNCTION__, __FILE__, __LINE__};         \
+            TreeDump((lang_ctx), &dump_info, DUMP_SHORT, (fmt), ##__VA_ARGS__);                         \
+            PrintSyntaxError(lang_ctx, __FILE__, __PRETTY_FUNCTION__, __LINE__, (fmt), ##__VA_ARGS__);  \
+            return LANG_SYNTAX_ERROR; }
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 static LangErr_t ParseToken(LangCtx_t* lang_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
+
+static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* func,
+                             const int  line,     const char* fmt, ...)
+{
+    char message[MAX_SYNTAX_ERR_MESSAGE_LEN] = {};
+
+    va_list args = {};
+    va_start(args, fmt);
+
+    vsnprintf(message, sizeof(message), fmt, args);
+
+    va_end(args);
+
+    fcprintf(stderr, RED, "ERROR from %s at %s:%d\n\tSyntax error: %s\n"
+                          "  %d   | ",
+                           func, file, line, message, lang_ctx->current_line);
+
+    char* cur_pos = lang_ctx->code;
+
+    while (*cur_pos != '\n' && *cur_pos != '\0')
+    {
+        fcprintf(stderr, RED, "%c", *cur_pos);
+        cur_pos++;
+    }
+
+    fcprintf(stderr, RED, "\n"
+                          "      |\n"
+                          "      |\n");
+
+    fcprintf(stderr, BLUE, "code:\n");
+
+    for (int i = 0; i < lang_ctx->code - lang_ctx->buffer; i++)
+        fcprintf(stderr, GRAY, "%c", lang_ctx->buffer[i]);
+
+    fcprintf(stderr, RED, "%c", *lang_ctx->code);
+
+    fcprintf(stderr, BLUE, "%s\n", lang_ctx->code + 1);
+}
+
+//------------------------------------------------------------------------------------------
 
 LangErr_t LexicallyAnalyze(LangCtx_t* lang_ctx)
 {
@@ -70,20 +123,25 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
                                         // |
                                         // |
 
-    PRINTERR("Unknown symbol");
+    SYNTAX_ERROR(lang_ctx, "Unknown symbol");
 
     return LANG_SYNTAX_ERROR;
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define PUSH_TOKEN_(_token)                                     \
-        TreeGraphDumpSubtree(lang_ctx, (_token), DUMP_FULL);    \
-        if (StackPush(&lang_ctx->tokens, (_token)))             \
-        {                                                       \
-            PRINTERR("Failed stack push token");                \
-            return LANG_STACK_ERROR;                            \
-        }
+#define PUSH_TOKEN_(lang_ctx, __token)                                        \
+        TreeNode_t* _token = __token;                                         \
+        DPRINTF("Dumping token %p\n", (_token));                              \
+        TreeGraphDumpSubtree(lang_ctx, (_token), DUMP_FULL);                  \
+        DPRINTF("Pushing token %p\n", (_token));                              \
+        if (StackPush(&lang_ctx->tokens, (_token)))                           \
+        {                                                                     \
+            PRINTERR("Failed stack push token");                              \
+            StackDump(&lang_ctx->tokens, STACK_SUCCESS,  "Push token fail");  \
+            return LANG_STACK_ERROR;                                          \
+        }                                                                     \
+        StackDump(&lang_ctx->tokens, STACK_SUCCESS,  "Pushed token");
 
 //------------------------------------------------------------------------------------------
 
@@ -94,8 +152,13 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
 
     for (size_t op_code = 1; op_code < OPERATORS_COUNT; op_code++)
     {
-        DPRINTF("code = %p; ", lang_ctx->code);
-        DPRINTF("code = %s;\n", lang_ctx->code);
+        DPRINTF("code = %s;\n"
+                "op_name = %s;\n"
+                "op_len = %zu;\n"
+                "------------------------------\n",
+                lang_ctx->code,
+                OP_CASES_TABLE[op_code].name,
+                OP_CASES_TABLE[op_code].name_len);
 
         if (strncmp(lang_ctx->code,
                     OP_CASES_TABLE[op_code].name,
@@ -103,7 +166,7 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
         {
             *do_continue = true;
 
-            PUSH_TOKEN_(OPERATOR_((Operator_t) op_code));
+            PUSH_TOKEN_(lang_ctx, OPERATOR_((Operator_t) op_code));
 
             lang_ctx->code += OP_CASES_TABLE[op_code].name_len;
 
@@ -133,7 +196,7 @@ static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
 
     lang_ctx->code = num_code_end;
 
-    PUSH_TOKEN_(NUMBER_(value));
+    PUSH_TOKEN_(lang_ctx, NUMBER_(value));
 
     return LANG_SUCCESS;
 }
@@ -172,7 +235,7 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
     if ((status = LangIdTablePush(lang_ctx, buf, &id_index)))
         return status;
 
-    PUSH_TOKEN_(IDENTIFIER_(id_index));
+    PUSH_TOKEN_(lang_ctx, IDENTIFIER_(id_index));
 
     return LANG_SUCCESS;
 }

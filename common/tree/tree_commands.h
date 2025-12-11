@@ -3,6 +3,7 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#include "lang_ctx.h"
 #include "tree_types.h"
 #include <stdarg.h>
 #include "tree_dump.h"
@@ -63,7 +64,7 @@ TreeErr_t TreeRightSubtreeDtor (TreeNode_t*  node    , Tree_t* tree);
 TreeErr_t TreeSubtreeDtor      (TreeNode_t** node_ptr, Tree_t* tree);
 
 #ifdef TREE_DEBUG
-TreeErr_t TreeCheck(MathCtx_t*  math_ctx,
+TreeErr_t TreeCheck(LangCtx_t*  lang_ctx,
                     const char* func,
                     const char* file,
                     int         line,

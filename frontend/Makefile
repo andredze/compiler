@@ -30,7 +30,7 @@ SOURCES = src/main.cpp 						\
 #           src/data_read.cpp 				\
 
 ifdef DEBUG
-CXXFLAGS += -D TREE_DEBUG
+CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG
 endif
 
 OBJS = $(SOURCES:src/%.cpp=obj/%.o)

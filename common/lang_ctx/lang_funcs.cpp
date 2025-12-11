@@ -38,17 +38,16 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
 
-    StackDtor      (&lang_ctx->tokens  );
     TreeDtor       (&lang_ctx->tree    );
     LangIdTableDtor(&lang_ctx->id_table);
 
     for (size_t i = 0; i < lang_ctx->tokens.size; i++)
     {
-        TreeNode_t* token = NULL;
-        DPRINTF("&token = %p\n", &token);
-        StackGetElement(&lang_ctx->tokens, i, &token);
-        free(token);
+        DPRINTF("token = %p\n", lang_ctx->tokens.data[i]);
+        free(lang_ctx->tokens.data[i]);
     }
+
+    StackDtor(&lang_ctx->tokens);
 
     free(lang_ctx->buffer);
 
@@ -98,7 +97,7 @@ void LangIdTableDtor(IdTable_t* id_table)
     free(id_table->data);
     id_table->data = NULL;
 
-    DPRINTF("> IdTable destroyed");
+    DPRINTF("> IdTable destroyed\n");
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
