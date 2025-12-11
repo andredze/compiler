@@ -40,7 +40,7 @@ TreeErr_t TreeCheck(LangCtx_t*  lang_ctx,
 
 //------------------------------------------------------------------------------------------
 
-TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode)
+TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode, TreeNode_t* left, TreeNode_t* right)
 {
     assert(lang_ctx != NULL);
 
@@ -49,7 +49,7 @@ TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode)
     token_data.type         = TYPE_OP;
     token_data.value.opcode = opcode;
 
-    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
+    return TreeNodeCtor(&lang_ctx->tree, token_data, left, right, NULL);
 }
 
 //------------------------------------------------------------------------------------------

@@ -43,9 +43,11 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-TreeNode_t* LangOperatorNodeCtor  (LangCtx_t* lang_ctx, Operator_t opcode  );
-TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t     id_index);
-TreeNode_t* LangNumberNodeCtor    (LangCtx_t* lang_ctx, double     number  );
+TreeNode_t* LangOperatorNodeCtor  (LangCtx_t*  lang_ctx, Operator_t  opcode,
+                                   TreeNode_t* left,     TreeNode_t* right);
+
+TreeNode_t* LangIdentifierNodeCtor(LangCtx_t*  lang_ctx, size_t     id_index);
+TreeNode_t* LangNumberNodeCtor    (LangCtx_t*  lang_ctx, double     number  );
 
 TreeErr_t TreeVerify           (const Tree_t* tree);
 TreeErr_t TreeCtor             (Tree_t*     tree);

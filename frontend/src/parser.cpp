@@ -1,25 +1,11 @@
 #include "parser.h"
 
-/* ==================== Domain Specific Language for reading data ========================== */
+//——————————————————————————————————————————————————————————————————————————————————————————
 
-// lnode means left_node
-// rnode means right_node
+#define _DSL_DEFINE_
+#include "dsl.h"
 
-/* if operation has 1 argument, it should be placed in right node */
-
-#define ISVALUE_(node, number) (node->data.type == TYPE_NUM && \
-                                CompareDoubles(node->data.value.num, (number)) == 0)
-
-#define NUM_(number)       MathNodeCtor(math_ctx, {TYPE_NUM, { .num = (number) }}, NULL, NULL)
-
-#define ADD_(lnode, rnode) MathNodeCtor(math_ctx, {TYPE_OP,  { .op  = OP_ADD }}, (lnode), (rnode))
-#define SUB_(lnode, rnode) MathNodeCtor(math_ctx, {TYPE_OP,  { .op  = OP_SUB }}, (lnode), (rnode))
-#define MUL_(lnode, rnode) MathNodeCtor(math_ctx, {TYPE_OP,  { .op  = OP_MUL }}, (lnode), (rnode))
-#define DIV_(lnode, rnode) MathNodeCtor(math_ctx, {TYPE_OP,  { .op  = OP_DIV }}, (lnode), (rnode))
-#define DEG_(lnode, rnode) MathNodeCtor(math_ctx, {TYPE_OP,  { .op  = OP_DEG }}, (lnode), (rnode))
-#define UNARY_(oper, node) MathNodeCtor(math_ctx, {TYPE_OP,  { .op  = (oper) }},  NULL,   (node) )
-
-/* ====================================================================================== */
+//——————————————————————————————————————————————————————————————————————————————————————————
 
 #ifdef TREE_DEBUG
     #define TREE_READ_BUFFER_DUMP(expr, fmt, ...)                                                      \
@@ -31,10 +17,33 @@
 
 #endif
 
-//------------------------------------------------------------------------------------------
+//——————————————————————————————————————————————————————————————————————————————————————————
 
-static TreeNode_t* ParseGrammar     (Tree_t* tree, Expr_t* expr);
-static TreeNode_t* ParseExpr        (Tree_t* tree, Expr_t* expr);
+static TreeNode_t* ParseProgram             (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseStatement           (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseFunctionStatement   (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseFunctionDeclaration (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseFunctionParameters  (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseParameter           (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseReturnStatement     (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseIfStatement         (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseWhileStatement      (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseElseStatement       (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseBlockStatement      (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseExpression          (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseTerm                (LangCtx_t* lang_ctx);
+static TreeNode_t* ParsePower               (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseFactor              (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseUnaryOperatorCall   (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseUnaryOperator       (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseFunctionCall        (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseFunctionArguments   (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseString              (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseIdentifier          (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseNumber              (LangCtx_t* lang_ctx);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 static TreeNode_t* ParseTerm        (Tree_t* tree, Expr_t* expr);
 static TreeNode_t* ParseDegree      (Tree_t* tree, Expr_t* expr);
 static TreeNode_t* ParseElement     (Tree_t* tree, Expr_t* expr);
@@ -488,17 +497,9 @@ static MathErr_t PutVarInTable(Tree_t* tree, char* str, size_t str_len, MathData
     return MATH_SUCCESS;
 }
 
-//==========================================================================================
+//——————————————————————————————————————————————————————————————————————————————————————————
 
-#undef ISVALUE_
+#define _DSL_UNDEF_
+#include "dsl.h"
 
-#undef NUM_
-
-#undef ADD_
-#undef SUB_
-#undef MUL_
-#undef DIV_
-#undef DEG_
-#undef UNARY_
-
-//==========================================================================================
+//——————————————————————————————————————————————————————————————————————————————————————————

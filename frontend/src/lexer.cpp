@@ -28,6 +28,11 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+    // TODO: SyntaxError(); with lines and |
+                                        // |
+                                        // |
+    // TODO: wchar_t?
+
 static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* func,
                              const int  line,     const char* fmt, ...)
 {
@@ -118,10 +123,6 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
 
     if (status != LANG_SUCCESS || do_continue)
         return status;
-
-    // TODO: SyntaxError(); with lines and |
-                                        // |
-                                        // |
 
     SYNTAX_ERROR(lang_ctx, "Unknown symbol");
 
