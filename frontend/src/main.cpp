@@ -12,7 +12,11 @@ int main()
     if (LangCtxCtor(&lang_ctx))
         return EXIT_FAILURE;
 
-    lang_ctx.code   = strdup("5+2");
+    lang_ctx.code   = strdup("5+2; \n"
+                             "если (2 + 3 - 5)\n"
+                             "{ аборт }\n"
+                             "иначе \n"
+                             "{ x = 5 + 1; }");
     lang_ctx.buffer = lang_ctx.code;
 
     LexicallyAnalyze(&lang_ctx);

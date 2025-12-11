@@ -564,8 +564,9 @@ static void DumpNodeDataOperator(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
     assert(params   != NULL);
 
     snprintf(params->str_data, sizeof(params->str_data),
-             "type = %s | value = %s",
+             "type = %s | code = %s | value = %s",
              TYPE_CASES_TABLE[params->node->data.type].name,
+             OP_CASES_TABLE[params->node->data.value.opcode].code_str,
              OP_CASES_TABLE[params->node->data.value.opcode].name);
 }
 

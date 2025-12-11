@@ -32,7 +32,8 @@ typedef enum Operator
     OP_SEPARATOR      = 15,
     OP_ABORT          = 16,
     OP_OUTPUT         = 17,
-    OP_INPUT          = 18
+    OP_INPUT          = 18,
+    OP_ASSIGNMENT     = 19
 } Operator_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -40,6 +41,8 @@ typedef enum Operator
 typedef struct OperatorCase
 {
     Operator_t  code;
+
+    const char* code_str;
 
     const char* name;
     size_t      name_len;
@@ -50,8 +53,8 @@ typedef struct OperatorCase
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define SET_OP_CASE_(code,   name,                                    child_count) \
-        [(code)] = {(code), (name), sizeof(name) / sizeof(char) - 1, (child_count)}
+#define SET_OP_CASE_(code,          name,                                    child_count) \
+        [(code)] = {(code), #code, (name), sizeof(name) / sizeof(char) - 1, (child_count)}
 
 //------------------------------------------------------------------------------------------
 
@@ -75,7 +78,8 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_SEPARATOR,     ",",        2),
     SET_OP_CASE_(OP_ABORT,         "аборт",    2), // hlt
     SET_OP_CASE_(OP_OUTPUT,        "печать",   2),
-    SET_OP_CASE_(OP_INPUT,         "читать",   2)
+    SET_OP_CASE_(OP_INPUT,         "читать",   2),
+    SET_OP_CASE_(OP_ASSIGNMENT,    "=",        2)
 };
 
 //------------------------------------------------------------------------------------------

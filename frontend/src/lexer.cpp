@@ -58,7 +58,7 @@ static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* 
 
     fcprintf(stderr, BLUE, "code:\n");
 
-    for (int i = 0; i < lang_ctx->code - lang_ctx->buffer; i++)
+    for (int i = 0; i < lang_ctx->code - lang_ctx->buffer; i += 2)
         fcprintf(stderr, GRAY, "%c", lang_ctx->buffer[i]);
 
     fcprintf(stderr, RED, "%c", *lang_ctx->code);
@@ -152,13 +152,13 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
 
     for (size_t op_code = 1; op_code < OPERATORS_COUNT; op_code++)
     {
-        DPRINTF("code = %s;\n"
-                "op_name = %s;\n"
-                "op_len = %zu;\n"
-                "------------------------------\n",
-                lang_ctx->code,
-                OP_CASES_TABLE[op_code].name,
-                OP_CASES_TABLE[op_code].name_len);
+//         DPRINTF("code = %s;\n"
+//                 "op_name = %s;\n"
+//                 "op_len = %zu;\n"
+//                 "------------------------------\n",
+//                 lang_ctx->code,
+//                 OP_CASES_TABLE[op_code].name,
+//                 OP_CASES_TABLE[op_code].name_len);
 
         if (strncmp(lang_ctx->code,
                     OP_CASES_TABLE[op_code].name,
