@@ -29,6 +29,8 @@ typedef struct NodeDumpParams
 {
     NodeDumpType_t dump_type;
 
+    TreeNode_t* node;
+
     char name     [MAX_NODE_NAME_LEN];
     char label    [MAX_LABEL_LEN];
     char str_data [MAX_DATA_LEN];
@@ -63,24 +65,28 @@ LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, const char* fmt, ...);
 
 TreeErr_t TreeDump(LangCtx_t* lang_ctx,
                    const TreeDumpInfo_t* dump_info,
+                   NodeDumpType_t dump_type,
                    const char* fmt, ...);
 
 TreeErr_t vTreeDump(LangCtx_t* lang_ctx,
                     const TreeDumpInfo_t* dump_info,
+                    NodeDumpType_t dump_type,
                     const char* fmt, va_list args);
 
 TreeErr_t TreeOpenLogFile   (LangCtx_t* lang_ctx);
 void      TreeCloseLogFile  (LangCtx_t* lang_ctx);
 
-TreeErr_t TreeGraphDump        (LangCtx_t* lang_ctx);
+TreeErr_t TreeGraphDump        (LangCtx_t* lang_ctx, NodeDumpType_t dump_type);
 void      SetGraphFilepaths    (LangCtx_t* lang_ctx);
 TreeErr_t TreeConvertGraphFile (LangCtx_t* lang_ctx);
 
-TreeErr_t TreeGraphDumpSubtree(LangCtx_t* lang_ctx, TreeNode_t* node);
+TreeErr_t TreeGraphDumpSubtree(LangCtx_t* lang_ctx, TreeNode_t* node, NodeDumpType_t dump_type);
 
 void      DumpGraphTitle      (FILE* dot_file);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
+
+const NodeDumpParams_t DUMMY_NODE_PARAMS = {DUMP_FULL, {}, {}, {}, {}, "#3E3A22", "#ecede8", "#3E3A22", "record"};
 
 const char* const DEFAULT_EDGE_COLOR = "#404040";
 const char* const IMAGE_FILE_TYPE    = "svg";

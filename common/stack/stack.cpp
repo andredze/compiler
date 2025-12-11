@@ -210,6 +210,49 @@ StackErr_t StackPop(Stack_t* stack, item_t* item)
 
 //------------------------------------------------------------------------------------------
 
+StackErr_t StackGetElement(Stack_t* stack, size_t index, item_t* element)
+{
+    STACK_OK(stack, reason_start);
+
+    if (element == NULL)
+    {
+        DPRINTF("Error: nullptr given");
+        return STACK_IS_NULL;
+    }
+
+    if (index >= stack->capacity)
+    {
+        DPRINTF("Given index is bigger than stack size");
+        return STACK_INDEX_TOOBIG;
+    }
+
+    DPRINTF("elem = %p\n", element);
+    *element = stack->data[index];
+
+    return STACK_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+StackErr_t StackSetElement(Stack_t* stack, size_t index, item_t element)
+{
+    STACK_OK(stack, reason_start);
+
+    if (index >= stack->capacity)
+    {
+        DPRINTF("Given index is bigger than stack size");
+        return STACK_INDEX_TOOBIG;
+    }
+
+    stack->data[index] = element;
+
+    STACK_OK(stack, reason_end);
+
+    return STACK_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
 StackErr_t StackDtor(Stack_t* stack)
 {
     if (stack == NULL)

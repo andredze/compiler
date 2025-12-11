@@ -21,6 +21,9 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
         return LANG_TREE_ERROR;
     }
 
+    if (TreeOpenLogFile(lang_ctx))
+        return LANG_TREE_ERROR;
+
     LangErr_t error = LANG_SUCCESS;
 
     if ((error = LangIdTableCtor(&lang_ctx->id_table)))
@@ -39,9 +42,20 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
     TreeDtor       (&lang_ctx->tree    );
     LangIdTableDtor(&lang_ctx->id_table);
 
-    free(lang_ctx->code);
+    for (size_t i = 0; i < lang_ctx->tokens.size; i++)
+    {
+        TreeNode_t* token = NULL;
+        DPRINTF("&token = %p\n", &token);
+        StackGetElement(&lang_ctx->tokens, i, &token);
+        free(token);
+    }
 
-    lang_ctx->code = NULL;
+    free(lang_ctx->buffer);
+
+    lang_ctx->code   = NULL;
+    lang_ctx->buffer = NULL;
+
+    TreeCloseLogFile(lang_ctx);
 }
 
 //==========================================================================================

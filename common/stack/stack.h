@@ -136,7 +136,8 @@ typedef enum StackErr
     STACK_CALLOC_ERROR           = 9,
     STACK_REALLOC_ERROR          = 10,
     STACK_FILE_OPENING_ERROR     = 11,
-    STACK_SIZE_IS_ZERO           = 12
+    STACK_SIZE_IS_ZERO           = 12,
+    STACK_INDEX_TOOBIG           = 13
 } StackErr_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -169,6 +170,8 @@ typedef struct Stack
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+StackErr_t StackGetElement    (Stack_t* stack, size_t index, item_t* element);
+StackErr_t StackSetElement    (Stack_t* stack, size_t index, item_t element);
 StackErr_t StackCtor          (Stack_t* stack, size_t  capacity);
 StackErr_t StackPush          (Stack_t* stack, item_t  item);
 StackErr_t StackPop           (Stack_t* stack, item_t* item);

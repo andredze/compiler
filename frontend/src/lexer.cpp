@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "lang_ctx.h"
+#include "lang_funcs.h"
 #include <ctype.h>
 #include <assert.h>
 
@@ -76,11 +77,12 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define PUSH_TOKEN_(_token)                         \
-        if (StackPush(&lang_ctx->tokens, _token))   \
-        {                                           \
-            PRINTERR("Failed stack push token");    \
-            return LANG_STACK_ERROR;                \
+#define PUSH_TOKEN_(_token)                                     \
+        TreeGraphDumpSubtree(lang_ctx, (_token), DUMP_FULL);    \
+        if (StackPush(&lang_ctx->tokens, (_token)))             \
+        {                                                       \
+            PRINTERR("Failed stack push token");                \
+            return LANG_STACK_ERROR;                            \
         }
 
 //------------------------------------------------------------------------------------------
@@ -90,8 +92,11 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
     assert(do_continue);
     assert(lang_ctx);
 
-    for (size_t op_code = 0; op_code < OPERATORS_COUNT; op_code++)
+    for (size_t op_code = 1; op_code < OPERATORS_COUNT; op_code++)
     {
+        DPRINTF("code = %p; ", lang_ctx->code);
+        DPRINTF("code = %s;\n", lang_ctx->code);
+
         if (strncmp(lang_ctx->code,
                     OP_CASES_TABLE[op_code].name,
                     OP_CASES_TABLE[op_code].name_len) == 0)
