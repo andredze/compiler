@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "*.txt": "plaintext",
-        "compare": "cpp",
-        "type_traits": "cpp",
-        "cstdlib": "cpp",
-        "typeinfo": "cpp"
-    }
-}
