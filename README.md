@@ -2,56 +2,143 @@
 
 ## Синтаксис
 
+### Таблица операторов
 
+1 | OP_ELSE | ""
+
+2 | OP_ADD  | "нарастить на"
+3 | OP_SUB  | "избавить от"
+4 | OP_MUL  | "усилить в"
+5 | OP_DIV  | "расщепить на"
+6 | OP_POW  | "расплодить" <power> "раз"
+
+### Пример программы, считающей факториал:
+
+```
+за Факториал отомсти н
+
+    за что? за что? за что?
+
+    пересади в череп результат 1    ЗАМОЛЧИ
+    пересади в череп итератор  1    ЗАМОЛЧИ
+
+    снова и снова
+    снова и снова
+    снова и снова
+    снова и снова
+    снова и снова
+
+    вырежи мясо н из мяса итератор
+
+    убей убей убей убей убей убей убей убей убей
+
+        пересади в череп результат результат усилить в итератор ЗАМОЛЧИ
+        пересади в череп итератор  итератор  нарастить на 1     ЗАМОЛЧИ
+
+    ОНИ СМОТРЯТ ОНИ СМОТРЯТ ОНИ СМОТРЯТ ОНИ СМОТРЯТ
+
+    оставь результат ЗАМОЛЧИ
+
+    нет нет нет нет все кончено?
+
+
+скажи мне кто ты, приятель                                                  ЗАМОЛЧИ
+пересади в череп ответ ритуал: во имя Факториал принеси в жертву приятель   ЗАМОЛЧИ
+заставь их услышать ответ                                                   ЗАМОЛЧИ
+
+```
+
+### Эквивалент программы на C - подобном языке
+
+```cpp
+
+int ComputeFactorial(int n)
+{
+    int result = 1;
+
+    int i = 1;
+
+    while (i <= n)
+    {
+        result *= i;
+        i = i + 1;
+    }
+
+    return result;
+}
+
+scanf(n);
+res = ComputeFactorial(n);
+printf(res);
+
+
+```
 
 ## Грамматика в расширенной форме Бэкуса — Наура
 ```
 Program             ::= (Statement)* '\0'
 
+OperatorSeparator   ::= 'ЗАМОЛЧИ'
+
 FunctionStatement   ::= Statement | ReturnStatement
 
-ReturnStatement     ::= 'верни' Expression
+ReturnStatement     ::= 'оставь' Expression OperatorSeparator
 
 Statement           ::= IfStatement
                       | WhileStatement
                       | FunctionDeclaration
-                      | Assignment ';'
-                      | Expression ';'
+                      | Assignment OperatorSeparator
+                      | Expression OperatorSeparator
 
-FunctionDeclaration ::= 'функция' Identifier '(' FunctionParameters? ')' '{' FunctionStatement* '}'
+FunctionDeclaration ::= 'за' Identifier 'отомсти' FunctionParameters?
+                            'за что? за что? за что?'
+                            FunctionStatement+
+                            'нет нет нет нет все кончено?'
 
-FunctionParameters  ::= Parameter { ',' Parameter }*
-Parameter           ::= 'параметр' Identifier
+FunctionParameters  ::= Identifier { 'и' Identifier }*
 
-IfStatement         ::= 'если'  '(' Expression ')' BlockStatement ElseStatement?
-WhileStatement      ::= 'пока'  '(' Expression ')' BlockStatement
-ElseStatement       ::= 'иначе' BlockStatement
+IfStatement         ::= 'ты думаешь' Expression 'сможет что-то изменить'
+                         BlockStatement
+                         ElseStatement?
 
-BlockStatement      ::= '{' Statement* '}'
+ElseStatement       ::= 'не верь им'
+                         BlockStatement
 
-Expression          ::= Term   { ['+''-'] Term  }*
-Term                ::= Power  { ['*''/'] Power }*
-Power               ::= Factor { '^' Factor }*
+WhileStatement      ::=  'снова и снова'
+                         'снова и снова'
+                         'снова и снова'
+                         'снова и снова'
+                         'снова и снова'
+                         Expression
+                         BlockStatement
+
+BlockStatement      ::= 'убей' 'убей' 'убей' 'убей' 'убей' 'убей' 'убей' 'убей' 'убей'
+                         Statement*
+                        'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ'
+
+Assignment          ::= 'пересади в череп' Expression Expression
+
+Expression          ::= Term   { ['нарастить на''избавить от']  Term         }*
+Term                ::= Power  { ['усилить в''расщепить на']    Power        }*
+Power               ::= Factor { 'расплодить в'                 Factor 'раз' }*
 
 Factor              ::= '(' Expression ')'
                       | UnaryOperatorCall
                       | FunctionCall
                       | Number
                       | Identifier
-                      | String
 
-UnaryOperatorCall   ::= UnaryOperator '(' Expression ')'
-UnaryOperator       ::= 'sin' | 'cos' | 'ln' | 'tg' | 'sqrt' | 'печать' | 'читать'
+UnaryOperatorCall   ::= UnaryOperator Expression
 
-FunctionCall        ::= Identifier '(' FunctionArguments? ')'
+UnaryOperator       ::= 'заставь их услышать' | 'скажи мне кто ты,'
 
-FunctionArguments   ::= Expression { ',' Expression }*
+FunctionCall        ::= 'ритуал: во имя' Identifier 'принеси в жертву' FunctionArguments?
 
-String              ::= '"' [^'"''\n'] '"'
-Identifier          ::= ['А'-'Я''а'-'я''_']['А'-'Я''а'-'я''_''0'-'9']+
+FunctionArguments   ::= Expression { 'и' Expression }*
+
+Identifier          ::= ['A'-'Z''a'-'z''А'-'Я''а'-'я''_']['A'-'Z''a'-'z''А'-'Я''а'-'я''_''0'-'9']+
 Number              ::= ['0'-'9']+ | ['0'-'9']+ '.' ['0'-'9']+
 ```
-
 
 ## Абстрактное Синтаксическое Дерево (AST)
 

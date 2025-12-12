@@ -4,6 +4,10 @@
 *.log
 run
 *.o
+*.txt
+*.psy
+fact.cpp
+example.cpp
 
 # Prerequisites
 *.d
