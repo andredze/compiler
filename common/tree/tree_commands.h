@@ -21,7 +21,7 @@
                                                 (fmt), ##__VA_ARGS__);  \
         if ((tree_check_status != TREE_SUCCESS))                        \
         {                                                               \
-            return MATH_TREE_ERROR;                                     \
+            return LANG_TREE_ERROR;                                     \
         }                                                               \
         END
 
@@ -30,7 +30,7 @@
         TreeDumpInfo_t dump_info = {TREE_SUCCESS, __PRETTY_FUNCTION__, __FILE__, __LINE__}; \
         if (TreeDump((tree_ptr), &dump_info, (fmt), ##__VA_ARGS__))                         \
         {                                                                                   \
-            return MATH_TREE_ERROR;                                                         \
+            return LANG_TREE_ERROR;                                                         \
         }                                                                                   \
         END
 

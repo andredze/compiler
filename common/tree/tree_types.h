@@ -63,17 +63,17 @@ typedef struct TreeDebugData
 {
     FILE* fp;
 
-    char log_file_path   [MAX_FILE_PATH_LEN];
-    char graph_file_name [MAX_FILE_NAME_LEN];
-    char img_file_path   [MAX_FILE_PATH_LEN];
-    char dot_file_path   [MAX_FILE_PATH_LEN];
+    wchar_t log_file_path   [MAX_FILE_PATH_LEN];
+    wchar_t graph_file_name [MAX_FILE_NAME_LEN];
+    wchar_t img_file_path   [MAX_FILE_PATH_LEN];
+    wchar_t dot_file_path   [MAX_FILE_PATH_LEN];
 
     int graphs_count;
 
-    char str_time [MAX_STR_TIME_LEN];
-    char log_dir  [MAX_DIR_PATH_LEN];
-    char img_dir  [MAX_DIR_PATH_LEN];
-    char dot_dir  [MAX_DIR_PATH_LEN];
+    wchar_t str_time [MAX_STR_TIME_LEN];
+    wchar_t log_dir  [MAX_DIR_PATH_LEN];
+    wchar_t img_dir  [MAX_DIR_PATH_LEN];
+    wchar_t dot_dir  [MAX_DIR_PATH_LEN];
 
 } TreeDebugData_t;
 
@@ -144,11 +144,11 @@ typedef struct TypeCase
     TokenType_t    type;
     const char*    name;
 
-    const char*    shape;
+    const wchar_t* shape;
 
-    const char*    color;
-    const char*    fillcolor;
-    const char*    fontcolor;
+    const wchar_t* color;
+    const wchar_t* fillcolor;
+    const wchar_t* fontcolor;
 
 } TypeCase_t;
 
@@ -161,9 +161,9 @@ typedef struct TypeCase
 
 const TypeCase_t TYPE_CASES_TABLE[] =
 {
-    SET_TYPE_CASE_(TYPE_OP , "OP" , "rectangle", "#000064", "#C0C0FF", "#000064"),
-    SET_TYPE_CASE_(TYPE_ID , "ID" , "octagon"  , "#006400", "#C0FFC0", "#006400"),
-    SET_TYPE_CASE_(TYPE_NUM, "NUM", "ellipse"  , "#990000", "#FFC0C0", "#990000")
+    SET_TYPE_CASE_(TYPE_OP , "OP" , L"rectangle", L"#000064", L"#C0C0FF", L"#000064"),
+    SET_TYPE_CASE_(TYPE_ID , "ID" , L"octagon"  , L"#006400", L"#C0FFC0", L"#006400"),
+    SET_TYPE_CASE_(TYPE_NUM, "NUM", L"ellipse"  , L"#990000", L"#FFC0C0", L"#990000")
 };
 
 //------------------------------------------------------------------------------------------

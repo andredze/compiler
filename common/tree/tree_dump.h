@@ -31,30 +31,30 @@ typedef struct NodeDumpParams
 
     TreeNode_t* node;
 
-    char name     [MAX_NODE_NAME_LEN];
-    char label    [MAX_LABEL_LEN];
-    char str_data [MAX_DATA_LEN];
+    wchar_t name     [MAX_NODE_NAME_LEN];
+    wchar_t label    [MAX_LABEL_LEN];
+    wchar_t str_data [MAX_DATA_LEN];
 
-    const char* color;
-    const char* fillcolor;
-    const char* fontcolor;
-    const char* shape;
+    const wchar_t* color;
+    const wchar_t* fillcolor;
+    const wchar_t* fontcolor;
+    const wchar_t* shape;
 } NodeDumpParams_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 typedef struct EdgeDumpParams
 {
-    char node1 [MAX_NODE_NAME_LEN];
-    char node2 [MAX_NODE_NAME_LEN];
+    wchar_t node1 [MAX_NODE_NAME_LEN];
+    wchar_t node2 [MAX_NODE_NAME_LEN];
 
-    const char* color;
-    const char* constraint;
-    const char* dir;
-    const char* style;
-    const char* arrowhead;
-    const char* arrowtail;
-    const char* label;
+    const wchar_t* color;
+    const wchar_t* constraint;
+    const wchar_t* dir;
+    const wchar_t* style;
+    const wchar_t* arrowhead;
+    const wchar_t* arrowtail;
+    const wchar_t* label;
 } EdgeDumpParams_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -86,10 +86,10 @@ void      DumpGraphTitle      (FILE* dot_file);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const NodeDumpParams_t DUMMY_NODE_PARAMS = {DUMP_FULL, {}, {}, {}, {}, "#3E3A22", "#ecede8", "#3E3A22", "record"};
+const NodeDumpParams_t DUMMY_NODE_PARAMS = {DUMP_FULL, {}, {}, {}, {}, L"#3E3A22", L"#ecede8", L"#3E3A22", L"record"};
 
-const char* const DEFAULT_EDGE_COLOR = "#404040";
-const char* const IMAGE_FILE_TYPE    = "svg";
+const wchar_t* const DEFAULT_EDGE_COLOR = L"#404040";
+const wchar_t* const IMAGE_FILE_TYPE    = L"svg";
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

@@ -23,6 +23,12 @@
                  __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__);               \
         END
 
+#define WPRINTERR(text, ...)                                                            \
+        BEGIN                                                                           \
+        wfcprintf(stderr, RED, L"In %s:%d from %s:\nERROR: " text "\n",                 \
+                  __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__);              \
+        END
+
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #ifdef DEBUG
@@ -30,8 +36,13 @@
             BEGIN                                              \
             fcprintf(stderr, YELLOW, text, ##__VA_ARGS__);     \
             END
+    #define WDPRINTF(text, ...)                                \
+            BEGIN                                              \
+            wfcprintf(stderr, YELLOW, text, ##__VA_ARGS__);    \
+            END
 #else
-    #define DPRINTF(...) ;
+    #define DPRINTF(...)  ;
+    #define WDPRINTF(...) ;
 #endif /* DEBUG */
 
 //——————————————————————————————————————————————————————————————————————————————————————————

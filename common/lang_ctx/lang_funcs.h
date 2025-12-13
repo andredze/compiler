@@ -6,6 +6,7 @@
 #include "lang_ctx.h"
 #include "tree_commands.h"
 #include "stack.h"
+#include <wchar.h>
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -14,7 +15,7 @@ void        LangCtxDtor           (LangCtx_t* lang_ctx);
 
 LangErr_t   LangIdTableCtor       (IdTable_t* id_table);
 void        LangIdTableDtor       (IdTable_t* id_table);
-LangErr_t   LangIdTablePush       (LangCtx_t* lang_ctx, const char* id_name_buf, size_t* id_index);
+LangErr_t   LangIdTablePush       (LangCtx_t* lang_ctx, const wchar_t* id_name_buf, size_t* id_index);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

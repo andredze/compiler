@@ -14,72 +14,89 @@ typedef enum TokenType
 
 typedef enum Operator
 {
-    OP_NONE           = 0,
-    OP_BRACKET_OPEN   = 1,
-    OP_BRACKET_CLOSE  = 2,
-    OP_IF             = 3,
-    OP_ELSE           = 4,
-    OP_WHILE          = 5,
-    OP_BLOCK_BEGIN    = 6,
-    OP_BLOCK_END      = 7,
-    OP_PARAM          = 8,
-    OP_FUNCTION       = 9,
-    OP_ADD            = 10,
-    OP_SUB            = 11,
-    OP_MUL            = 12,
-    OP_DIV            = 13,
-    OP_NEWLINE        = 14,
-    OP_SEPARATOR      = 15,
-    OP_ABORT          = 16,
-    OP_OUTPUT         = 17,
-    OP_INPUT          = 18,
-    OP_ASSIGNMENT     = 19
+    OP_NONE                 = 0,
+    OP_CMD_SEPARATOR        = 1,
+    OP_BRACKET_OPEN         = 2,
+    OP_BRACKET_CLOSE        = 3,
+    OP_ASSIGNMENT           = 4,
+    OP_IF_LEFT              = 5,
+    OP_IF_RIGHT             = 6,
+    OP_ELSE                 = 7,
+    OP_WHILE                = 8,
+    OP_BLOCK_BEGIN          = 9,
+    OP_BLOCK_END            = 10,
+    OP_FUNCTION_BLOCK_BEGIN = 11,
+    OP_FUNCTION_BLOCK_END   = 12,
+    OP_FUNCTION_DECL_LEFT   = 13,
+    OP_FUNCTION_DECL_RIGHT  = 14,
+    OP_FUNCTION_CALL_LEFT   = 15,
+    OP_FUNCTION_CALL_RIGHT  = 16,
+    OP_PARAMS_SEPARATOR     = 17,
+    OP_RETURN               = 18,
+    OP_ADD                  = 19,
+    OP_SUB                  = 20,
+    OP_MUL                  = 21,
+    OP_DIV                  = 22,
+    OP_POW_LEFT             = 23,
+    OP_POW_RIGHT            = 24,
+    OP_OUTPUT               = 25,
+    OP_INPUT                = 26,
+    OP_ABORT                = 27
 } Operator_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 typedef struct OperatorCase
 {
-    Operator_t  code;
+    Operator_t     code;
 
-    const char* code_str;
+    const char*    code_str;
 
-    const char* name;
-    size_t      name_len;
+    int            repeat_times;
 
-    int         child_count;
+    const wchar_t* name;
+    size_t         name_len;
 
 } OperatorCase_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define SET_OP_CASE_(code,          name,                                    child_count) \
-        [(code)] = {(code), #code, (name), sizeof(name) / sizeof(char) - 1, (child_count)}
+#define SET_OP_CASE_(code,          repeat_times,   name                                      ) \
+        [(code)] = {(code), #code, (repeat_times), (name), sizeof(name) / sizeof(wchar_t) - 1 }
 
 //------------------------------------------------------------------------------------------
 
 const OperatorCase_t OP_CASES_TABLE[] =
 {
-    SET_OP_CASE_(OP_NONE,          NULL,       0),
-    SET_OP_CASE_(OP_BRACKET_OPEN,  "(",        0),
-    SET_OP_CASE_(OP_BRACKET_CLOSE, ")",        0),
-    SET_OP_CASE_(OP_IF,            "если",     2),
-    SET_OP_CASE_(OP_ELSE,          "иначе",    1),
-    SET_OP_CASE_(OP_WHILE,         "пока",     2),
-    SET_OP_CASE_(OP_BLOCK_BEGIN,   "{",        2),
-    SET_OP_CASE_(OP_BLOCK_END,     "}",        0),
-    SET_OP_CASE_(OP_PARAM,         "параметр", 1),
-    SET_OP_CASE_(OP_FUNCTION,      "функция",  2),
-    SET_OP_CASE_(OP_ADD,           "+",        2),
-    SET_OP_CASE_(OP_SUB,           "-",        2),
-    SET_OP_CASE_(OP_MUL,           "*",        2),
-    SET_OP_CASE_(OP_DIV,           "/",        2),
-    SET_OP_CASE_(OP_NEWLINE,       ";",        2),
-    SET_OP_CASE_(OP_SEPARATOR,     ",",        2),
-    SET_OP_CASE_(OP_ABORT,         "аборт",    2), // hlt
-    SET_OP_CASE_(OP_OUTPUT,        "печать",   2),
-    SET_OP_CASE_(OP_INPUT,         "читать",   2),
-    SET_OP_CASE_(OP_ASSIGNMENT,    "=",        2)
+//                      code,         repeat_times,         name
+    SET_OP_CASE_(OP_NONE                ,   1,   NULL                            ),
+    SET_OP_CASE_(OP_CMD_SEPARATOR       ,   1,   L"ЗАМОЛЧИ"                      ),
+    SET_OP_CASE_(OP_BRACKET_OPEN        ,   1,   L"("                            ),
+    SET_OP_CASE_(OP_BRACKET_CLOSE       ,   1,   L")"                            ),
+    SET_OP_CASE_(OP_ASSIGNMENT          ,   1,   L"пересади в"                   ),
+    SET_OP_CASE_(OP_IF_LEFT             ,   1,   L"ты думаешь"                   ),
+    SET_OP_CASE_(OP_IF_RIGHT            ,   1,   L"сможет что-то изменить?"      ),
+    SET_OP_CASE_(OP_ELSE                ,   1,   L"не верь им"                   ),
+    SET_OP_CASE_(OP_WHILE               ,   5,   L"снова и снова"                ),
+    SET_OP_CASE_(OP_BLOCK_BEGIN         ,   5,   L"ЗАТКНИСЬ"                     ),
+    SET_OP_CASE_(OP_BLOCK_END           ,   4,   L"ОНИ СМОТРЯТ"                  ),
+    SET_OP_CASE_(OP_FUNCTION_BLOCK_BEGIN,   3,   L"за что?"                      ),
+    SET_OP_CASE_(OP_FUNCTION_BLOCK_END  ,   1,   L"нет нет нет нет все кончено?" ),
+    SET_OP_CASE_(OP_FUNCTION_DECL_LEFT  ,   1,   L"за"                           ),
+    SET_OP_CASE_(OP_FUNCTION_DECL_RIGHT ,   1,   L"отомсти"                      ),
+    SET_OP_CASE_(OP_FUNCTION_CALL_LEFT  ,   1,   L"ритуал: во имя"               ),
+    SET_OP_CASE_(OP_FUNCTION_CALL_RIGHT ,   1,   L"принеси в жертву"             ),
+    SET_OP_CASE_(OP_PARAMS_SEPARATOR    ,   1,   L"и"                            ),
+    SET_OP_CASE_(OP_RETURN              ,   1,   L"оставь"                       ),
+    SET_OP_CASE_(OP_ADD                 ,   1,   L"нарастить на"                 ),
+    SET_OP_CASE_(OP_SUB                 ,   1,   L"избавить от"                  ),
+    SET_OP_CASE_(OP_MUL                 ,   1,   L"усилить в"                    ),
+    SET_OP_CASE_(OP_DIV                 ,   1,   L"расщепить на"                 ),
+    SET_OP_CASE_(OP_POW_LEFT            ,   1,   L"расплодить в"                 ),
+    SET_OP_CASE_(OP_POW_RIGHT           ,   1,   L"раз"                          ),
+    SET_OP_CASE_(OP_OUTPUT              ,   1,   L"заставь их услышать"          ),
+    SET_OP_CASE_(OP_INPUT               ,   1,   L"скажи мне кто ты,"            ),
+    SET_OP_CASE_(OP_ABORT               ,   1,   L"аборт"                        )  // hlt
 };
 
 //------------------------------------------------------------------------------------------

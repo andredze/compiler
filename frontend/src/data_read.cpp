@@ -1,8 +1,10 @@
 #include "data_read.h"
+#include <wchar.h>
+#include <stdlib.h>
 
 //------------------------------------------------------------------------------------------
 
-MathErr_t TreeReadInputData(Tree_t* tree, FuncParams_t* params)
+LangErr_t TreeReadInputData(LangCtx* lang_ctx)
 {
     char file_path[MAX_FILENAME_LEN] = {};
 
@@ -11,19 +13,19 @@ MathErr_t TreeReadInputData(Tree_t* tree, FuncParams_t* params)
     if (scanf("%s", file_path) != 1)
     {
         PRINTERR("scanf failed");
-        return MATH_INVALID_INPUT;
+        return LANG_INVALID_INPUT;
     }
 
     getchar();
 
-    return TreeReadData(math_ctx, file_path, params);
+    return TreeReadData(lang_ctx, file_path);
 }
 
 //------------------------------------------------------------------------------------------
 
-MathErr_t TreeReadData(Tree_t* tree, const char* data_file_path, FuncParams_t* params)
+LangErr_t TreeReadData(LangCtx* lang_ctx, const char* data_file_path)
 {
-    DEBUG_TREE_CHECK(math_ctx, "ERROR BEFORE TREE READ DATA");
+    // DEBUG_TREE_CHECK(lang_ctx, "ERROR BEFORE TREE READ DATA");
 
     assert(data_file_path != NULL);
 
@@ -34,32 +36,22 @@ MathErr_t TreeReadData(Tree_t* tree, const char* data_file_path, FuncParams_t* p
     if (fp == NULL)
     {
         PRINTERR("Error with opening file: %s", data_file_path);
-        return MATH_FILE_ERROR;
+        return LANG_FILE_ERROR;
     }
 
-    Expr_t expr = {};
+    if (ReadFile(fp, &lang_ctx->code, data_file_path))
+        return LANG_FILE_ERROR;
 
-    if (ReadFile(fp, &expr.buffer, data_file_path))
-        return MATH_FILE_ERROR;
+    lang_ctx->buffer = lang_ctx->code;
 
-    expr.cur_p = expr.buffer;
+    fclose(fp);
 
-    MathErr_t error = MATH_SUCCESS;
-
-    if ((error = MathParseText(math_ctx, &expr)))
-    {
-        free(expr.buffer);
-        return error;
-    }
-
-    free(expr.buffer);
-
-    return MATH_SUCCESS;
+    return LANG_SUCCESS;
 }
 
 //------------------------------------------------------------------------------------------
 
-int ReadFile(FILE* fp, char** buffer_ptr, const char* file_path)
+int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path)
 {
     assert(buffer_ptr != NULL);
     assert(file_path  != NULL);
@@ -87,10 +79,31 @@ int ReadFile(FILE* fp, char** buffer_ptr, const char* file_path)
     }
 
     buffer[size - 1] = '\0'; /* set null-term */
+    WDPRINTF(L"buffer = %s;\n", buffer);
 
-    DPRINTF("buffer = %s;\n", buffer);
+    *buffer_ptr = (wchar_t*) calloc(size, sizeof(wchar_t));
 
-    *buffer_ptr = buffer;
+    if (*buffer_ptr == NULL)
+    {
+        PRINTERR("Memory allocation failed");
+        return 1;
+    }
+
+    WDPRINTF(L"Converting mb to wc\n");
+
+    if (mbstowcs(*buffer_ptr, buffer, size) == -1)
+    {
+        PRINTERR("mbtowc conversion failed");
+        return 1;
+    }
+    WDPRINTF(L"Converted mb to wc\n");
+
+    WDPRINTF(L"buffer_ptr = %p\n", *buffer_ptr);
+    (*buffer_ptr)[size - 1] = '\0';
+
+    WDPRINTF(L"code = %ls;\n", *buffer_ptr);
+
+    free(buffer);
 
     return 0;
 }

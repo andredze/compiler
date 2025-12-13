@@ -19,14 +19,19 @@ const char * const RESET_COLOR  = "\033[1;0m";
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const int FMT_BUFFER_SIZE = 4096;
+const int FMT_BUFFER_SIZE = 8024;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-int cprintf  (const char * const color, const char* fmt, ...);
-int vcprintf (const char * const color, const char* fmt, va_list args);
-int fcprintf (FILE* stream, const char * const color, const char* fmt, ...);
-int vfcprintf(FILE* stream, const char * const color, const char* fmt, va_list args);
+int cprintf   (const char * const color, const char* fmt, ...);
+int vcprintf  (const char * const color, const char* fmt, va_list args);
+int fcprintf  (FILE* stream, const char * const color, const char* fmt, ...);
+int vfcprintf (FILE* stream, const char * const color, const char* fmt, va_list args);
+
+int wcprintf  (const char * const color, const wchar_t* fmt, ...);
+int wvcprintf (const char * const color, const wchar_t* fmt, va_list args);
+int wfcprintf (FILE* stream, const char * const color, const wchar_t* fmt, ...);
+int wvfcprintf(FILE* stream, const char * const color, const wchar_t* fmt, va_list args);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

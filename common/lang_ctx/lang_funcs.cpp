@@ -2,11 +2,13 @@
 
 //------------------------------------------------------------------------------------------
 
+//FIXME - stack realloc дропается дамп, скорее всего реаллок не работает
+
 LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx != NULL);
 
-    if (StackCtor(&lang_ctx->tokens, 0))
+    if (StackCtor(&lang_ctx->tokens, 256))
     {
         PRINTERR("Tokens stack construct failed");
         return LANG_STACK_ERROR;
@@ -65,7 +67,7 @@ LangErr_t LangIdTableCtor(IdTable_t* id_table)
 
     size_t capacity = DEFAULT_ID_TABLE_CAPACITY;
 
-    id_table->data = (char**) calloc(capacity, sizeof(char*));
+    id_table->data = (Identifier_t*) calloc(capacity, sizeof(Identifier_t));
 
     if (id_table->data == NULL)
     {
@@ -106,7 +108,7 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const char* id_name_buf, size_t* id_index)
+LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const wchar_t* id_name_buf, size_t* id_index)
 {
     assert(id_name_buf != NULL);
     assert(lang_ctx    != NULL);
@@ -114,7 +116,8 @@ LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const char* id_name_buf, size_t* 
 
     IdTable_t* id_table = &lang_ctx->id_table;
 
-    char* id_name = strdup(id_name_buf);
+    //FIXME - без strdup - а
+    Identifier_t id_name = wcsdup(id_name_buf);
 
     if (id_name == NULL)
     {
@@ -144,7 +147,8 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table)
 
     size_t new_capacity = id_table->capacity * 2 + 1;
 
-    char** new_data = (char**) realloc(id_table->data, new_capacity * sizeof(*id_table->data));
+    Identifier_t* new_data = (Identifier_t*) realloc(id_table->data,
+                                                     new_capacity * sizeof(*id_table->data));
 
     if (new_data == NULL)
     {

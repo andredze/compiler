@@ -6,15 +6,19 @@
 #include "tree_types.h"
 #include "stack.h"
 #include <stdio.h>
+#include <wchar.h>
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+//FIXME - структура id
+typedef wchar_t* Identifier_t;
+
 typedef struct IdTable
 {
-    char** data;
+    Identifier_t* data;
 
-    size_t size;
-    size_t capacity;
+    size_t        size;
+    size_t        capacity;
 
 } IdTable_t;
 
@@ -22,8 +26,8 @@ typedef struct IdTable
 
 typedef struct LangCtx
 {
-    char*         code;
-    char*         buffer;
+    wchar_t*      code;
+    wchar_t*      buffer;
     size_t        current_line;
 
     Stack_t       tokens;
@@ -45,7 +49,8 @@ typedef enum LangErr
     LANG_MEMALLOC_ERROR,
     LANG_FILE_ERROR,
     LANG_STACK_ERROR,
-    LANG_TREE_ERROR
+    LANG_TREE_ERROR,
+    LANG_INVALID_INPUT
 
 } LangErr_t;
 
