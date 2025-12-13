@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <wchar.h>
 #include <wctype.h>
-// #include <stddef.h>
 #include <assert.h>
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -173,12 +172,6 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
         const wchar_t* opname     = OP_CASES_TABLE[op_code].name;
         size_t         opname_len = OP_CASES_TABLE[op_code].name_len;
 
-        // WDPRINTF(L"op_name = %ls;\n"
-        //          L"op_len = %zu;\n"
-        //          L"------------------------------\n",
-        //          opname,
-        //          opname_len);
-
         if (wcsncmp(lang_ctx->code, opname, opname_len) == 0 &&
             !IsAcceptableSymbol(lang_ctx->code[opname_len]))
         {
@@ -266,7 +259,6 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
 
     *do_continue = true;
 
-    // TODO: сделать указатель на буффер code вместо strdup
     wchar_t buf[MAX_OPERATOR_NAME_LEN] = L"";
 
     size_t i = 0;

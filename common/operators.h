@@ -74,12 +74,12 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_BRACKET_OPEN        ,   1,   L"("                            ),
     SET_OP_CASE_(OP_BRACKET_CLOSE       ,   1,   L")"                            ),
     SET_OP_CASE_(OP_ASSIGNMENT          ,   1,   L"пересади в"                   ),
-    SET_OP_CASE_(OP_IF_LEFT             ,   1,   L"ты думаешь"                   ),
-    SET_OP_CASE_(OP_IF_RIGHT            ,   1,   L"сможет что-то изменить?"      ),
-    SET_OP_CASE_(OP_ELSE                ,   1,   L"не верь им"                   ),
+    SET_OP_CASE_(OP_IF_LEFT             ,   1,   L"ты думаешь"                   ), // алгоритмы маркова
+    SET_OP_CASE_(OP_IF_RIGHT            ,   1,   L"сможет что-то изменить?"      ), // некоторые токены включают проверку
+    SET_OP_CASE_(OP_ELSE                ,   1,   L"не верь им"                   ), // никогда не / запрещаю / нисколько -> не
     SET_OP_CASE_(OP_WHILE               ,   5,   L"снова и снова"                ),
     SET_OP_CASE_(OP_BLOCK_BEGIN         ,   5,   L"ЗАТКНИСЬ"                     ),
-    SET_OP_CASE_(OP_BLOCK_END           ,   4,   L"ОНИ СМОТРЯТ"                  ),
+    SET_OP_CASE_(OP_BLOCK_END           ,   4,   L"ОНИ СМОТРЯТ"                  ), // сжимать все пробелы до 1 либо совмещать 2 токена в 1 на этапе лексики
     SET_OP_CASE_(OP_FUNCTION_BLOCK_BEGIN,   3,   L"за что?"                      ),
     SET_OP_CASE_(OP_FUNCTION_BLOCK_END  ,   1,   L"нет нет нет нет все кончено?" ),
     SET_OP_CASE_(OP_FUNCTION_DECL_LEFT  ,   1,   L"за"                           ),
