@@ -54,14 +54,14 @@ static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* 
                      L"  %d   | ",
                      func, file, line, message, lang_ctx->current_line);
 
-    wchar_t* cur_pos = lang_ctx->code;
+    wchar_t* cur_symbol_ptr = lang_ctx->cur_symbol_ptr;
 
-    wprintf(L"code = %ls\n", lang_ctx->code);
+    wprintf(L"code = %ls\n", cur_symbol_ptr);
 
-    while (*cur_pos != '\n' && *cur_pos != '\0')
+    while (*cur_symbol_ptr != '\n' && *cur_symbol_ptr != '\0')
     {
-        fwprintf(stderr, L"%lc", *cur_pos);
-        cur_pos++;
+        fwprintf(stderr, L"%lc", *cur_symbol_ptr);
+        cur_symbol_ptr++;
     }
 
     fwprintf(stderr, L"\n"
@@ -70,33 +70,37 @@ static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* 
 
     fwprintf(stderr, L"code:\n");
 
-    for (int i = 0; i < lang_ctx->code - lang_ctx->buffer; i++)
+    for (int i = 0; i < lang_ctx->cur_symbol_ptr - lang_ctx->buffer; i++)
     {
         fwprintf(stderr, L"%lc", lang_ctx->buffer[i]);
         wfcprintf(stderr, GRAY, L"%lc", lang_ctx->buffer[i]);
     }
 
-    wfcprintf(stderr, RED, L"%lc", *lang_ctx->code);
+    wfcprintf(stderr, RED, L"%lc", *lang_ctx->cur_symbol_ptr);
 
-    wfcprintf(stderr, BLUE, L"%ls\n", lang_ctx->code + 1);
+    wfcprintf(stderr, BLUE, L"%ls\n", lang_ctx->cur_symbol_ptr + 1);
 }
 
 //------------------------------------------------------------------------------------------
 
-LangErr_t LexicallyAnalyze(LangCtx_t* lang_ctx)
+LangErr_t Tokenize(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx       != NULL);
-    assert(lang_ctx->code != NULL);
+    assert(lang_ctx->cur_symbol_ptr != NULL);
 
     LangErr_t status = LANG_SUCCESS;
 
-    WDPRINTF(L"LEXER: code = %ls\n", lang_ctx->code);
+    wfcprintf(stderr, BLUE, L"Tokenizing...\n");
 
-    while (*lang_ctx->code != '\0')
+    WDPRINTF(L"LEXER: code = %ls\n", lang_ctx->cur_symbol_ptr);
+
+    while (*lang_ctx->cur_symbol_ptr != '\0')
     {
         if ((status = ParseToken(lang_ctx)))
             return status;
     }
+
+    wfcprintf(stderr, GREEN, L"Tokenizing success\n");
 
     return LANG_SUCCESS;
 }
@@ -143,16 +147,18 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #define PUSH_TOKEN_(lang_ctx, __token)                                        \
+                                                                              \
         TreeNode_t* _token = __token;                                         \
+                                                                              \
         TreeGraphDumpSubtree(lang_ctx, (_token), DUMP_FULL);                  \
+                                                                              \
         WDPRINTF(L"Pushing token %p\n", (_token));                            \
+                                                                              \
         if (StackPush(&lang_ctx->tokens, (_token)))                           \
         {                                                                     \
             WPRINTERR("Failed stack push token");                             \
-            StackDump(&lang_ctx->tokens, STACK_SUCCESS, "Push token fail");  \
             return LANG_STACK_ERROR;                                          \
-        }                                                                     \
-        StackDump(&lang_ctx->tokens, STACK_SUCCESS, "Pushed token");
+        }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -172,8 +178,8 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
         const wchar_t* opname     = OP_CASES_TABLE[op_code].name;
         size_t         opname_len = OP_CASES_TABLE[op_code].name_len;
 
-        if (wcsncmp(lang_ctx->code, opname, opname_len) == 0 &&
-            !IsAcceptableSymbol(lang_ctx->code[opname_len]))
+        if (wcsncmp(lang_ctx->cur_symbol_ptr, opname, opname_len) == 0 &&
+            !IsAcceptableSymbol(lang_ctx->cur_symbol_ptr[opname_len]))
         {
             // WDPRINTF(L"op_name = %ls;\n"
             //          L"op_len = %zu;\n"
@@ -181,7 +187,7 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
             //          opname,
             //          opname_len);
 
-            lang_ctx->code += opname_len;
+            lang_ctx->cur_symbol_ptr += opname_len;
 
             if ((status = ProcessOperatorTokenRepetitions(lang_ctx, op_code)))
                 return status;
@@ -211,13 +217,13 @@ static LangErr_t ProcessOperatorTokenRepetitions(LangCtx_t* lang_ctx, size_t op_
     {
         ProcessSpacesCase(lang_ctx, NULL);
 
-        if (!(wcsncmp(lang_ctx->code, opname, opname_len) == 0 &&
-              !IsAcceptableSymbol(lang_ctx->code[opname_len])))
+        if (!(wcsncmp(lang_ctx->cur_symbol_ptr, opname, opname_len) == 0 &&
+              !IsAcceptableSymbol(lang_ctx->cur_symbol_ptr[opname_len])))
         {
             SYNTAX_ERROR(lang_ctx, "operator should repeat %d times", op_repeat_times);
         }
 
-        lang_ctx->code += opname_len;
+        lang_ctx->cur_symbol_ptr += opname_len;
     }
 
     return LANG_SUCCESS;
@@ -230,7 +236,7 @@ static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
     assert(do_continue);
     assert(lang_ctx);
 
-    if (!isdigit(*lang_ctx->code))
+    if (!isdigit(*lang_ctx->cur_symbol_ptr))
         return LANG_SUCCESS;
 
     *do_continue = true;
@@ -238,9 +244,9 @@ static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
     double value        = 0.0;
     wchar_t*  num_code_end = NULL;
 
-    value = wcstod(lang_ctx->code, &num_code_end);
+    value = wcstod(lang_ctx->cur_symbol_ptr, &num_code_end);
 
-    lang_ctx->code = num_code_end;
+    lang_ctx->cur_symbol_ptr = num_code_end;
 
     PUSH_TOKEN_(lang_ctx, NUMBER_(value));
 
@@ -254,7 +260,7 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
     assert(do_continue);
     assert(lang_ctx);
 
-    if (!IsAcceptableFirstSymbol(*lang_ctx->code))
+    if (!IsAcceptableFirstSymbol(*lang_ctx->cur_symbol_ptr))
         return LANG_SUCCESS;
 
     *do_continue = true;
@@ -265,9 +271,9 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
 
     do
     {
-        buf[i++] = *(lang_ctx->code++);
+        buf[i++] = *(lang_ctx->cur_symbol_ptr++);
     }
-    while (IsAcceptableSymbol(*lang_ctx->code));
+    while (IsAcceptableSymbol(*lang_ctx->cur_symbol_ptr));
 
     size_t id_index = 0;
 
@@ -305,7 +311,7 @@ static void ProcessSpacesCase(LangCtx_t* lang_ctx, bool* do_continue)
 {
     assert(lang_ctx);
 
-    if (!iswspace(*lang_ctx->code))
+    if (!iswspace(*lang_ctx->cur_symbol_ptr))
         return;
 
     if (do_continue != NULL)
@@ -313,13 +319,13 @@ static void ProcessSpacesCase(LangCtx_t* lang_ctx, bool* do_continue)
 
     do
     {
-        if (*lang_ctx->code == '\n')
+        if (*lang_ctx->cur_symbol_ptr == '\n')
         {
             lang_ctx->current_line++;
         }
-        lang_ctx->code++;
+        lang_ctx->cur_symbol_ptr++;
     }
-    while (iswspace(*lang_ctx->code));
+    while (iswspace(*lang_ctx->cur_symbol_ptr));
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————

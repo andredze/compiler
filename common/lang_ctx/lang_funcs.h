@@ -17,6 +17,8 @@ LangErr_t   LangIdTableCtor       (IdTable_t* id_table);
 void        LangIdTableDtor       (IdTable_t* id_table);
 LangErr_t   LangIdTablePush       (LangCtx_t* lang_ctx, const wchar_t* id_name_buf, size_t* id_index);
 
+TreeNode_t* LangGetCurrentToken   (LangCtx_t* lang_ctx);
+
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #endif /* LANG_FUNCS_H */

@@ -4,7 +4,7 @@
 #include "data_read.h"
 #include <wchar.h>
 #include <locale.h>
-// #include "parser.h"
+#include "parser.h"
 
 //------------------------------------------------------------------------------------------
 
@@ -18,12 +18,17 @@ int main()
 
     if (LangCtxCtor(&lang_ctx))
         return EXIT_FAILURE;
+        
+    fwprintf(stderr, L"code = \n");
 
     do {
         if (TreeReadInputData(&lang_ctx))
             break;
 
-        if (LexicallyAnalyze(&lang_ctx))
+        if (Tokenize(&lang_ctx))
+            break;
+
+        if (ParseTokens(&lang_ctx))
             break;
 
     } while (0);

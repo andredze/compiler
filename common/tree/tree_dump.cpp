@@ -185,7 +185,7 @@ TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...)
 {
     assert(fmt != NULL);
 
-    int      pos    = (int) (lang_ctx->code - lang_ctx->buffer);
+    int      pos    = (int) (lang_ctx->cur_symbol_ptr - lang_ctx->buffer);
     wchar_t* buffer = lang_ctx->buffer;
 
     va_list args = {};
@@ -402,18 +402,18 @@ TreeErr_t TreeGraphDump(LangCtx_t* lang_ctx, NodeDumpType_t dump_type)
 
     DumpGraphTitle(dot_file);
 
-    NodeDumpParams_t dummy_params = DUMMY_NODE_PARAMS;
+//     NodeDumpParams_t dummy_params = DUMMY_NODE_PARAMS;
+//
+//     dummy_params.dump_type = dump_type;
+//
+//     swprintf(dummy_params.name,     sizeof(dummy_params.name),     L"dummy: node%p", tree->dummy);
+//     swprintf(dummy_params.str_data, sizeof(dummy_params.str_data), L"type = PZN | value = PZN");
+//
+//     DumpDefaultTreeNode(&dummy_params, dot_file);
 
-    dummy_params.dump_type = dump_type;
-
-    swprintf(dummy_params.name,     sizeof(dummy_params.name),     L"dummy: node%p", tree->dummy);
-    swprintf(dummy_params.str_data, sizeof(dummy_params.str_data), L"type = PZN | value = PZN");
-
-    DumpDefaultTreeNode(&dummy_params, dot_file);
-
-    if (tree->dummy->right != NULL)
+    if (tree->dummy != NULL)
     {
-        ASTNodeDump(tree->dummy->right, dot_file, lang_ctx, dump_type);
+        ASTNodeDump(tree->dummy, dot_file, lang_ctx, dump_type);
     }
 
     fwprintf(dot_file, L"}\n");
@@ -640,7 +640,8 @@ static void DumpDefaultTreeNode(NodeDumpParams_t* params, FILE* fp)
     assert(params != NULL);
     assert(fp     != NULL);
 
-    swprintf(params->name, sizeof(params->name), L"node%p", params->node);
+    if (wcscmp(params->name, L"") == 0)
+        swprintf(params->name, sizeof(params->name), L"node%p", params->node);
 
     TreeNode_t* node = params->node;
 

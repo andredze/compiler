@@ -29,7 +29,7 @@ SOURCES = src/main.cpp 						\
           ../common/tree/tree_commands.cpp	\
           ../common/tree/tree_dump.cpp		\
           src/data_read.cpp 				\
-#           src/parser.cpp 					\
+          src/parser.cpp
 
 ifdef DEBUG
 CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG

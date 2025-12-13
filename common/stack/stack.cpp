@@ -6,7 +6,7 @@ StackErr_t StackCtor(Stack_t* stack, size_t capacity)
 {
     if (stack == NULL)
     {
-        WDPRINTF("<Stack is null pointer>");
+        WDPRINTF(L"<Stack is null pointer>");
         return STACK_IS_NULL;
     }
 
@@ -29,7 +29,7 @@ StackErr_t StackCtor(Stack_t* stack, size_t capacity)
     item_t* data = (item_t*) calloc(capacity, sizeof(item_t));
     if (data == NULL)
     {
-        DPRINTF("Memory allocation failed");
+        WDPRINTF(L"Memory allocation failed");
         return STACK_CALLOC_ERROR;
     }
     stack->data = data;
@@ -285,7 +285,7 @@ StackErr_t StackIsOk(Stack_t* stack,
     StackErr_t dump_return = STACK_SUCCESS;
     if ((error = StackVerify(stack)) != STACK_SUCCESS)
     {
-        DPRINTF("<ERROR OCCURRED, CHECK STACK.LOG>\n");
+        WDPRINTF(L"<ERROR OCCURRED, CHECK STACK.LOG>\n");
         if (error != STACK_IS_NULL)
         {
             stack->var_info.file_name = file_name;

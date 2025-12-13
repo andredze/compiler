@@ -26,7 +26,8 @@ typedef struct IdTable
 
 typedef struct LangCtx
 {
-    wchar_t*      code;
+//TODO: код ошибки вся инфа об ошибке передавать до main
+    wchar_t*      cur_symbol_ptr; // cur
     wchar_t*      buffer;
     size_t        current_line;
 
@@ -36,6 +37,8 @@ typedef struct LangCtx
     IdTable_t     id_table;
 
     TreeDebugData debug;
+
+    TreeNode_t*   cur_token_index; // for parser rename
 
 } LangCtx_t;
 

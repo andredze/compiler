@@ -8,19 +8,16 @@
 #include <ctype.h>
 #include "tree_types.h"
 #include "tree_commands.h"
+#include "lang_ctx.h"
+#include "lang_funcs.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-typedef struct Expr
-{
-    char* buffer;
-    char* cur_p;
-} Expr_t;
+LangErr_t ParseTokens(LangCtx_t* lang_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const char END_SYMBOL                 = '$';
-const int  MAX_SYNTAX_ERR_MESSAGE_LEN = 128;
+const int MAX_SYNTAX_PARSE_ERR_MESSAGE_LEN = 128;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

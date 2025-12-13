@@ -1,21 +1,27 @@
-#ifndef LEXER_H
-#define LEXER_H
+#ifndef PARSER_H
+#define PARSER_H
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#include "lang_ctx.h"
-#include "tree_commands.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include "tree_types.h"
-#include "operators.h"
+#include "tree_commands.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t Tokenize(LangCtx_t* lang_ctx);
+typedef struct Expr
+{
+    char* buffer;
+    char* cur_p;
+} Expr_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const size_t MAX_SYNTAX_ERR_MESSAGE_LEN = 128;
+const char END_SYMBOL                 = '$';
+const int  MAX_SYNTAX_ERR_MESSAGE_LEN = 128;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#endif /* LEXER_H */
+#endif /* PARSER_H */

@@ -39,10 +39,10 @@ LangErr_t TreeReadData(LangCtx* lang_ctx, const char* data_file_path)
         return LANG_FILE_ERROR;
     }
 
-    if (ReadFile(fp, &lang_ctx->code, data_file_path))
+    if (ReadFile(fp, &lang_ctx->cur_symbol_ptr, data_file_path))
         return LANG_FILE_ERROR;
 
-    lang_ctx->buffer = lang_ctx->code;
+    lang_ctx->buffer = lang_ctx->cur_symbol_ptr;
 
     fclose(fp);
 

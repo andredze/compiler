@@ -14,7 +14,7 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
         return LANG_STACK_ERROR;
     }
 
-    lang_ctx->code         = NULL;
+    lang_ctx->cur_symbol_ptr         = NULL;
     lang_ctx->current_line = 1;
 
     if (TreeCtor(&lang_ctx->tree))
@@ -53,7 +53,7 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
 
     free(lang_ctx->buffer);
 
-    lang_ctx->code   = NULL;
+    lang_ctx->cur_symbol_ptr   = NULL;
     lang_ctx->buffer = NULL;
 
     TreeCloseLogFile(lang_ctx);
@@ -160,6 +160,23 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table)
     id_table->capacity = new_capacity;
 
     return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+TreeNode_t* LangGetCurrentToken(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    TreeNode_t* token = NULL;
+
+    if (StackGetElement(&lang_ctx->tokens, lang_ctx->cur_symbol_ptr, &token))
+    {
+        PRINTERR("Error with getting token from stack");
+        return NULL;
+    }
+
+    return token;
 }
 
 //------------------------------------------------------------------------------------------
