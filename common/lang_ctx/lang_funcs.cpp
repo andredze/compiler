@@ -10,7 +10,7 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 
     if (StackCtor(&lang_ctx->tokens, 256))
     {
-        PRINTERR("Tokens stack construct failed");
+        WPRINTERR(L"Tokens stack construct failed");
         return LANG_STACK_ERROR;
     }
 
@@ -19,7 +19,7 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 
     if (TreeCtor(&lang_ctx->tree))
     {
-        PRINTERR("Language tree construct failed");
+        WPRINTERR(L"Language tree construct failed");
         return LANG_TREE_ERROR;
     }
 
@@ -45,7 +45,7 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
 
     for (size_t i = 0; i < lang_ctx->tokens.size; i++)
     {
-        DPRINTF("token = %p\n", lang_ctx->tokens.data[i]);
+        WDPRINTF(L"freed token = %p\n", lang_ctx->tokens.data[i]);
         free(lang_ctx->tokens.data[i]);
     }
 
@@ -71,7 +71,7 @@ LangErr_t LangIdTableCtor(IdTable_t* id_table)
 
     if (id_table->data == NULL)
     {
-        PRINTERR("Memory allocation failed");
+        WPRINTERR(L"Memory allocation failed");
         return LANG_MEMALLOC_ERROR;
     }
 
@@ -99,7 +99,7 @@ void LangIdTableDtor(IdTable_t* id_table)
     free(id_table->data);
     id_table->data = NULL;
 
-    DPRINTF("> IdTable destroyed\n");
+    WDPRINTF(L"> IdTable destroyed\n");
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -152,7 +152,7 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table)
 
     if (new_data == NULL)
     {
-        PRINTERR("Memory reallocation failed");
+        WPRINTERR(L"Memory reallocation failed");
         return LANG_MEMALLOC_ERROR;
     }
 

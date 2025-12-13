@@ -145,7 +145,6 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
 
 #define PUSH_TOKEN_(lang_ctx, __token)                                        \
         TreeNode_t* _token = __token;                                         \
-        WDPRINTF(L"Dumping token %p\n", (_token));                            \
         TreeGraphDumpSubtree(lang_ctx, (_token), DUMP_FULL);                  \
         WDPRINTF(L"Pushing token %p\n", (_token));                            \
         if (StackPush(&lang_ctx->tokens, (_token)))                           \
@@ -183,11 +182,11 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
         if (wcsncmp(lang_ctx->code, opname, opname_len) == 0 &&
             !IsAcceptableSymbol(lang_ctx->code[opname_len]))
         {
-            WDPRINTF(L"op_name = %ls;\n"
-                     L"op_len = %zu;\n"
-                     L"------------------------------\n",
-                     opname,
-                     opname_len);
+            // WDPRINTF(L"op_name = %ls;\n"
+            //          L"op_len = %zu;\n"
+            //          L"------------------------------\n",
+            //          opname,
+            //          opname_len);
 
             lang_ctx->code += opname_len;
 

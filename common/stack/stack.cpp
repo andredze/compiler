@@ -6,7 +6,7 @@ StackErr_t StackCtor(Stack_t* stack, size_t capacity)
 {
     if (stack == NULL)
     {
-        DPRINTF("<Stack is null pointer>");
+        WDPRINTF("<Stack is null pointer>");
         return STACK_IS_NULL;
     }
 
