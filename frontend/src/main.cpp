@@ -8,6 +8,8 @@
 
 //------------------------------------------------------------------------------------------
 
+//TODO - в readme parser и lexer GRAMMAR
+
 int main()
 {
     setlocale(LC_ALL, "en_US.utf8");
@@ -18,7 +20,7 @@ int main()
 
     if (LangCtxCtor(&lang_ctx))
         return EXIT_FAILURE;
-        
+
     fwprintf(stderr, L"code = \n");
 
     do {

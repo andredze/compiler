@@ -14,23 +14,23 @@ typedef enum TokenType
 
 typedef enum Operator
 {
-    OP_NONE                 = 0,
-    OP_CMD_SEPARATOR        = 1,
-    OP_BRACKET_OPEN         = 2,
-    OP_BRACKET_CLOSE        = 3,
-    OP_ASSIGNMENT           = 4,
-    OP_IF_LEFT              = 5,
-    OP_IF_RIGHT             = 6,
-    OP_ELSE                 = 7,
-    OP_WHILE                = 8,
-    OP_BLOCK_BEGIN          = 9,
+    OP_NONE                 = 0 ,
+    OP_CMD_SEPARATOR        = 1 ,
+    OP_BRACKET_OPEN         = 2 ,
+    OP_BRACKET_CLOSE        = 3 ,
+    OP_ASSIGNMENT           = 4 ,
+    OP_IF_LEFT              = 5 ,
+    OP_IF_RIGHT             = 6 ,
+    OP_ELSE                 = 7 ,
+    OP_WHILE                = 8 ,
+    OP_BLOCK_BEGIN          = 9 ,
     OP_BLOCK_END            = 10,
     OP_FUNCTION_BLOCK_BEGIN = 11,
     OP_FUNCTION_BLOCK_END   = 12,
     OP_FUNCTION_DECL_LEFT   = 13,
     OP_FUNCTION_DECL_RIGHT  = 14,
-    OP_FUNCTION_CALL_LEFT   = 15,
-    OP_FUNCTION_CALL_RIGHT  = 16,
+    OP_FUNCTION_CALL_LHS    = 15,
+    OP_FUNCTION_CALL_RHS    = 16,
     OP_PARAMS_SEPARATOR     = 17,
     OP_RETURN               = 18,
     OP_ADD                  = 19,
@@ -61,15 +61,15 @@ typedef struct OperatorCase
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define SET_OP_CASE_(code,          repeat_times,   name                                      ) \
-        [(code)] = {(code), #code, (repeat_times), (name), sizeof(name) / sizeof(wchar_t) - 1 }
+#define SET_OP_CASE_(code,          repeat_times,   name                                    ) \
+        [(code)] = {(code), #code, (repeat_times), (name), sizeof(name) / sizeof(*name) - 1 }
 
 //------------------------------------------------------------------------------------------
 
 const OperatorCase_t OP_CASES_TABLE[] =
 {
 //                      code,         repeat_times,         name
-    SET_OP_CASE_(OP_NONE                ,   1,   NULL                            ),
+    SET_OP_CASE_(OP_NONE                ,   1,   L""                             ),
     SET_OP_CASE_(OP_CMD_SEPARATOR       ,   1,   L"ЗАМОЛЧИ"                      ),
     SET_OP_CASE_(OP_BRACKET_OPEN        ,   1,   L"("                            ),
     SET_OP_CASE_(OP_BRACKET_CLOSE       ,   1,   L")"                            ),
@@ -84,8 +84,8 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_FUNCTION_BLOCK_END  ,   1,   L"нет нет нет нет все кончено?" ),
     SET_OP_CASE_(OP_FUNCTION_DECL_LEFT  ,   1,   L"за"                           ),
     SET_OP_CASE_(OP_FUNCTION_DECL_RIGHT ,   1,   L"отомсти"                      ),
-    SET_OP_CASE_(OP_FUNCTION_CALL_LEFT  ,   1,   L"ритуал: во имя"               ),
-    SET_OP_CASE_(OP_FUNCTION_CALL_RIGHT ,   1,   L"принеси в жертву"             ),
+    SET_OP_CASE_(OP_FUNCTION_CALL_LHS   ,   1,   L"ритуал: во имя"               ),
+    SET_OP_CASE_(OP_FUNCTION_CALL_RHS   ,   1,   L"принеси в жертву"             ),
     SET_OP_CASE_(OP_PARAMS_SEPARATOR    ,   1,   L"и"                            ),
     SET_OP_CASE_(OP_RETURN              ,   1,   L"оставь"                       ),
     SET_OP_CASE_(OP_ADD                 ,   1,   L"нарастить на"                 ),

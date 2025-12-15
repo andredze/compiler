@@ -1,4 +1,4 @@
-CXX = g++
+CXX := g++
 
 CXXFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Wsign-conversion 			 \
 		   -Waggressive-loop-optimizations -Wc++14-compat -Wmissing-declarations 		   		 \
@@ -15,39 +15,53 @@ CXXFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Wsign-convers
 		   -fstack-protector -fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer 	 \
 		   -Wlarger-than=8192 -Wstack-usage=8192 -pie -fPIE -Werror=vla -Wconversion
 
-CXXFLAGS += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
+SANITIZER += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,$\
+             integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,$\
+			 shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-CXXFLAGS += -I include -I include/tree -I include/data_access -I include/math
+CXXFLAGS += $(SANITIZER)
 
-SOURCES = src/main.cpp 						\
-          src/data_access/data_read.cpp 	\
-          src/tree/tree_commands.cpp 		\
-          src/tree/tree_debug.cpp 			\
-          src/colors.cpp					\
-		  src/data_access/text_parse.cpp
+FRONTEND_INCLUDES := -I frontend/include \
+                     -I common/lang_ctx  \
+                     -I common/stack 	 \
+                     -I common/colors 	 \
+                     -I common/tree 	 \
+                     -I common
+
+FRONTEND_SOURCES := frontend/src/main.cpp          \
+                    frontend/src/lexer.cpp         \
+                    frontend/src/data_read.cpp     \
+                    frontend/src/parser.cpp 	   \
+                    common/lang_ctx/lang_funcs.cpp \
+                    common/stack/stack.cpp 		   \
+                    common/tree/tree_commands.cpp  \
+                    common/tree/tree_dump.cpp 	   \
+                    common/colors/colors.cpp
+
+LOGS := log/*
+
+FRONTEND_OBJECTS := $(FRONTEND_SOURCES:.cpp=.o)
+
+TARGET := front
 
 ifdef DEBUG
-CXXFLAGS += -D TREE_DEBUG
+CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG -D DEBUG
 endif
-
-OBJS = $(SOURCES:src/%.cpp=obj/%.o)
-
-TARGET = run
-
-$(shell mkdir -p obj obj/data_access obj/tree)
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CXX) $(OBJS) -o $@ $(CXXFLAGS)
+$(TARGET): $(FRONTEND_OBJECTS)
+	$(CXX) $(CXXFLAGS) $(FRONTEND_OBJECTS) -o $(TARGET)
 
-obj/%.o: src/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(FRONTEND_INCLUDES) -c $< -o $@
 
 clean:
-	rm -rf $(OBJS) $(TARGET)
+	rm -f $(FRONTEND_OBJECTS) $(TARGET)
 
-dlog:
-	rm -rf log/*
+dlogs:
+	rm -f $(LOGS)
 
-.PHONY: all clean
+rebuild: clean all
+
+.PHONY: all clean rebuild

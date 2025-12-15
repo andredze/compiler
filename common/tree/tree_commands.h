@@ -28,7 +28,7 @@
 #define TREE_CALL_DUMP(tree_ptr, fmt, ...)                                                  \
         BEGIN                                                                               \
         TreeDumpInfo_t dump_info = {TREE_SUCCESS, __PRETTY_FUNCTION__, __FILE__, __LINE__}; \
-        if (TreeDump((tree_ptr), &dump_info, DUMP_SHORT, (fmt), ##__VA_ARGS__))                         \
+        if (TreeDump((tree_ptr), &dump_info, DUMP_FULL, (fmt), ##__VA_ARGS__))              \
         {                                                                                   \
             return LANG_TREE_ERROR;                                                         \
         }                                                                                   \

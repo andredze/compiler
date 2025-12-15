@@ -40,7 +40,8 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
 
-    TreeDtor       (&lang_ctx->tree    );
+    TreeSingleNodeDtor(lang_ctx->tree.dummy, &lang_ctx->tree);
+
     LangIdTableDtor(&lang_ctx->id_table);
 
     for (size_t i = 0; i < lang_ctx->tokens.size; i++)
@@ -170,7 +171,7 @@ TreeNode_t* LangGetCurrentToken(LangCtx_t* lang_ctx)
 
     TreeNode_t* token = NULL;
 
-    if (StackGetElement(&lang_ctx->tokens, lang_ctx->cur_symbol_ptr, &token))
+    if (StackGetElement(&lang_ctx->tokens, lang_ctx->cur_token_index, &token))
     {
         PRINTERR("Error with getting token from stack");
         return NULL;

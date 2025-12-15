@@ -17,10 +17,10 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define PRINTERR(text, ...)                                                             \
-        BEGIN                                                                           \
-        fcprintf(stderr, RED, "In %s:%d from %s:\nERROR: " text "\n",                   \
-                 __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__);               \
+#define PRINTERR(text, ...)                                                              \
+        BEGIN                                                                            \
+        wfcprintf(stderr, RED, L"In %s:%d from %s:\nERROR: " text "\n",                   \
+                 __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__);                \
         END
 
 #define WPRINTERR(text, ...)                                                            \
@@ -32,9 +32,9 @@
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #ifdef DEBUG
-    #define DPRINTF(text, ...)                                 \
-            BEGIN                                              \
-            fcprintf(stderr, YELLOW, text, ##__VA_ARGS__);     \
+    #define DPRINTF(text, ...)                                  \
+            BEGIN                                               \
+            wfcprintf(stderr, YELLOW, text, ##__VA_ARGS__);     \
             END
     #define WDPRINTF(text, ...)                                \
             BEGIN                                              \

@@ -102,7 +102,7 @@ TreeErr_t TreeCtor(Tree_t* tree)
     tree->size   = 1;
 
     // DEBUG_TREE_CHECK(tree, "ERROR DUMP AFTER CTOR");
-    DPRINTF("> TreeCtor   END\n");
+    DPRINTF(L"> TreeCtor   END\n");
 
     return TREE_SUCCESS;
 }
@@ -128,7 +128,7 @@ TreeNode_t* TreeNodeCtor(Tree_t*        tree,
         PRINTERR("Memory allocation for a new node failed");
         return NULL;
     }
-    DPRINTF("Allocated %p\n", node);
+    DPRINTF(L"Allocated %p\n", node);
 
     node->parent = parent;
 
@@ -145,7 +145,7 @@ TreeNode_t* TreeNodeCtor(Tree_t*        tree,
 
 TreeNode_t* TreeCopySubtree(Tree_t* dest_tree, TreeNode_t* node, TreeNode_t* parent)
 {
-    DPRINTF("node = %p\n", node);
+    DPRINTF(L"node = %p\n", node);
 
     assert(dest_tree != NULL);
 

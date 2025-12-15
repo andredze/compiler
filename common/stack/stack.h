@@ -185,6 +185,7 @@ StackErr_t StackCheckCanaries (Stack_t* stack);
 StackErr_t StackCheckHash     (Stack_t* stack);
 StackErr_t StackVerify        (Stack_t* stack);
 size_t     StackHash          (Stack_t* stack);
+size_t     StackSize          (Stack_t* stack);
 
 int        StackErrToStr      (StackErr_t error, const char* line[]);
 StackErr_t StackDump          (Stack_t* stack, StackErr_t error, const char* reason_of_calling);

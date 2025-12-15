@@ -219,21 +219,23 @@ static TreeNode_t* ParseDegree(Tree_t* tree, Expr_t* expr)
 
     SkipSpaces(expr);
 
-    while (*expr->cur_p == '^')
+    // LangGetCurrentNode
+
+    while (*expr->cur_p == '^') // while IS_OP_
     {
-        expr->cur_p++;
+        expr->cur_p++; // cur_tok_ind ++;
 
         TREE_READ_BUFFER_DUMP(expr, "GET POWER: READ \"^\"");
 
-        node1 = DEG_(node1, NULL);
+        node1 = DEG_(node1, NULL); // par_sep->left = cur_tok; cur_tok = par_sep;
 
-        TreeNode_t* node2 = ParseElement(math_ctx, expr);
+        TreeNode_t* node2 = ParseElement(math_ctx, expr); // cur_tok_2 = ParseExpression();
 
-        if (node2 == NULL)
+        if (node2 == NULL)  // if (cur_tok_2 == NULL) return NULL;
             return NULL;
 
-        node1->right  = node2;
-        node2->parent = node1;
+        node1->right  = node2;  // par_sep->right = cur_tok_2;
+        node2->parent = node1;  
 
         SkipSpaces(expr);
     }

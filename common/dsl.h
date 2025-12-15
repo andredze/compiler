@@ -13,6 +13,12 @@
 
 //------------------------------------------------------------------------------------------
 
+#define IS_OPERATOR_(node, op_code) ((node)->data.type == TYPE_OP && (node)->data.value.opcode == (op_code))
+#define IS_IDENTIFIER_(node)        ((node)->data.type == TYPE_ID )
+#define IS_NUMBER_(node)            ((node)->data.type == TYPE_NUM)
+
+//------------------------------------------------------------------------------------------
+
 /* if operation has 1 argument, it should be placed in right node */
 
 #define ISVALUE_(node, number) (node->data.type == TYPE_NUM && \

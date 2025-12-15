@@ -77,7 +77,7 @@ StackErr_t StackReallocUp(Stack_t* stack)
                                      (capacity) * sizeof(item_t));
     if (data == NULL)
     {
-        DPRINTF("Memory reallocation up failed");
+        DPRINTF(L"Memory reallocation up failed");
         return STACK_REALLOC_ERROR;
     }
     stack->data = data;
@@ -123,7 +123,7 @@ StackErr_t StackReallocDown(Stack_t* stack)
                                     capacity * sizeof(item_t));
     if (stack->data == NULL)
     {
-        DPRINTF("Memory reallocation down failed");
+        DPRINTF(L"Memory reallocation down failed");
         return STACK_REALLOC_ERROR;
     }
 
@@ -179,7 +179,7 @@ StackErr_t StackPop(Stack_t* stack, item_t* item)
 
     if (stack->size == 0)
     {
-        DPRINTF("<Pop is impossible with zero size>\n");
+        DPRINTF(L"<Pop is impossible with zero size>\n");
         return STACK_SIZE_IS_ZERO;
     }
 
@@ -216,17 +216,17 @@ StackErr_t StackGetElement(Stack_t* stack, size_t index, item_t* element)
 
     if (element == NULL)
     {
-        DPRINTF("Error: nullptr given");
+        DPRINTF(L"Error: nullptr given");
         return STACK_IS_NULL;
     }
 
     if (index >= stack->capacity)
     {
-        DPRINTF("Given index is bigger than stack size");
+        DPRINTF(L"Given index is bigger than stack size");
         return STACK_INDEX_TOOBIG;
     }
 
-    DPRINTF("elem = %p\n", element);
+    DPRINTF(L"elem = %p\n", element);
     *element = stack->data[index];
 
     return STACK_SUCCESS;
@@ -240,7 +240,7 @@ StackErr_t StackSetElement(Stack_t* stack, size_t index, item_t element)
 
     if (index >= stack->capacity)
     {
-        DPRINTF("Given index is bigger than stack size");
+        DPRINTF(L"Given index is bigger than stack size");
         return STACK_INDEX_TOOBIG;
     }
 
@@ -253,16 +253,23 @@ StackErr_t StackSetElement(Stack_t* stack, size_t index, item_t element)
 
 //------------------------------------------------------------------------------------------
 
+size_t StackSize(Stack_t* stack)
+{
+    return stack->size;
+}
+
+//------------------------------------------------------------------------------------------
+
 StackErr_t StackDtor(Stack_t* stack)
 {
     if (stack == NULL)
     {
-        DPRINTF("Null stack pointer given to the stack destructor\n");
+        DPRINTF(L"Null stack pointer given to the stack destructor\n");
         return STACK_IS_NULL;
     }
     if (stack->data == NULL)
     {
-        DPRINTF("Null stack.data pointer given to the stack destructor\n");
+        DPRINTF(L"Null stack.data pointer given to the stack destructor\n");
         return STACK_DATA_IS_NULL;
     }
 
@@ -364,12 +371,12 @@ StackErr_t StackDump(Stack_t* stack, StackErr_t error,
 {
     assert(reason_of_calling != NULL);
 
-    DPRINTF("Dumping...\n");
+    DPRINTF(L"Dumping...\n");
 
     FILE* stream = fopen(STACK_LOGFILENAME, "a");
     if (stream == NULL)
     {
-        DPRINTF("Can not open stream: stack.log");
+        DPRINTF(L"Can not open stream: stack.log");
         return STACK_FILE_OPENING_ERROR;
     }
 
@@ -378,7 +385,7 @@ StackErr_t StackDump(Stack_t* stack, StackErr_t error,
 
     if (error == STACK_IS_NULL)
     {
-        DPRINTF("Stack is null activated\n");
+        DPRINTF(L"Stack is null activated\n");
         fprintf(stream, "%s\n", error_str);
         fclose(stream);
         return STACK_SUCCESS;
@@ -409,7 +416,7 @@ StackErr_t StackDump(Stack_t* stack, StackErr_t error,
 
     if (error == STACK_DATA_IS_NULL)
     {
-        DPRINTF("Stack.data is null activated\n");
+        DPRINTF(L"Stack.data is null activated\n");
         fprintf(stream, "\t\t----------------\n"
                         "\t}\n"
                         "}\n");

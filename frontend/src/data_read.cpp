@@ -29,7 +29,7 @@ LangErr_t TreeReadData(LangCtx* lang_ctx, const char* data_file_path)
 
     assert(data_file_path != NULL);
 
-    DPRINTF("Reading file %s\n", data_file_path);
+    DPRINTF(L"Reading file %s\n", data_file_path);
 
     FILE* fp = fopen(data_file_path, "r");
 

@@ -17,6 +17,14 @@ const int MAX_DATA_LEN      = 128;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#define GRAPH_DUMP_(lang_ctx, node, dump_type, fmt, ...) \
+        BEGIN \
+        TreeDumpInfo_t _dump_info_ = {TREE_SUCCESS, __func__, __FILE__, __LINE__}; \
+        GraphDump((lang_ctx), (node), &_dump_info_, (dump_type), fmt); \
+        END
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 typedef enum NodeDumpType
 {
     DUMP_FULL  = 0,
@@ -80,7 +88,8 @@ TreeErr_t TreeGraphDump        (LangCtx_t* lang_ctx, NodeDumpType_t dump_type);
 void      SetGraphFilepaths    (LangCtx_t* lang_ctx);
 TreeErr_t TreeConvertGraphFile (LangCtx_t* lang_ctx);
 
-TreeErr_t TreeGraphDumpSubtree(LangCtx_t* lang_ctx, TreeNode_t* node, NodeDumpType_t dump_type);
+TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDumpInfo_t* dump_info,
+                    NodeDumpType_t dump_type, const wchar_t* fmt, ...);
 
 void      DumpGraphTitle      (FILE* dot_file);
 

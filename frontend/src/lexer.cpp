@@ -13,8 +13,8 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static inline int IsAcceptableFirstSymbol(wchar_t ch);
-static inline int IsAcceptableSymbol     (wchar_t ch);
+static inline int IsAcceptableFirstSymbol(wint_t ch);
+static inline int IsAcceptableSymbol     (wint_t ch);
 
 static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* func,
                              const int  line,     const char* fmt, ...);
@@ -50,15 +50,13 @@ static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* 
 
     va_end(args);
 
-    fwprintf(stderr, L"ERROR from %s at %s:%d\n\tSyntax error: %s\n"
-                     L"  %d   | ",
-                     func, file, line, message, lang_ctx->current_line);
+    wfcprintf(stderr, RED, L"ERROR from %s at %s:%d\n\tSyntax error: %s\n"
+                           L"  %d   | ",
+                           func, file, line, message, lang_ctx->current_line);
 
     wchar_t* cur_symbol_ptr = lang_ctx->cur_symbol_ptr;
 
-    wprintf(L"code = %ls\n", cur_symbol_ptr);
-
-    while (*cur_symbol_ptr != '\n' && *cur_symbol_ptr != '\0')
+    while (*cur_symbol_ptr != L'\n' && *cur_symbol_ptr != L'\0')
     {
         fwprintf(stderr, L"%lc", *cur_symbol_ptr);
         cur_symbol_ptr++;
@@ -72,7 +70,6 @@ static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* 
 
     for (int i = 0; i < lang_ctx->cur_symbol_ptr - lang_ctx->buffer; i++)
     {
-        fwprintf(stderr, L"%lc", lang_ctx->buffer[i]);
         wfcprintf(stderr, GRAY, L"%lc", lang_ctx->buffer[i]);
     }
 
@@ -146,18 +143,17 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define PUSH_TOKEN_(lang_ctx, __token)                                        \
-                                                                              \
-        TreeNode_t* _token = __token;                                         \
-                                                                              \
-        TreeGraphDumpSubtree(lang_ctx, (_token), DUMP_FULL);                  \
-                                                                              \
-        WDPRINTF(L"Pushing token %p\n", (_token));                            \
-                                                                              \
-        if (StackPush(&lang_ctx->tokens, (_token)))                           \
-        {                                                                     \
-            WPRINTERR("Failed stack push token");                             \
-            return LANG_STACK_ERROR;                                          \
+#define PUSH_TOKEN_(lang_ctx, __token)                                                          \
+        TreeNode_t* _token = __token;                                                           \
+        TreeDumpInfo_t _dump_info_ = {TREE_SUCCESS, __func__, __FILE__, __LINE__};              \
+        GraphDump(lang_ctx, (_token), &_dump_info_, DUMP_FULL, L"pushing token %p\n", (_token)); \
+                                                                                                \
+        WDPRINTF(L"Pushing token %p\n", (_token));                                              \
+                                                                                                \
+        if (StackPush(&lang_ctx->tokens, (_token)))                                             \
+        {                                                                                       \
+            WPRINTERR("Failed stack push token");                                               \
+            return LANG_STACK_ERROR;                                                            \
         }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -178,14 +174,19 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
         const wchar_t* opname     = OP_CASES_TABLE[op_code].name;
         size_t         opname_len = OP_CASES_TABLE[op_code].name_len;
 
+        // WDPRINTF(L"code = \"%ls\"\n"
+        //          L"op_name = %ls;\n"
+        //          L"op_len = %zu;\n"
+        //          L"------------------------------\n",
+        //          lang_ctx->cur_symbol_ptr,
+        //          opname,
+        //          opname_len);
+
         if (wcsncmp(lang_ctx->cur_symbol_ptr, opname, opname_len) == 0 &&
-            !IsAcceptableSymbol(lang_ctx->cur_symbol_ptr[opname_len]))
+            !(op_code != OP_BRACKET_OPEN  &&
+              op_code != OP_BRACKET_CLOSE &&
+              IsAcceptableSymbol(lang_ctx->cur_symbol_ptr[opname_len])))
         {
-            // WDPRINTF(L"op_name = %ls;\n"
-            //          L"op_len = %zu;\n"
-            //          L"------------------------------\n",
-            //          opname,
-            //          opname_len);
 
             lang_ctx->cur_symbol_ptr += opname_len;
 
@@ -241,8 +242,8 @@ static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
 
     *do_continue = true;
 
-    double value        = 0.0;
-    wchar_t*  num_code_end = NULL;
+    double   value = 0.0;
+    wchar_t* num_code_end = NULL;
 
     value = wcstod(lang_ctx->cur_symbol_ptr, &num_code_end);
 
@@ -293,14 +294,14 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
 
 //------------------------------------------------------------------------------------------
 
-static inline int IsAcceptableSymbol(wchar_t ch)
+static inline int IsAcceptableSymbol(wint_t ch)
 {
-    return iswalnum(ch) || ch == '_';
+   return iswalnum(ch) || ch == '_';
 }
 
 //------------------------------------------------------------------------------------------
 
-static inline int IsAcceptableFirstSymbol(wchar_t ch)
+static inline int IsAcceptableFirstSymbol(wint_t ch)
 {
     return iswalpha(ch) || ch == '_';
 }

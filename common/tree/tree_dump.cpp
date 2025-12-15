@@ -260,6 +260,8 @@ TreeErr_t vTreeDump(LangCtx_t* lang_ctx,
                  L"dummy = %p;\n",
                  tree, tree->size, tree->dummy);
 
+    fwprintf(fp, L"code = \"%ls\"\n\n", lang_ctx->buffer);
+
     TreeErr_t graph_error = TREE_SUCCESS;
 
     if ((graph_error = TreeGraphDump(lang_ctx, dump_type)))
@@ -295,7 +297,7 @@ TreeErr_t TreeOpenLogFile(LangCtx_t* lang_ctx)
 
     if (lang_ctx->debug.fp == NULL)
     {
-        PRINTERR("Opening logfile %s failed", lang_ctx->debug.log_file_path);
+        PRINTERR(L"Opening logfile %ls failed", lang_ctx->debug.log_file_path);
         return TREE_FILE_ERROR;
     }
 
@@ -317,12 +319,44 @@ static void ASTNodeDump(TreeNode_t* node,     FILE*          fp,
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-TreeErr_t TreeGraphDumpSubtree(LangCtx_t* lang_ctx, TreeNode_t* node, NodeDumpType_t dump_type)
+TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDumpInfo_t* dump_info,
+                    NodeDumpType_t dump_type, const wchar_t* fmt, ...)
 {
     assert(lang_ctx != NULL);
 
     Tree_t*   tree  = &lang_ctx->tree;
     TreeErr_t error = TREE_SUCCESS;
+
+    FILE* fp = lang_ctx->debug.fp;
+
+    fwprintf(fp, L"<pre>\n<h3><font color=blue>");
+
+    va_list args = {};
+
+    va_start(args, fmt);
+
+    vfwprintf(fp, fmt, args);
+
+    va_end(args);
+
+    fwprintf(fp, L"</font></h3>");
+
+    fwprintf(fp, dump_info->error == TREE_SUCCESS ?
+                L"<font color=green><b>" :
+                L"<font color=red><b>ERROR: ");
+
+    fwprintf(fp, L"%s (code %d)</b></font>\n"
+                 L"TREE DUMP called from %s at %s:%d\n\n",
+                 TREE_STR_ERRORS[dump_info->error],
+                 dump_info->error,
+                 dump_info->func,
+                 dump_info->file,
+                 dump_info->line);
+
+    fwprintf(fp, L"tree [%p]:\n\n"
+                 L"size  = %zu;\n"
+                 L"dummy = %p;\n",
+                 tree, tree->size, tree->dummy);
 
     if (tree == NULL)
     {

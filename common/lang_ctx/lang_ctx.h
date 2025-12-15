@@ -38,7 +38,7 @@ typedef struct LangCtx
 
     TreeDebugData debug;
 
-    TreeNode_t*   cur_token_index; // for parser rename
+    size_t        cur_token_index; // for parser rename
 
 } LangCtx_t;
 
