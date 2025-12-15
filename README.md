@@ -120,9 +120,9 @@ BlockStatement      ::= 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ'
 
 Assignment          ::= 'пересади в' Expression Expression
 
-Expression          ::= Term   { ['нарастить на''избавить от']  Term         }*
-Term                ::= Power  { ['усилить в''расщепить на']    Power        }*
-Power               ::= Factor { 'расплодить в'                 Factor 'раз' }*
+Expression          ::= Term   { ['нарастить на''избавить от']  Term   }*
+Term                ::= Power  { ['усилить в''расщепить на']    Power  }*
+Power               ::= Factor { 'расплодить в'                 Factor }*
 
 Factor              ::= '(' Expression ')'
                       | UnaryOperatorCall

@@ -14,9 +14,13 @@
                    (fmt), (node), #node, TYPE_CASES_TABLE[(node)->data.type].name, (node)->left, (node)->right); \
         END
 
+//FIXME - ноды наоборот лево/право
+
 static TreeNode_t* ParseProgram            (LangCtx_t* lang_ctx);
 
 static TreeNode_t* ParseExpression         (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseTerm               (LangCtx_t* lang_ctx);
+static TreeNode_t* ParsePower              (LangCtx_t* lang_ctx);
 static TreeNode_t* ParseFactor             (LangCtx_t* lang_ctx);
 
 static TreeNode_t* ParseBracketsExpression (LangCtx_t* lang_ctx);
@@ -75,11 +79,155 @@ static TreeNode_t* ParseProgram(LangCtx_t* lang_ctx)
 static TreeNode_t* ParseExpression(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
-    //TODO - actual function
 
-    TreeNode_t* cur_token = ParseFactor(lang_ctx);
+    TreeNode_t* cur_token = ParseTerm(lang_ctx); // moves cur_token_index by itself
 
-    PARSER_DUMP_(cur_token, L"expression");
+    if (cur_token == NULL)
+    {
+        WDPRINTF(L"No term in expression parse\n");
+        return NULL;
+    }
+
+    PARSER_DUMP_(cur_token, L"parse expression got first token");
+
+    TreeNode_t* expr_token = LangGetCurrentToken(lang_ctx);
+
+    if (expr_token == NULL)
+        return cur_token;
+
+    TreeNode_t* next_token = NULL;
+
+    while (IS_OPERATOR_(expr_token, OP_ADD) ||
+           IS_OPERATOR_(expr_token, OP_SUB))
+    {
+        lang_ctx->cur_token_index++;
+
+        expr_token->right = cur_token;
+
+        cur_token = expr_token;
+
+        next_token = ParseTerm(lang_ctx); // moves cur_token_index by itself
+
+        if (next_token == NULL)
+        {
+            WPRINTERR("Should be an argument after expression operation");
+            return NULL;
+        }
+
+        cur_token->left = next_token;
+
+        expr_token = LangGetCurrentToken(lang_ctx);
+
+        if (expr_token == NULL)
+            break;
+    }
+
+    PARSER_DUMP_(cur_token, L"expression all");
+
+    return cur_token;
+}
+
+//------------------------------------------------------------------------------------------
+
+static TreeNode_t* ParseTerm(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    TreeNode_t* cur_token = ParsePower(lang_ctx); // moves cur_token_index by itself
+
+    if (cur_token == NULL)
+    {
+        WDPRINTF(L"No power in term parse\n");
+        return NULL;
+    }
+
+    PARSER_DUMP_(cur_token, L"parse term got first token");
+
+    TreeNode_t* term_token = LangGetCurrentToken(lang_ctx);
+
+    if (term_token == NULL)
+        return cur_token;
+
+    TreeNode_t* next_token = NULL;
+
+    while (IS_OPERATOR_(term_token, OP_MUL) ||
+           IS_OPERATOR_(term_token, OP_DIV))
+    {
+        lang_ctx->cur_token_index++;
+
+        term_token->right = cur_token;
+
+        cur_token = term_token;
+
+        next_token = ParsePower(lang_ctx); // moves cur_token_index by itself
+
+        if (next_token == NULL)
+        {
+            WPRINTERR("Should be an argument after term operation");
+            return NULL;
+        }
+
+        cur_token->left = next_token;
+
+        term_token = LangGetCurrentToken(lang_ctx);
+
+        if (term_token == NULL)
+            break;
+    }
+
+    PARSER_DUMP_(cur_token, L"term all");
+
+    return cur_token;
+}
+
+//------------------------------------------------------------------------------------------
+
+static TreeNode_t* ParsePower(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    TreeNode_t* cur_token = ParseFactor(lang_ctx); // moves cur_token_index by itself
+
+    if (cur_token == NULL)
+    {
+        WDPRINTF(L"No factor in parse power\n");
+        return NULL;
+    }
+
+    PARSER_DUMP_(cur_token, L"parse power got first token");
+
+    TreeNode_t* power_token = LangGetCurrentToken(lang_ctx);
+
+    if (power_token == NULL)
+        return cur_token;
+
+    TreeNode_t* next_token = NULL;
+
+    while (IS_OPERATOR_(power_token, OP_POW))
+    {
+        lang_ctx->cur_token_index++;
+
+        power_token->right = cur_token;
+
+        cur_token = power_token;
+
+        next_token = ParseFactor(lang_ctx); // moves cur_token_index by itself
+
+        if (next_token == NULL)
+        {
+            WPRINTERR("Should be an argument after power operation");
+            return NULL;
+        }
+
+        cur_token->left = next_token;
+
+        power_token = LangGetCurrentToken(lang_ctx);
+
+        if (power_token == NULL)
+            break;
+    }
+
+    PARSER_DUMP_(cur_token, L"power all");
 
     return cur_token;
 }

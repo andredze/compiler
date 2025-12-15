@@ -37,11 +37,10 @@ typedef enum Operator
     OP_SUB                  = 20,
     OP_MUL                  = 21,
     OP_DIV                  = 22,
-    OP_POW_LEFT             = 23,
-    OP_POW_RIGHT            = 24,
-    OP_OUTPUT               = 25,
-    OP_INPUT                = 26,
-    OP_ABORT                = 27
+    OP_POW                  = 23,
+    OP_OUTPUT               = 24,
+    OP_INPUT                = 25,
+    OP_ABORT                = 26
 } Operator_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -92,8 +91,7 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_SUB                 ,   1,   L"избавить от"                  ),
     SET_OP_CASE_(OP_MUL                 ,   1,   L"усилить в"                    ),
     SET_OP_CASE_(OP_DIV                 ,   1,   L"расщепить на"                 ),
-    SET_OP_CASE_(OP_POW_LEFT            ,   1,   L"расплодить в"                 ),
-    SET_OP_CASE_(OP_POW_RIGHT           ,   1,   L"раз"                          ),
+    SET_OP_CASE_(OP_POW                 ,   1,   L"расплодить в"                 ),
     SET_OP_CASE_(OP_OUTPUT              ,   1,   L"заставь их услышать"          ),
     SET_OP_CASE_(OP_INPUT               ,   1,   L"скажи мне кто ты,"            ),
     SET_OP_CASE_(OP_ABORT               ,   1,   L"аборт"                        )  // hlt
