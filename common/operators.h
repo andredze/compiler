@@ -19,8 +19,8 @@ typedef enum Operator
     OP_BRACKET_OPEN         = 2 ,
     OP_BRACKET_CLOSE        = 3 ,
     OP_ASSIGNMENT           = 4 ,
-    OP_IF_LEFT              = 5 ,
-    OP_IF_RIGHT             = 6 ,
+    OP_IF_LHS               = 5 ,
+    OP_IF_RHS               = 6 ,
     OP_ELSE                 = 7 ,
     OP_WHILE                = 8 ,
     OP_BLOCK_BEGIN          = 9 ,
@@ -73,8 +73,8 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_BRACKET_OPEN        ,   1,   L"("                            ),
     SET_OP_CASE_(OP_BRACKET_CLOSE       ,   1,   L")"                            ),
     SET_OP_CASE_(OP_ASSIGNMENT          ,   1,   L"пересади в"                   ),
-    SET_OP_CASE_(OP_IF_LEFT             ,   1,   L"ты думаешь"                   ), // алгоритмы маркова
-    SET_OP_CASE_(OP_IF_RIGHT            ,   1,   L"сможет что-то изменить?"      ), // некоторые токены включают проверку
+    SET_OP_CASE_(OP_IF_LHS              ,   1,   L"ты думаешь"                   ), // алгоритмы маркова
+    SET_OP_CASE_(OP_IF_RHS              ,   1,   L"сможет что-то изменить?"      ), // некоторые токены включают проверку
     SET_OP_CASE_(OP_ELSE                ,   1,   L"не верь им"                   ), // никогда не / запрещаю / нисколько -> не
     SET_OP_CASE_(OP_WHILE               ,   5,   L"снова и снова"                ),
     SET_OP_CASE_(OP_BLOCK_BEGIN         ,   5,   L"ЗАТКНИСЬ"                     ),

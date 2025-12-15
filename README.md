@@ -78,24 +78,26 @@ printf(res);
 
 ## Грамматика в расширенной форме Бэкуса — Наура
 ```
-Program             ::= (Statement)* '\0'
+Program             ::= Body '\0'
+
+Body                ::= {Statement OperatorSeparator}*
 
 OperatorSeparator   ::= 'ЗАМОЛЧИ'
 
-FunctionStatement   ::= Statement | ReturnStatement
-
-ReturnStatement     ::= 'оставь' Expression OperatorSeparator
+ReturnStatement     ::= 'оставь' Expression
 
 Statement           ::= IfStatement
                       | WhileStatement
                       | FunctionDeclaration
-                      | Assignment OperatorSeparator
-                      | Expression OperatorSeparator
+                      | Assignment
+                      | Expression
 
 FunctionDeclaration ::= 'за' Identifier 'отомсти' FunctionParameters?
                             'за что? за что? за что?'
-                            FunctionStatement+
+                            {FunctionStatement OperatorSeparator}+
                             'нет нет нет нет все кончено?'
+
+FunctionStatement   ::= Statement | ReturnStatement
 
 FunctionParameters  ::= Identifier { 'и' Identifier }*
 
@@ -115,10 +117,10 @@ WhileStatement      ::=  'снова и снова'
                          BlockStatement
 
 BlockStatement      ::= 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ'
-                         Statement*
+                         {Statement OperatorSeparator}*
                         'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ'
 
-Assignment          ::= 'пересади в' Expression Expression
+Assignment          ::= 'пересади в' Identifier Expression
 
 Expression          ::= Term   { ['нарастить на''избавить от']  Term   }*
 Term                ::= Power  { ['усилить в''расщепить на']    Power  }*

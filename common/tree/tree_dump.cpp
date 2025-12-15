@@ -381,7 +381,10 @@ TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDum
 
     DumpGraphTitle(dot_file);
 
-    ASTNodeDump(node, dot_file, lang_ctx, dump_type);
+    if (node != NULL)
+        ASTNodeDump(node, dot_file, lang_ctx, dump_type);
+    else
+        fwprintf(fp, L"<font color=red><b> NODE IS A NULL POINTER </b></font>\n");
 
     fwprintf(dot_file, L"}\n");
 

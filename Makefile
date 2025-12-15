@@ -60,7 +60,7 @@ clean:
 	rm -f $(FRONTEND_OBJECTS) $(TARGET)
 
 dlogs:
-	rm -f $(LOGS)
+	rm -rf $(LOGS)
 
 rebuild: clean all
 
