@@ -11,21 +11,23 @@
 
 //TODO - в readme parser и lexer GRAMMAR
 
-int main()
+int main(int argc, char* argv[])
 {
     setlocale(LC_ALL, "en_US.utf8");
 
-    fwprintf(stderr, L"code = \n");
+    if (argc == 1)
+    {
+        WPRINTERR("Expected code input file through terminal args");
+        return EXIT_FAILURE;
+    }
 
     LangCtx_t lang_ctx = {};
 
     if (LangCtxCtor(&lang_ctx))
         return EXIT_FAILURE;
 
-    fwprintf(stderr, L"code = \n");
-
     do {
-        if (TreeReadInputData(&lang_ctx))
+        if (TreeReadInputData(&lang_ctx, argv[1]))
             break;
 
         if (Tokenize(&lang_ctx))

@@ -12,7 +12,7 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t TreeReadInputData (LangCtx* lang_ctx);
+LangErr_t TreeReadInputData (LangCtx* lang_ctx, char* input_file_path);
 LangErr_t TreeReadData      (LangCtx* lang_ctx, const char* data_file_path);
 
 //——————————————————————————————————————————————————————————————————————————————————————————

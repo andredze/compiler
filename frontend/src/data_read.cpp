@@ -4,26 +4,17 @@
 
 //------------------------------------------------------------------------------------------
 
-LangErr_t TreeReadInputData(LangCtx* lang_ctx)
+LangErr_t TreeReadInputData(LangCtx* lang_ctx, char* input_file_path)
 {
-    char file_path[MAX_FILENAME_LEN] = {};
-
-    printf("Enter database file path: ");
-
-    if (scanf("%s", file_path) != 1)
-    {
-        PRINTERR("scanf failed");
-        return LANG_INVALID_INPUT;
-    }
-
-    getchar();
+    assert(lang_ctx);
+    assert(input_file_path);
 
     LangErr_t error = LANG_SUCCESS;
 
-    if ((error = TreeReadData(lang_ctx, file_path)))
+    if ((error = TreeReadData(lang_ctx, input_file_path)))
         return error;
 
-    strcpy(lang_ctx->ast_file_name, GetFileName(file_path));
+    strcpy(lang_ctx->ast_file_name, GetFileName(input_file_path));
 
     return LANG_SUCCESS;
 }

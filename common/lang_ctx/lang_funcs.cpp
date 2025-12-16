@@ -97,7 +97,9 @@ LangErr_t LangOpenAsmFile(LangCtx_t* lang_ctx)
         return LANG_FILE_ERROR;
     }
 
+#ifdef BACKEND
     lang_ctx->output_file = asm_fp;
+#endif /* BACKEND */
 
     return LANG_SUCCESS;
 }
