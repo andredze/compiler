@@ -209,6 +209,32 @@ LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
 
 //------------------------------------------------------------------------------------------
 
+LangErr_t AssembleInput(LangCtx_t* lang_ctx, TreeNode_t* node)
+{
+    assert(lang_ctx);
+    assert(node);
+
+    ASM_VERIFY_(IS_OPERATOR_(node, OP_INPUT));
+
+    ASM_VERIFY_(node->left == NULL);
+    ASM_VERIFY_(node->right && IS_IDENTIFIER_(node->right));
+
+    LangErr_t error = LANG_SUCCESS;
+
+    ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
+
+    /* get value from stack to a variable */
+    ASM_PRINT_(L"PUSH %zu\n", node->data.value.id_index);
+    ASM_PRINT_(L"POPR RAX\n"  );
+    ASM_PRINT_(L"POPM [RAX]\n");
+
+    ASM_PRINT_(L"\n");
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
 LangErr_t AssembleHlt(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
     assert(lang_ctx);

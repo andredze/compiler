@@ -40,6 +40,7 @@ LangErr_t AssembleIf             (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleAssignment     (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleMathOperation  (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleUnaryOperation (LangCtx_t* lang_ctx, TreeNode_t* node);
+LangErr_t AssembleInput          (LangCtx_t* lang_ctx, TreeNode_t* node);
 // LangErr_t AssembleElse         (LangCtx_t* lang_ctx, TreeNode_t* node);
 // LangErr_t AssembleWhile        (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleCmdSeparator   (LangCtx_t* lang_ctx, TreeNode_t* node);
@@ -90,9 +91,9 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_MUL                 ,   1,   L"усилить в"                   , L"_MATH_MUL_"     , AssembleMathOperation  , L"MUL" ),
     SET_OP_CASE_(OP_DIV                 ,   1,   L"расщепить на"                , L"_MATH_DIV_"     , AssembleMathOperation  , L"DIV" ),
     SET_OP_CASE_(OP_POW                 ,   1,   L"расплодить в"                , L"_MATH_POW_"     , AssembleMathOperation  , L"POW" ),
-    SET_OP_CASE_(OP_OUTPUT              ,   1,   L"заставь их услышать"         , L""               , AssembleUnaryOperation , L"OUT" ),
-    SET_OP_CASE_(OP_INPUT               ,   1,   L"скажи мне кто ты,"           , L""               , AssembleUnaryOperation , L"IN"  ),
-    SET_OP_CASE_(OP_ABORT               ,   1,   L"аборт"                       , L""               , AssembleHlt            , L"HLT" )
+    SET_OP_CASE_(OP_OUTPUT              ,   1,   L"заставь их услышать"         , L"_OUTPUT_"       , AssembleUnaryOperation , L"OUT" ),
+    SET_OP_CASE_(OP_INPUT               ,   1,   L"скажи мне кто ты,"           , L"_INPUT_"        , AssembleInput          , L"IN"  ),
+    SET_OP_CASE_(OP_ABORT               ,   1,   L"аборт"                       , L"_ABORT_"        , AssembleHlt            , L"HLT" )
 };
 
 //------------------------------------------------------------------------------------------
