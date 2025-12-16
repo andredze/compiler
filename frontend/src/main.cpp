@@ -5,6 +5,7 @@
 #include <wchar.h>
 #include <locale.h>
 #include "parser.h"
+#include "AST_write.h"
 
 //------------------------------------------------------------------------------------------
 
@@ -31,6 +32,9 @@ int main()
             break;
 
         if (ParseTokens(&lang_ctx))
+            break;
+
+        if (ASTWriteData(&lang_ctx))
             break;
 
     } while (0);

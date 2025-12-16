@@ -26,6 +26,8 @@ typedef struct IdTable
 
 typedef struct LangCtx
 {
+    char          ast_file_name[MAX_FILENAME_LEN];
+
 //TODO: код ошибки вся инфа об ошибке передавать до main
     wchar_t*      cur_symbol_ptr; // cur
     wchar_t*      buffer;

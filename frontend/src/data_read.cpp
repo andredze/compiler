@@ -18,7 +18,32 @@ LangErr_t TreeReadInputData(LangCtx* lang_ctx)
 
     getchar();
 
-    return TreeReadData(lang_ctx, file_path);
+    LangErr_t error = LANG_SUCCESS;
+
+    if ((error = TreeReadData(lang_ctx, file_path)))
+        return error;
+
+    char* format = strchr(file_path, '.');
+
+    if (format)
+        *format = '\0';
+
+    char* slash = file_path;
+    char* start = NULL;
+
+    WDPRINTF(L"Searching slash\n");
+
+    while ((slash = strchr(slash, '/')) != NULL)
+    {
+        slash++;
+        start = slash;
+        WDPRINTF(L"Searching slash: %s\n", slash);
+    }
+
+    WDPRINTF(L"Start: %s\n", start);
+    strcpy(lang_ctx->ast_file_name, start);
+
+    return LANG_SUCCESS;
 }
 
 //------------------------------------------------------------------------------------------

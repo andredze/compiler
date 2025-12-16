@@ -32,6 +32,7 @@ FRONTEND_SOURCES := frontend/src/main.cpp          \
                     frontend/src/lexer.cpp         \
                     frontend/src/data_read.cpp     \
                     frontend/src/parser.cpp 	   \
+                    frontend/src/AST_write.cpp 	   \
                     common/lang_ctx/lang_funcs.cpp \
                     common/stack/stack.cpp 		   \
                     common/tree/tree_commands.cpp  \
