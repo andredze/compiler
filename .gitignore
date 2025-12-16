@@ -9,6 +9,10 @@ run
 fact.cpp
 example.cpp
 *.json
+*.asm
+
+back
+front
 
 # Prerequisites
 *.d

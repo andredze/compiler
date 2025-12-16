@@ -42,6 +42,11 @@ typedef struct LangCtx
 
     size_t        cur_token_index; // for parser rename
 
+#ifdef BACKEND
+    FILE*         output_file;
+    size_t        endif_labels_count;
+#endif /* BACKEND */
+
 } LangCtx_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -56,7 +61,9 @@ typedef enum LangErr
     LANG_STACK_ERROR,
     LANG_TREE_ERROR,
     LANG_INVALID_INPUT,
-    LANG_INVALID_AST_INPUT
+    LANG_INVALID_AST_INPUT,
+    LANG_BACKEND_AST_SYNTAX_ERROR,
+    LANG_UNKNOWN_TOKEN_TYPE
 
 } LangErr_t;
 

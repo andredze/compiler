@@ -4,9 +4,13 @@
 
 //FIXME - stack realloc дропается дамп, скорее всего реаллок не работает
 
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx != NULL);
+
+    LangErr_t error = LANG_SUCCESS;
 
 #ifdef FRONTEND
     if (StackCtor(&lang_ctx->tokens, 256))
@@ -19,8 +23,6 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
     lang_ctx->current_line   = 1;
 
 #endif /* FRONTEND */
-
-    LangErr_t error = LANG_SUCCESS;
 
     if ((error = LangIdTableCtor(&lang_ctx->id_table)))
         return error;
@@ -44,6 +46,7 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
     assert(lang_ctx);
 
 #ifdef FRONTEND
+
     TreeSingleNodeDtor(lang_ctx->tree.dummy, &lang_ctx->tree);
 
     for (size_t i = 0; i < lang_ctx->tokens.size; i++)
@@ -52,11 +55,15 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
         free(lang_ctx->tokens.data[i]);
     }
     StackDtor(&lang_ctx->tokens);
+
 #endif /* FRONTEND */
 
 #ifdef BACKEND
-    WDPRINTF(L"\nDestroying tree...\n\n");
+
     TreeDtor(&lang_ctx->tree);
+
+    fclose(lang_ctx->output_file);
+
 #endif /* BACKEND */
 
     LangIdTableDtor(&lang_ctx->id_table);
@@ -67,6 +74,32 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
     lang_ctx->buffer         = NULL;
 
     TreeCloseLogFile(lang_ctx);
+}
+
+//------------------------------------------------------------------------------------------
+
+LangErr_t LangOpenAsmFile(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    char asm_file_path[MAX_FILE_NAME_LEN];
+
+    snprintf(asm_file_path, sizeof(asm_file_path), "asm/%s.asm", lang_ctx->ast_file_name);
+
+    WDPRINTF(L"Asm file name: %s\n", lang_ctx->ast_file_name);
+    WDPRINTF(L"Opening file %s\n\n",   asm_file_path);
+
+    FILE* asm_fp = fopen(asm_file_path, "w");
+
+    if (asm_fp == NULL)
+    {
+        WPRINTERR(L"Failed opening file %s", asm_file_path);
+        return LANG_FILE_ERROR;
+    }
+
+    lang_ctx->output_file = asm_fp;
+
+    return LANG_SUCCESS;
 }
 
 //==========================================================================================

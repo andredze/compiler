@@ -24,14 +24,28 @@
 #define ISVALUE_(node, number) (node->data.type == TYPE_NUM && \
                                 CompareDoubles(node->data.value.num, (number)) == 0)
 
-#define NUM_(number)        MathNodeCtor(math_ctx, {TYPE_NUM, { .num = (number) }}, NULL, NULL)
-
 #define ADD_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_ADD, (l),  (r))
 #define SUB_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_SUB, (l),  (r))
 #define MUL_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_MUL, (l),  (r))
 #define DIV_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_DIV, (l),  (r))
-// #define DEG_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_DEG, (l),  (r))
+#define POW_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_POW, (l),  (r))
 #define UNARY_(oper, r)     LangOperatorNodeCtor(lang_ctx, (oper), NULL, (r))
+
+//------------------------------------------------------------------------------------------
+
+#define ASM_PRINT_(...)                                 \
+        BEGIN                                           \
+        fwprintf(lang_ctx->output_file, ##__VA_ARGS__); \
+        END
+
+#define ASM_VERIFY_(cond)                                 \
+        BEGIN                                             \
+        if (!(cond))                                      \
+        {                                                 \
+            WPRINTERR(L"ASM_VERIFY_(%s) dropped", #cond); \
+            return LANG_BACKEND_AST_SYNTAX_ERROR;         \
+        }                                                 \
+        END
 
 /* ==================================================================================== */
 
@@ -47,6 +61,22 @@
 #undef OPERATOR_
 #undef IDENTIFIER_
 #undef NUMBER_
+
+#undef IS_OPERATOR_
+#undef IS_IDENTIFIER_
+#undef IS_NUMBER_
+
+#undef ISVALUE_
+
+#undef NUM_
+#undef ADD_
+#undef SUB_
+#undef MUL_
+#undef DIV_
+#undef POW_
+#undef UNARY_
+
+#undef ASM_PRINT_
 
 //------------------------------------------------------------------------------------------
 

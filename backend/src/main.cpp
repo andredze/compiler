@@ -1,5 +1,6 @@
 #include "backend.h"
 #include "AST_read.h"
+#include "lang_funcs.h"
 #include <locale.h>
 
 //------------------------------------------------------------------------------------------
@@ -21,6 +22,12 @@ int main(int argc, char* argv[])
 
     do {
         if (ASTReadData(&lang_ctx, argv[1]))
+            break;
+
+        if (LangOpenAsmFile(&lang_ctx))
+            break;
+
+        if (AssembleProgram(&lang_ctx))
             break;
 
     } while (0);
