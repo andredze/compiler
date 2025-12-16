@@ -112,7 +112,7 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
         return error;
 
     ASM_PRINT_(L"PUSH 0\n");
-    ASM_PRINT_(L"JE :endif_%zu\n", lang_ctx->endif_labels_count);
+    ASM_PRINT_(L"JNE :endif_%zu\n", lang_ctx->endif_labels_count);
 
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
@@ -224,7 +224,7 @@ LangErr_t AssembleInput(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
 
     /* get value from stack to a variable */
-    ASM_PRINT_(L"PUSH %zu\n", node->data.value.id_index);
+    ASM_PRINT_(L"PUSH %zu\n", node->right->data.value.id_index);
     ASM_PRINT_(L"POPR RAX\n"  );
     ASM_PRINT_(L"POPM [RAX]\n");
 

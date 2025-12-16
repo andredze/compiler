@@ -258,6 +258,7 @@ static TreeNode_t* ParseBlockStatement(LangCtx_t* lang_ctx)
                  move two next lines after if
                  (left for compatibility with other people)
         */
+
         separator->left = statement;
         statement = separator;
 

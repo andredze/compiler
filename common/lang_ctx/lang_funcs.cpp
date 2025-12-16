@@ -159,6 +159,12 @@ LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const wchar_t* id_name_buf, size_
     assert(lang_ctx    != NULL);
     assert(id_index    != NULL);
 
+    for (size_t i = 0; i < lang_ctx->id_table.size; i++)
+    {
+        if (wcscmp(lang_ctx->id_table.data[i], id_name_buf) == 0)
+            return LANG_SUCCESS;
+    }
+
     IdTable_t* id_table = &lang_ctx->id_table;
 
     //FIXME - без strdup - а
