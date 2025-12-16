@@ -1,0 +1,3 @@
+[submodule "spu-asm"]
+	path = spu-asm
+	url = https://github.com/andredze/spu-asm
