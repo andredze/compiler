@@ -8,14 +8,22 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx != NULL);
 
+#ifdef FRONTEND
     if (StackCtor(&lang_ctx->tokens, 256))
     {
         WPRINTERR(L"Tokens stack construct failed");
         return LANG_STACK_ERROR;
     }
 
-    lang_ctx->cur_symbol_ptr         = NULL;
-    lang_ctx->current_line = 1;
+    lang_ctx->cur_symbol_ptr = NULL;
+    lang_ctx->current_line   = 1;
+
+#endif /* FRONTEND */
+
+    LangErr_t error = LANG_SUCCESS;
+
+    if ((error = LangIdTableCtor(&lang_ctx->id_table)))
+        return error;
 
     if (TreeCtor(&lang_ctx->tree))
     {
@@ -26,11 +34,6 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
     if (TreeOpenLogFile(lang_ctx))
         return LANG_TREE_ERROR;
 
-    LangErr_t error = LANG_SUCCESS;
-
-    if ((error = LangIdTableCtor(&lang_ctx->id_table)))
-        return error;
-
     return LANG_SUCCESS;
 }
 
@@ -40,22 +43,28 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
 
+#ifdef FRONTEND
     TreeSingleNodeDtor(lang_ctx->tree.dummy, &lang_ctx->tree);
-
-    LangIdTableDtor(&lang_ctx->id_table);
 
     for (size_t i = 0; i < lang_ctx->tokens.size; i++)
     {
         WDPRINTF(L"freed token = %p\n", lang_ctx->tokens.data[i]);
         free(lang_ctx->tokens.data[i]);
     }
-
     StackDtor(&lang_ctx->tokens);
+#endif /* FRONTEND */
+
+#ifdef BACKEND
+    WDPRINTF(L"\nDestroying tree...\n\n");
+    TreeDtor(&lang_ctx->tree);
+#endif /* BACKEND */
+
+    LangIdTableDtor(&lang_ctx->id_table);
 
     free(lang_ctx->buffer);
 
-    lang_ctx->cur_symbol_ptr   = NULL;
-    lang_ctx->buffer = NULL;
+    lang_ctx->cur_symbol_ptr = NULL;
+    lang_ctx->buffer         = NULL;
 
     TreeCloseLogFile(lang_ctx);
 }

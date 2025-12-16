@@ -23,25 +23,7 @@ LangErr_t TreeReadInputData(LangCtx* lang_ctx)
     if ((error = TreeReadData(lang_ctx, file_path)))
         return error;
 
-    char* format = strchr(file_path, '.');
-
-    if (format)
-        *format = '\0';
-
-    char* slash = file_path;
-    char* start = NULL;
-
-    WDPRINTF(L"Searching slash\n");
-
-    while ((slash = strchr(slash, '/')) != NULL)
-    {
-        slash++;
-        start = slash;
-        WDPRINTF(L"Searching slash: %s\n", slash);
-    }
-
-    WDPRINTF(L"Start: %s\n", start);
-    strcpy(lang_ctx->ast_file_name, start);
+    strcpy(lang_ctx->ast_file_name, GetFileName(file_path));
 
     return LANG_SUCCESS;
 }
@@ -72,82 +54,6 @@ LangErr_t TreeReadData(LangCtx* lang_ctx, const char* data_file_path)
     fclose(fp);
 
     return LANG_SUCCESS;
-}
-
-//------------------------------------------------------------------------------------------
-
-int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path)
-{
-    assert(buffer_ptr != NULL);
-    assert(file_path  != NULL);
-    assert(fp         != NULL);
-
-    size_t size = 0;
-
-    if (CountSize(file_path, &size))
-    {
-        return 1;
-    }
-
-    char* buffer = (char*) calloc(size, 1);
-
-    if (buffer == NULL)
-    {
-        PRINTERR("Memory allocation failed");
-        return 1;
-    }
-
-    if (fread(buffer, size - 1, 1, fp) != 1)
-    {
-        PRINTERR("Reading file error");
-        return 1;
-    }
-
-    buffer[size - 1] = '\0'; /* set null-term */
-    WDPRINTF(L"buffer = %s;\n", buffer);
-
-    *buffer_ptr = (wchar_t*) calloc(size, sizeof(wchar_t));
-
-    if (*buffer_ptr == NULL)
-    {
-        PRINTERR("Memory allocation failed");
-        return 1;
-    }
-
-    WDPRINTF(L"Converting mb to wc\n");
-
-    if (mbstowcs(*buffer_ptr, buffer, size) == -1)
-    {
-        PRINTERR("mbtowc conversion failed");
-        return 1;
-    }
-    WDPRINTF(L"Converted mb to wc\n");
-
-    WDPRINTF(L"buffer_ptr = %p\n", *buffer_ptr);
-    (*buffer_ptr)[size - 1] = '\0';
-
-    WDPRINTF(L"code = %ls;\n", *buffer_ptr);
-
-    free(buffer);
-
-    return 0;
-}
-
-//------------------------------------------------------------------------------------------
-
-int CountSize(const char* file_path, size_t* size)
-{
-    struct stat fileinfo = {};
-
-    if (stat(file_path, &fileinfo) == -1)
-    {
-        PRINTERR("Error with stat()");
-        return 1;
-    }
-
-    *size = (size_t) fileinfo.st_size + 1;
-
-    return 0;
 }
 
 //------------------------------------------------------------------------------------------

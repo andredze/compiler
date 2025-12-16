@@ -4,6 +4,7 @@
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #include "tree_types.h"
+#include "op_cases.h"
 #include "lang_ctx.h"
 #include <time.h>
 #include <sys/stat.h>

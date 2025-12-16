@@ -1,22 +1,19 @@
-#ifndef LEXER_H
-#define LEXER_H
+#ifndef IO_FILE_H
+#define IO_FILE_H
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#include "lang_ctx.h"
-#include "tree_commands.h"
-#include "tree_types.h"
-#include "operators.h"
-#include "op_cases.h"
+#include "common.h"
+#include <wchar.h>
+#include <stdio.h>
+#include <sys/stat.h>
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t Tokenize(LangCtx_t* lang_ctx);
+int   ReadFile   (FILE* fp, wchar_t** buffer_ptr, const char* file_path);
+int   CountSize  (const char* file_path, size_t* size);
+char* GetFileName(char* file_path);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const size_t MAX_SYNTAX_ERR_MESSAGE_LEN = 128;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-#endif /* LEXER_H */
+#endif /* IO_FILE_H */

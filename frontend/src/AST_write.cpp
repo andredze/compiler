@@ -92,6 +92,9 @@ static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE*
         case TYPE_NUM:
             fwprintf(fp, L"\"%lg\"", data->value.number);
             break;
+
+        default:
+            return;
     }
 }
 
