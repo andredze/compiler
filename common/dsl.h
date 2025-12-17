@@ -7,8 +7,11 @@
 
 /* =============== Domain Specific Language for my programming language =============== */
 
+#ifdef FRONTEND
+#define IDENTIFIER_(id_index) LangIdentifierNodeCtor    (lang_ctx, (name_index))
+#endif /* FRONTEND */
+
 #define OPERATOR_(op_code)    LangOperatorNodeCtor      (lang_ctx, (op_code ), NULL, NULL)
-#define IDENTIFIER_(id_index) LangIdentifierNodeCtor    (lang_ctx, (id_index))
 #define NUMBER_(number)       LangNumberNodeCtor        (lang_ctx, (number  ))
 
 //------------------------------------------------------------------------------------------

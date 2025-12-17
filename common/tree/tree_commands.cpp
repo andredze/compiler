@@ -54,14 +54,14 @@ TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode, TreeNod
 
 //------------------------------------------------------------------------------------------
 
-TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t id_index)
+TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, Identifier_t id)
 {
     assert(lang_ctx != NULL);
 
     TokenData_t token_data = {};
 
-    token_data.type           = TYPE_ID;
-    token_data.value.id_index = id_index;
+    token_data.type     = TYPE_ID;
+    token_data.value.id = id;
 
     return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
 }

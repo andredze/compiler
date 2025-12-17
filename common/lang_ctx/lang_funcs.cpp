@@ -24,8 +24,18 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 
 #endif /* FRONTEND */
 
-    if ((error = LangIdTableCtor(&lang_ctx->id_table)))
+    if ((error = LangNamesPoolCtor(&lang_ctx->names_pool)))
         return error;
+
+#ifdef BACKEND
+
+    if ((error = LangIdTableCtor(&lang_ctx->main_id_table)))
+        return error;
+
+    if ((error = LangIdTableCtor(&lang_ctx->func_id_table)))
+        return error;
+
+#endif /* BACKEND */
 
     if (TreeCtor(&lang_ctx->tree))
     {
@@ -65,9 +75,12 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
     if (lang_ctx->output_file != NULL)
         fclose(lang_ctx->output_file);
 
+    LangIdTableDtor  (&lang_ctx->main_id_table);
+    LangIdTableDtor  (&lang_ctx->func_id_table);
+
 #endif /* BACKEND */
 
-    LangIdTableDtor(&lang_ctx->id_table);
+    LangNamesPoolDtor(&lang_ctx->names_pool   );
 
     free(lang_ctx->buffer);
 
@@ -107,13 +120,121 @@ LangErr_t LangOpenAsmFile(LangCtx_t* lang_ctx)
 
 //==========================================================================================
 
+LangErr_t LangNamesPoolCtor(NamesPool_t* names_pool)
+{
+    assert(names_pool);
+
+    size_t capacity = DEFAULT_NAMES_POOL_CAPACITY;
+
+    names_pool->data = (wchar_t**) calloc(capacity, sizeof(wchar_t*));
+
+    if (names_pool->data == NULL)
+    {
+        WPRINTERR(L"Memory allocation failed");
+        return LANG_MEMALLOC_ERROR;
+    }
+
+    names_pool->capacity = capacity;
+    names_pool->size     = 0;
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+void LangNamesPoolDtor(NamesPool_t* names_pool)
+{
+    assert(names_pool);
+
+    for (size_t i = 0; i < names_pool->size; i++)
+    {
+        free(names_pool->data[i]);
+        names_pool->data[i] = NULL;
+    }
+
+    names_pool->size     = 0;
+    names_pool->capacity = 0;
+
+    free(names_pool->data);
+    names_pool->data = NULL;
+
+    WDPRINTF(L"------- NamesPool destroyed -------\n");
+}
+
+//------------------------------------------------------------------------------------------
+
+static LangErr_t LangNamesPoolRealloc(NamesPool_t* names_pool);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+LangErr_t LangNamesPoolPush(NamesPool_t* names_pool, const wchar_t* name_buf, size_t* name_index)
+{
+    assert(name_index != NULL);
+    assert(names_pool != NULL);
+    assert(name_buf   != NULL);
+
+    for (size_t i = 0; i < names_pool->size; i++)
+    {
+        if (wcscmp(names_pool->data[i], name_buf) == 0)
+        {
+            *name_index = i;
+            return LANG_SUCCESS;
+        }
+    }
+
+    wchar_t* name = wcsdup(name_buf);
+
+    if (name == NULL)
+    {
+        PRINTERR("Memory allocation failed");
+        return LANG_MEMALLOC_ERROR;
+    }
+
+    LangErr_t error = LANG_SUCCESS;
+
+    if (names_pool->size >= names_pool->capacity)
+    {
+        if ((error = LangNamesPoolRealloc(names_pool)))
+            return error;
+    }
+
+    *name_index = names_pool->size;
+    names_pool->data[names_pool->size++] = name;
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+static LangErr_t LangNamesPoolRealloc(NamesPool_t* names_pool)
+{
+    assert(names_pool);
+
+    size_t new_capacity = names_pool->capacity * 2 + 1;
+
+    wchar_t** new_data = (wchar_t**) realloc(names_pool->data, new_capacity * sizeof(*names_pool->data));
+
+    if (new_data == NULL)
+    {
+        WPRINTERR(L"Memory reallocation failed");
+        return LANG_MEMALLOC_ERROR;
+    }
+
+    names_pool->data     = new_data;
+    names_pool->capacity = new_capacity;
+
+    return LANG_SUCCESS;
+}
+
+//==========================================================================================
+
 LangErr_t LangIdTableCtor(IdTable_t* id_table)
 {
     assert(id_table);
 
     size_t capacity = DEFAULT_ID_TABLE_CAPACITY;
 
-    id_table->data = (Identifier_t*) calloc(capacity, sizeof(Identifier_t));
+    id_table->data = (IdData_t*) calloc(capacity, sizeof(IdData_t));
 
     if (id_table->data == NULL)
     {
@@ -135,8 +256,9 @@ void LangIdTableDtor(IdTable_t* id_table)
 
     for (size_t i = 0; i < id_table->size; i++)
     {
-        free(id_table->data[i]);
-        id_table->data[i] = NULL;
+        id_table->data[i].name_index = (size_t)-1;
+        id_table->data[i].type       = ID_TYPE_UNKNOWN;
+        id_table->data[i].addr       = (size_t)-1;
     }
 
     id_table->size     = 0;
@@ -145,7 +267,7 @@ void LangIdTableDtor(IdTable_t* id_table)
     free(id_table->data);
     id_table->data = NULL;
 
-    WDPRINTF(L"> IdTable destroyed\n");
+    WDPRINTF(L"----- IdTable destroyed -----\n");
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -154,30 +276,18 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const wchar_t* id_name_buf, size_t* id_index)
+LangErr_t LangIdTablePush(IdTable_t* id_table, IdData_t data, size_t* id_index)
 {
-    assert(id_name_buf != NULL);
-    assert(lang_ctx    != NULL);
-    assert(id_index    != NULL);
+    assert(id_table != NULL);
+    assert(id_index != NULL);
 
-    for (size_t i = 0; i < lang_ctx->id_table.size; i++)
+    for (size_t i = 0; i < id_table->size; i++)
     {
-        if (wcscmp(lang_ctx->id_table.data[i], id_name_buf) == 0)
+        if (id_table->data[i].name_index == data.name_index)
         {
             *id_index = i;
             return LANG_SUCCESS;
         }
-    }
-
-    IdTable_t* id_table = &lang_ctx->id_table;
-
-    //FIXME - без strdup - а
-    Identifier_t id_name = wcsdup(id_name_buf);
-
-    if (id_name == NULL)
-    {
-        PRINTERR("Memory allocation failed");
-        return LANG_MEMALLOC_ERROR;
     }
 
     LangErr_t error = LANG_SUCCESS;
@@ -189,7 +299,7 @@ LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, const wchar_t* id_name_buf, size_
     }
 
     *id_index = id_table->size;
-    id_table->data[id_table->size++] = id_name;
+    id_table->data[id_table->size++] = data;
 
     return LANG_SUCCESS;
 }
@@ -202,8 +312,7 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table)
 
     size_t new_capacity = id_table->capacity * 2 + 1;
 
-    Identifier_t* new_data = (Identifier_t*) realloc(id_table->data,
-                                                     new_capacity * sizeof(*id_table->data));
+    IdData_t* new_data = (IdData_t*) realloc(id_table->data, new_capacity * sizeof(*id_table->data));
 
     if (new_data == NULL)
     {

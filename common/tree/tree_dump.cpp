@@ -136,10 +136,8 @@ TreeErr_t TreeDump(LangCtx_t*            lang_ctx,
 
 //------------------------------------------------------------------------------------------
 
-LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, const char* fmt, ...)
+LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* fmt, ...)
 {
-    assert(lang_ctx != NULL);
-
     va_list args = {};
     va_start(args, fmt);
 
@@ -154,22 +152,22 @@ LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, const char* fmt, ...)
     fwprintf(fp, L"vars_table [%p]:\n\n"
                 L"size     = %zu\n"
                 L"capacity = %zu\n\n",
-                lang_ctx->id_table.data,
-                lang_ctx->id_table.size,
-                lang_ctx->id_table.capacity);
+                id_table->data,
+                id_table->size,
+                id_table->capacity);
 
     fwprintf(fp, L"index: ");
 
-    for (size_t i = 0; i < lang_ctx->id_table.capacity; i++)
+    for (size_t i = 0; i <id_table->capacity; i++)
     {
         fwprintf(fp, L"%12zu |", i);
     }
 
     fwprintf(fp, L"\nnames: ");
 
-    for (size_t i = 0; i < lang_ctx->id_table.capacity; i++)
+    for (size_t i = 0; i < id_table->capacity; i++)
     {
-        fwprintf(fp, L"%12ls |", lang_ctx->id_table.data[i]);
+        fwprintf(fp, L"%12ls |", id_table->data[i]);
     }
 
     va_end(args);
@@ -650,11 +648,21 @@ static void DumpNodeDataIdentifier(NodeDumpParams_t* params, LangCtx_t* lang_ctx
     assert(lang_ctx != NULL);
     assert(params   != NULL);
 
+#ifdef FRONTEND
     swprintf(params->str_data, sizeof(params->str_data),
              L"type = %s | value = %ls (%zu)",
              TYPE_CASES_TABLE[params->node->data.type].name,
-             lang_ctx->id_table.data[params->node->data.value.id_index],
-             params->node->data.value.id_index);
+             lang_ctx->names_pool.data[params->node->data.value.id],
+             params->node->data.value.id);
+#endif /* FRONTEND */
+
+#ifdef BACKEND
+    swprintf(params->str_data, sizeof(params->str_data),
+             L"type = %s | value = %ls (%zu)",
+             TYPE_CASES_TABLE[params->node->data.type].name,
+             lang_ctx->names_pool.data[params->node->data.value.id.name_index],
+             params->node->data.value.id.name_index);
+#endif /* BACKEND */
 }
 
 //------------------------------------------------------------------------------------------

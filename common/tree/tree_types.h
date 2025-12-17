@@ -8,11 +8,32 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#ifdef BACKEND
+
+typedef struct Identifier
+{
+    size_t name_index;
+    size_t id_index;
+
+    bool   is_global;
+
+} Identifier_t;
+
+#endif /* BACKEND */
+
+#ifdef FRONTEND
+
+typedef size_t Identifier_t;
+
+#endif /* FRONTEND */
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 typedef union TokenValue
 {
-    Operator_t opcode;
-    double     number;
-    size_t     id_index;
+    Operator_t   opcode;
+    double       number;
+    Identifier_t id;
 
 } TokenValue_t;
 
@@ -170,6 +191,8 @@ const TypeCase_t TYPE_CASES_TABLE[] =
 //------------------------------------------------------------------------------------------
 
 #undef SET_TYPE_CASE_
+
+const size_t TYPES_COUNT = sizeof(TYPE_CASES_TABLE) / sizeof(TYPE_CASES_TABLE[0]);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

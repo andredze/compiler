@@ -277,14 +277,14 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
     }
     while (IsAcceptableSymbol(*lang_ctx->cur_symbol_ptr));
 
-    size_t id_index = 0;
+    size_t name_index = 0;
 
     LangErr_t status = LANG_SUCCESS;
 
-    if ((status = LangIdTablePush(lang_ctx, buf, &id_index)))
+    if ((status = LangNamesPoolPush(&lang_ctx->names_pool, buf, &name_index)))
         return status;
 
-    PUSH_TOKEN_(lang_ctx, IDENTIFIER_(id_index));
+    PUSH_TOKEN_(lang_ctx, IDENTIFIER_(name_index));
 
     return LANG_SUCCESS;
 }

@@ -70,7 +70,7 @@ typedef struct EdgeDumpParams
 
 TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...);
 
-LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, const char* fmt, ...);
+LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* fmt, ...);
 
 TreeErr_t TreeDump(LangCtx_t* lang_ctx,
                    const TreeDumpInfo_t* dump_info,

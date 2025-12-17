@@ -140,17 +140,81 @@ LangErr_t ReadNodeData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos, Token
 
 //------------------------------------------------------------------------------------------
 
+static LangErr_t GetNodeDataOp (TokenData_t* node_data, wchar_t* string_data);
+static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data);
+static LangErr_t GetNodeDataId (LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_t* string_data);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 static LangErr_t GetNodeData(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_t* word)
 {
     assert(node_data);
     assert(lang_ctx);
     assert(word);
 
+    wchar_t type_name  [MAX_BUFFER_LEN] = {};
+    wchar_t string_data[MAX_BUFFER_LEN] = {};
+
+    if (swscanf(word, L"%ls %ls", type_name, string_data) != 2)
+    {
+        WPRINTERR("swscanf in AST read failed");
+        return LANG_INVALID_AST_INPUT;
+    }
+
+    bool got_type = false;
+
+    for (size_t i = 0; i < TYPES_COUNT; i++)
+    {
+        if (wcscmp(type_name, TYPE_CASES_TABLE[i].ast_format) == 0)
+        {
+            node_data->type = TYPE_CASES_TABLE[i].type;
+            got_type = true;
+            break;
+        }
+    }
+    if (!got_type)
+    {
+        WPRINTERR(L"unknown token type in AST read");
+        return LANG_INVALID_AST_INPUT;
+    }
+
+    switch (node_data->type)
+    {
+        case TYPE_OP:
+            return GetNodeDataOp(node_data, string_data);
+
+        case TYPE_NUM:
+            return GetNodeDataNum(node_data, string_data);
+
+        case TYPE_ID:
+            WPRINTERR("Type identifier should not be in back end");
+            return LANG_INVALID_AST_INPUT;
+
+        case TYPE_VAR:
+        case TYPE_VAR_DECL:
+        case TYPE_FUNC_DECL:
+        case TYPE_FUNC_CALL:
+            return GetNodeDataId(lang_ctx, node_data, string_data);
+
+        default:
+            return LANG_INVALID_AST_INPUT;
+    }
+
+    return LANG_INVALID_AST_INPUT;
+}
+
+//------------------------------------------------------------------------------------------
+
+static LangErr_t GetNodeDataOp(TokenData_t* node_data, wchar_t* string_data)
+{
+    assert(string_data != NULL);
+    assert(node_data   != NULL);
+
     for (size_t opcode = 0; opcode < OPERATORS_COUNT; opcode++)
     {
         const wchar_t* opname = OP_CASES_TABLE[opcode].ast_format;
 
-        if (wcscmp(word, opname) == 0)
+        if (wcscmp(string_data, opname) == 0)
         {
             node_data->type         = TYPE_OP;
             node_data->value.opcode = (Operator_t) opcode;
@@ -159,25 +223,46 @@ static LangErr_t GetNodeData(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_
         }
     }
 
-    if (iswdigit(word[0]))
+    WPRINTERR("Unknown operator in AST");
+    return LANG_INVALID_AST_INPUT;
+}
+
+//------------------------------------------------------------------------------------------
+
+static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data)
+{
+    assert(string_data != NULL);
+    assert(node_data   != NULL);
+
+    if (!iswdigit(string_data[0]))
     {
-        double value = wcstod(word, NULL);
-
-        node_data->type         = TYPE_NUM;
-        node_data->value.number = value;
-
-        return LANG_SUCCESS;
+        WPRINTERR("Not a number in AST with type number");
+        return LANG_INVALID_AST_INPUT;
     }
 
-    size_t id_index = 0;
+    double value = wcstod(string_data, NULL);
+
+    node_data->type         = TYPE_NUM;
+    node_data->value.number = value;
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+static LangErr_t GetNodeDataId(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_t* string_data)
+{
+    assert(string_data != NULL);
+    assert(node_data   != NULL);
+
+    size_t name_index = 0;
 
     LangErr_t error = LANG_SUCCESS;
 
-    if ((error = LangIdTablePush(lang_ctx, word, &id_index)))
+    if ((error = LangNamesPoolPush(&lang_ctx->names_pool, string_data, &name_index)))
         return error;
 
-    node_data->type           = TYPE_ID;
-    node_data->value.id_index = id_index;
+    node_data->value.id.name_index = name_index;
 
     return LANG_SUCCESS;
 }

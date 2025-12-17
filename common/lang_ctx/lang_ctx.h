@@ -20,27 +20,35 @@ typedef enum IdType
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 //FIXME - структура id
-typedef wchar_t* Identifier_t;
 
-// typedef struct Identifier
-// {
-//     IdType_t    type;
-//     wchar_t*    name;
-//     int         params_count;
-//
-// } Identifier_t;
+typedef struct IdData
+{
+    size_t    name_index;
+    IdType_t  type;
+
+    size_t    addr;
+
+} IdData_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-//NOTE - NamesPool? - stack of wchar_t*
-//NOTE - IdTable    - stack of Identifier_t
+typedef struct NamesPool
+{
+    wchar_t** data;
+
+    size_t    size;
+    size_t    capacity;
+
+} NamesPool_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
 
 typedef struct IdTable
 {
-    Identifier_t* data;
+    IdData_t* data;
 
-    size_t        size;
-    size_t        capacity;
+    size_t    size;
+    size_t    capacity;
 
 } IdTable_t;
 
@@ -58,7 +66,10 @@ typedef struct LangCtx
     Stack_t       tokens;
     Tree_t        tree;
 
-    IdTable_t     id_table;
+    NamesPool_t   names_pool;
+
+    IdTable_t     main_id_table;
+    IdTable_t     func_id_table;
 
     TreeDebugData debug;
 
@@ -100,10 +111,6 @@ typedef enum LangErr
 //     [LANG_MEMALLOC_ERROR]   = "",
 //     [LANG_FILE_ERROR]       = ""
 // };
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-const size_t DEFAULT_ID_TABLE_CAPACITY = 64;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

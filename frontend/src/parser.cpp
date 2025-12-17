@@ -218,7 +218,7 @@ static TreeNode_t* ParseFunctionParameters(LangCtx_t* lang_ctx, TreeNode_t* func
 static TreeNode_t* ParseFunctionBlock(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
-
+    
     TreeNode_t* block_begin = LangGetCurrentToken(lang_ctx);
 
     if (block_begin == NULL || !IS_OPERATOR_(block_begin, OP_FUNCTION_BLOCK_BEGIN))

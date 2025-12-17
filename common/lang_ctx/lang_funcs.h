@@ -15,11 +15,26 @@ void        LangCtxDtor           (LangCtx_t* lang_ctx);
 
 LangErr_t   LangOpenAsmFile       (LangCtx_t* lang_ctx);
 
+//------------------------------------------------------------------------------------------
+
+LangErr_t LangNamesPoolCtor       (NamesPool_t* names_pool);
+void      LangNamesPoolDtor       (NamesPool_t* names_pool);
+LangErr_t LangNamesPoolPush       (NamesPool_t* names_pool, const wchar_t* name_buf, size_t* name_index);
+
+//------------------------------------------------------------------------------------------
+
 LangErr_t   LangIdTableCtor       (IdTable_t* id_table);
 void        LangIdTableDtor       (IdTable_t* id_table);
-LangErr_t   LangIdTablePush       (LangCtx_t* lang_ctx, const wchar_t* id_name_buf, size_t* id_index);
+LangErr_t   LangIdTablePush       (IdTable_t* id_table, IdData_t data, size_t* id_index);
+
+//------------------------------------------------------------------------------------------
 
 TreeNode_t* LangGetCurrentToken   (LangCtx_t* lang_ctx);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+const size_t DEFAULT_ID_TABLE_CAPACITY   = 64;
+const size_t DEFAULT_NAMES_POOL_CAPACITY = 64;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

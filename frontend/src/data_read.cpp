@@ -23,8 +23,6 @@ LangErr_t TreeReadInputData(LangCtx* lang_ctx, char* input_file_path)
 
 LangErr_t TreeReadData(LangCtx* lang_ctx, const char* data_file_path)
 {
-    // DEBUG_TREE_CHECK(lang_ctx, "ERROR BEFORE TREE READ DATA");
-
     assert(data_file_path != NULL);
 
     DPRINTF(L"Reading file %s\n", data_file_path);

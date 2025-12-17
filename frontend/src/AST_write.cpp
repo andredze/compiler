@@ -92,7 +92,7 @@ static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE*
         case TYPE_VAR_DECL:
         case TYPE_FUNC_CALL:
         case TYPE_FUNC_DECL:
-            fwprintf(fp, L"%ls", lang_ctx->id_table.data[data->value.id_index]);
+            fwprintf(fp, L"%ls", lang_ctx->names_pool.data[data->value.id]);
             break;
 
         case TYPE_NUM:

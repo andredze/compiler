@@ -13,6 +13,7 @@ typedef enum TokenType
     TYPE_VAR_DECL  = 4,
 
     TYPE_FUNC_CALL = 5,
+    
     TYPE_FUNC_DECL = 6
 
 } TokenType_t;
