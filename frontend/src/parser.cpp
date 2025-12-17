@@ -19,6 +19,8 @@
 
 //FIXME - ноды наоборот лево/право
 
+
+
 static TreeNode_t* ParseProgram            (LangCtx_t* lang_ctx);
 static TreeNode_t* ParseBody               (LangCtx_t* lang_ctx);
 
@@ -27,6 +29,7 @@ static TreeNode_t* ParseCmdSeparator       (LangCtx_t* lang_ctx);
 static TreeNode_t* ParseStatement          (LangCtx_t* lang_ctx);
 
 static TreeNode_t* ParseIfStatement        (LangCtx_t* lang_ctx);
+static TreeNode_t* ParseWhileStatement     (LangCtx_t* lang_ctx);
 static TreeNode_t* ParseBlockStatement     (LangCtx_t* lang_ctx);
 
 static TreeNode_t* ParseAssignment         (LangCtx_t* lang_ctx);
@@ -143,8 +146,15 @@ static TreeNode_t* ParseStatement(LangCtx_t* lang_ctx)
 
     if (cur_token != NULL)
     {
-        PARSER_DUMP_(cur_token, L"statement");
+        PARSER_DUMP_(cur_token, L"statement: got if statement");
+        return cur_token;
+    }
 
+    cur_token = ParseWhileStatement(lang_ctx);
+
+    if (cur_token != NULL)
+    {
+        PARSER_DUMP_(cur_token, L"statement: got while statement");
         return cur_token;
     }
 
@@ -152,8 +162,7 @@ static TreeNode_t* ParseStatement(LangCtx_t* lang_ctx)
 
     if (cur_token != NULL)
     {
-        PARSER_DUMP_(cur_token, L"statement");
-
+        PARSER_DUMP_(cur_token, L"statement: got assignment");
         return cur_token;
     }
 
@@ -161,8 +170,7 @@ static TreeNode_t* ParseStatement(LangCtx_t* lang_ctx)
 
     if (cur_token != NULL)
     {
-        PARSER_DUMP_(cur_token, L"statement");
-
+        PARSER_DUMP_(cur_token, L"statement: got expression");
         return cur_token;
     }
 
@@ -222,6 +230,49 @@ static TreeNode_t* ParseIfStatement(LangCtx_t* lang_ctx)
     PARSER_DUMP_(if_lhs, L"if finale");
 
     return if_lhs;
+}
+
+//------------------------------------------------------------------------------------------
+
+static TreeNode_t* ParseWhileStatement(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    TreeNode_t* while_token = LangGetCurrentToken(lang_ctx);
+
+    if (while_token == NULL || !IS_OPERATOR_(while_token, OP_WHILE))
+        return NULL;
+
+    lang_ctx->cur_token_index++;
+
+    PARSER_DUMP_(while_token, L"while");
+
+    TreeNode_t* condition = ParseExpression(lang_ctx);
+
+    if (condition == NULL)
+    {
+        WPRINTERR("There should be an expression inside if");
+        return NULL;
+    }
+
+    PARSER_DUMP_(condition, L"while_condition");
+
+    TreeNode_t* block_statement = ParseBlockStatement(lang_ctx);
+
+    if (block_statement == NULL)
+    {
+        WPRINTERR("Expected block after while statement");
+        return NULL;
+    }
+
+    PARSER_DUMP_(block_statement, L"while block");
+
+    while_token->left  = condition;
+    while_token->right = block_statement;
+
+    PARSER_DUMP_(while_token, L"while finale");
+
+    return while_token;
 }
 
 //------------------------------------------------------------------------------------------

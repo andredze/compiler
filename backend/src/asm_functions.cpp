@@ -26,6 +26,13 @@ LangErr_t AssembleNode(LangCtx_t* lang_ctx, TreeNode_t* node)
             return AssembleIdentifier(lang_ctx, node);
 
         case TYPE_OP:
+            if (OP_CASES_TABLE[node->data.value.opcode].asm_function == NULL)
+            {
+                WPRINTERR("Error: operator %ls doesn't support assembling",
+                          OP_CASES_TABLE[node->data.value.opcode].name);
+
+                return LANG_UNASSEMBLE_OPERATOR;
+            }
             return OP_CASES_TABLE[node->data.value.opcode].asm_function (lang_ctx, node);
 
         default:
@@ -93,7 +100,7 @@ LangErr_t AssembleCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
              for AST standard
     */
 
-    if (!node->right)
+    if (node->right == NULL)
         return LANG_SUCCESS;
 
     if ((error = AssembleNode(lang_ctx, node->right)))
@@ -134,6 +141,47 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_PRINT_(L"; ------------------endif------------------\n\n");
 
     lang_ctx->endif_labels_count++;
+
+    ASM_PRINT_(L"\n");
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
+{
+    assert(lang_ctx);
+    assert(node);
+
+    ASM_VERIFY_(IS_OPERATOR_(node, OP_WHILE));
+    ASM_VERIFY_(node->left );
+    ASM_VERIFY_(node->right);
+
+    ASM_PRINT_(L"; while\n");
+
+    ASM_PRINT_(L":while_start_%zu\n\n", lang_ctx->while_labels_count);
+    ASM_PRINT_(L"; ----------------condition----------------\n\n");
+
+    LangErr_t error = LANG_SUCCESS;
+
+    if ((error = AssembleNode(lang_ctx, node->left)))
+        return error;
+
+    ASM_PRINT_(L"PUSH 0\n\n");
+    ASM_PRINT_(L"JNE :while_end_%zu\n", lang_ctx->while_labels_count);
+
+    ASM_PRINT_(L"; ----------------statement----------------\n\n");
+
+    if ((error = AssembleNode(lang_ctx, node->right)))
+        return error;
+
+    ASM_PRINT_(L":while_end_%zu\n", lang_ctx->while_labels_count);
+    ASM_PRINT_(L"JMP :while_start_%zu\n", lang_ctx->while_labels_count);
+
+    ASM_PRINT_(L"; ----------------while_end----------------\n\n");
+
+    lang_ctx->while_labels_count++;
 
     ASM_PRINT_(L"\n");
 

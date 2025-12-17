@@ -37,6 +37,7 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx);
                                         // |
                                         // |
     // TODO: mystrncmp позволяющий любой регистр
+    // TODO: алгорифмы Маркова
 
 static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* func,
                              const int  line,     const char* fmt, ...)

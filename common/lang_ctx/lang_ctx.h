@@ -10,8 +10,30 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+typedef enum IdType
+{
+    ID_TYPE_UNKNOWN  = 0,
+    ID_TYPE_VARIABLE = 1,
+    ID_TYPE_FUNCTION = 2
+} IdType_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 //FIXME - структура id
 typedef wchar_t* Identifier_t;
+
+// typedef struct Identifier
+// {
+//     IdType_t    type;
+//     wchar_t*    name;
+//     int         params_count;
+//
+// } Identifier_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+//NOTE - NamesPool? - stack of wchar_t*
+//NOTE - IdTable    - stack of Identifier_t
 
 typedef struct IdTable
 {
@@ -45,6 +67,7 @@ typedef struct LangCtx
 #ifdef BACKEND
     FILE*         output_file;
     size_t        endif_labels_count;
+    size_t        while_labels_count;
 #endif /* BACKEND */
 
 } LangCtx_t;
@@ -63,7 +86,8 @@ typedef enum LangErr
     LANG_INVALID_INPUT,
     LANG_INVALID_AST_INPUT,
     LANG_BACKEND_AST_SYNTAX_ERROR,
-    LANG_UNKNOWN_TOKEN_TYPE
+    LANG_UNKNOWN_TOKEN_TYPE,
+    LANG_UNASSEMBLE_OPERATOR
 
 } LangErr_t;
 

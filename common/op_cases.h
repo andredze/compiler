@@ -42,7 +42,7 @@ LangErr_t AssembleMathOperation  (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleUnaryOperation (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleInput          (LangCtx_t* lang_ctx, TreeNode_t* node);
 // LangErr_t AssembleElse         (LangCtx_t* lang_ctx, TreeNode_t* node);
-// LangErr_t AssembleWhile        (LangCtx_t* lang_ctx, TreeNode_t* node);
+LangErr_t AssembleWhile          (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleCmdSeparator   (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleHlt            (LangCtx_t* lang_ctx, TreeNode_t* node);
 
@@ -75,7 +75,7 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_IF_LHS              ,   1,   L"ты думаешь"                  , L"_IF_"           , AssembleIf             , L""    ), // алгоритмы маркова
     SET_OP_CASE_(OP_IF_RHS              ,   1,   L"сможет что-то изменить?"     , L""               , NULL                   , L""    ), // некоторые токены включают проверку
     SET_OP_CASE_(OP_ELSE                ,   1,   L"не верь им"                  , L"_ELSE_"         , NULL                   , L""    ), // никогда не / запрещаю / нисколько -> не
-    SET_OP_CASE_(OP_WHILE               ,   5,   L"снова и снова"               , L"_WHILE_"        , NULL                   , L""    ),
+    SET_OP_CASE_(OP_WHILE               ,   5,   L"снова и снова"               , L"_WHILE_"        , AssembleWhile          , L""    ),
     SET_OP_CASE_(OP_BLOCK_BEGIN         ,   5,   L"ЗАТКНИСЬ"                    , L""               , NULL                   , L""    ),
     SET_OP_CASE_(OP_BLOCK_END           ,   4,   L"ОНИ СМОТРЯТ"                 , L""               , NULL                   , L""    ), // сжимать все пробелы до 1 либо совмещать 2 токена в 1 на этапе лексики
     SET_OP_CASE_(OP_FUNCTION_BLOCK_BEGIN,   3,   L"за что?"                     , L""               , NULL                   , L""    ),

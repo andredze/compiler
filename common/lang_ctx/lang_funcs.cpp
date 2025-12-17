@@ -62,7 +62,8 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
 
     TreeDtor(&lang_ctx->tree);
 
-    fclose(lang_ctx->output_file);
+    if (lang_ctx->output_file != NULL)
+        fclose(lang_ctx->output_file);
 
 #endif /* BACKEND */
 
