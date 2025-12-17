@@ -110,44 +110,40 @@ static TreeNode_t* ParseBody(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
 
-    TreeNode_t* statement      = ParseStatement(lang_ctx);
-    TreeNode_t* next_statement = NULL;
+    TreeNode_t  dummy_root     = {};
+    TreeNode_t* last_separator = &dummy_root;
 
-    while (statement != NULL)
+    while (true)
     {
+        TreeNode_t* statement = ParseStatement(lang_ctx);
+
+        if (statement == NULL)
+            break;
+
         TreeNode_t* separator = ParseCmdSeparator(lang_ctx);
 
         if (separator == NULL)
         {
             WPRINTERR("There should be a cmd separator after statement, cur_tok_ind = %zu",
-                      lang_ctx->cur_token_index);
-
+                        lang_ctx->cur_token_index);
             PARSER_DUMP_(lang_ctx->tokens.data[lang_ctx->cur_token_index - 1],
-                         L"expected to have a separator after");
-
-            if (separator) PARSER_DUMP_(separator, L"expected to be a separator");
+                            L"expected to have a separator after");
             return NULL;
         }
 
-        next_statement = ParseStatement(lang_ctx);
+        separator->left       = statement;
+        last_separator->right = separator;
+        last_separator        = separator;
 
-        /*NOTE - to not make empty nodes with semicolons,
-                 move two next lines after if
-                 (left for compatibility with other people)
-        */
-
-        if (next_statement == NULL)
-            break;
-
-        separator->left = statement;
-        statement = separator;
-
-        statement->right = next_statement;
+        PARSER_DUMP_(separator, L"body: separator");
     }
 
-    PARSER_DUMP_(statement, L"body la finale");
+    if (dummy_root.right == NULL)
+        return NULL;
 
-    return statement;
+    PARSER_DUMP_(dummy_root.right, L"body la finale");
+
+    return dummy_root.right;
 }
 
 //------------------------------------------------------------------------------------------
@@ -232,37 +228,38 @@ static TreeNode_t* ParseFunctionBlock(LangCtx_t* lang_ctx)
 
     PARSER_DUMP_(block_begin, L"function block: begin");
 
-    TreeNode_t* statement = ParseFunctionStatement(lang_ctx);
+    TreeNode_t  dummy_root     = {};
+    TreeNode_t* last_separator = &dummy_root;
 
-    if (statement == NULL)
+    while (true)
     {
-        WPRINTERR(L"Function declaration must have atleast 1 statement");
-        return NULL;
-    }
+        TreeNode_t* statement = ParseFunctionStatement(lang_ctx);
 
-    TreeNode_t* next_statement = NULL;
+        if (statement == NULL)
+            break;
 
-    do
-    {
         TreeNode_t* separator = ParseCmdSeparator(lang_ctx);
 
         if (separator == NULL)
         {
-            WPRINTERR(L"There should be a cmd separator after function statement");
+            WPRINTERR("There should be a cmd separator after function statement, cur_tok_ind = %zu",
+                        lang_ctx->cur_token_index);
+            PARSER_DUMP_(lang_ctx->tokens.data[lang_ctx->cur_token_index - 1],
+                            L"expected to have a separator after");
             return NULL;
         }
 
-        next_statement = ParseFunctionStatement(lang_ctx);
+        separator->left       = statement;
+        last_separator->right = separator;
+        last_separator        = separator;
 
-        if (next_statement == NULL)
-            break;
-
-        separator->left = statement;
-        statement       = separator;
-
-        statement->right = next_statement;
+        PARSER_DUMP_(separator, L"function block: separator");
     }
-    while (statement != NULL); //FIXME - this check is useless or there will be SEGV 2 lines earlier
+
+    if (dummy_root.right == NULL)
+        return NULL;
+
+    PARSER_DUMP_(dummy_root.right, L"function block body");
 
     TreeNode_t* block_end = LangGetCurrentToken(lang_ctx);
 
@@ -274,10 +271,10 @@ static TreeNode_t* ParseFunctionBlock(LangCtx_t* lang_ctx)
 
     lang_ctx->cur_token_index++;
 
-    PARSER_DUMP_(block_end, L"function block: end");
-    PARSER_DUMP_(statement, L"function block statement");
+    PARSER_DUMP_(block_end,        L"function block: end");
+    PARSER_DUMP_(dummy_root.right, L"function block statement");
 
-    return statement;
+    return dummy_root.right;
 }
 
 //------------------------------------------------------------------------------------------
