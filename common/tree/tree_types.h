@@ -161,10 +161,10 @@ const TypeCase_t TYPE_CASES_TABLE[] =
     SET_TYPE_CASE_(TYPE_OP       , "OP"       , L"Mrecord", L"#000064"  , L"#C0C0FF"  , L"#000064"  , L"OPER"     ),
     SET_TYPE_CASE_(TYPE_ID       , "ID"       , L"Mrecord", L"#006400"  , L"#C0FFC0"  , L"#006400"  , L""         ),
     SET_TYPE_CASE_(TYPE_NUM      , "NUM"      , L"Mrecord", L"#990000"  , L"#FFC0C0"  , L"#990000"  , L"NUM"      ),
-    SET_TYPE_CASE_(TYPE_VAR      , "VAR"      , L"Mrecord", L"#2f8cdeff", L"#5fefffff", L"#2f8cdeff", L"VAR"      ),
-    SET_TYPE_CASE_(TYPE_VAR_DECL , "VAR_DECL" , L"Mrecord", L"#4e43ebff", L"#a37fd5ff", L"#4e43ebff", L"VAR_INIT" ),
-    SET_TYPE_CASE_(TYPE_FUNC_CALL, "FUNC_CALL", L"Mrecord", L"#8d128dff", L"#ed96d7ff", L"#8d128dff", L"FUNC"     ),
-    SET_TYPE_CASE_(TYPE_FUNC_DECL, "FUNC_DECL", L"Mrecord", L"#89224bff", L"#c84d6dff", L"#89224bff", L"FUNC_INIT")
+    SET_TYPE_CASE_(TYPE_VAR      , "VAR"      , L"Mrecord", L"#153e61ff", L"#aadce2ff", L"#153e61ff", L"VAR"      ),
+    SET_TYPE_CASE_(TYPE_VAR_DECL , "VAR_DECL" , L"Mrecord", L"#43236eff", L"#af92d6ff", L"#43236eff", L"VAR_INIT" ),
+    SET_TYPE_CASE_(TYPE_FUNC_CALL, "FUNC_CALL", L"Mrecord", L"#2e4517ff", L"#bcd2a5ff", L"#2e4517ff", L"FUNC"     ),
+    SET_TYPE_CASE_(TYPE_FUNC_DECL, "FUNC_DECL", L"Mrecord", L"#451126ff", L"#df7a93ff", L"#451126ff", L"FUNC_INIT")
 };
 
 //------------------------------------------------------------------------------------------
