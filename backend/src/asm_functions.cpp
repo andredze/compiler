@@ -45,7 +45,11 @@ static LangErr_t AssembleNumber(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_VERIFY_(node->left  == NULL);
     ASM_VERIFY_(node->right == NULL);
 
+    ASM_PRINT_(L"; number: %lg\n", node->data.value.number);
+
     ASM_PRINT_(L"PUSH %lg\n", node->data.value.number);
+
+    ASM_PRINT_(L"\n");
 
     return LANG_SUCCESS;
 }
@@ -60,6 +64,8 @@ static LangErr_t AssembleIdentifier(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_VERIFY_(IS_IDENTIFIER_(node));
     ASM_VERIFY_(node->left  == NULL);
     ASM_VERIFY_(node->right == NULL);
+
+    ASM_PRINT_(L"; identifier: %ls\n\n", lang_ctx->id_table.data[node->data.value.id_index]);
 
     ASM_PRINT_(L"PUSH %zu\n", node->data.value.id_index);
     ASM_PRINT_(L"POPR RAX\n"  );
@@ -86,6 +92,7 @@ LangErr_t AssembleCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     /*NOTE - there might be a cmd_separator with only left node
              for AST standard
     */
+
     if (!node->right)
         return LANG_SUCCESS;
 
@@ -106,18 +113,25 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 
+    ASM_PRINT_(L"; if\n");
+    ASM_PRINT_(L"; ----------------condition----------------\n\n");
+
     LangErr_t error = LANG_SUCCESS;
 
     if ((error = AssembleNode(lang_ctx, node->left)))
         return error;
 
-    ASM_PRINT_(L"PUSH 0\n");
+    ASM_PRINT_(L"PUSH 0\n\n");
     ASM_PRINT_(L"JNE :endif_%zu\n", lang_ctx->endif_labels_count);
+
+    ASM_PRINT_(L"; ----------------statement----------------\n\n");
 
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
 
     ASM_PRINT_(L":endif_%zu\n", lang_ctx->endif_labels_count);
+
+    ASM_PRINT_(L"; ------------------endif------------------\n\n");
 
     lang_ctx->endif_labels_count++;
 
@@ -137,12 +151,18 @@ LangErr_t AssembleAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_VERIFY_(node->left && IS_IDENTIFIER_(node->left));
     ASM_VERIFY_(node->right);
 
+    ASM_PRINT_(L"; assignment: %ls = ... \n\n",
+               lang_ctx->id_table.data[node->left->data.value.id_index]);
+
     LangErr_t error = LANG_SUCCESS;
 
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
 
-    ASM_PRINT_(L"PUSH %zu\n", node->data.value.id_index);
+    ASM_PRINT_(L"; identifier: %ls\n\n",
+               lang_ctx->id_table.data[node->left->data.value.id_index]);
+
+    ASM_PRINT_(L"PUSH %zu\n", node->left->data.value.id_index);
     ASM_PRINT_(L"POPR RAX\n"  );
     ASM_PRINT_(L"POPM [RAX]\n");
 
@@ -166,6 +186,8 @@ LangErr_t AssembleMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
+
+    ASM_PRINT_(L"; math operation: %ls\n\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -195,6 +217,8 @@ LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_VERIFY_(node->left == NULL);
     ASM_VERIFY_(node->right);
 
+    ASM_PRINT_(L"; output\n\n");
+
     LangErr_t error = LANG_SUCCESS;
 
     if ((error = AssembleNode(lang_ctx, node->right)))
@@ -218,6 +242,8 @@ LangErr_t AssembleInput(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     ASM_VERIFY_(node->left == NULL);
     ASM_VERIFY_(node->right && IS_IDENTIFIER_(node->right));
+
+    ASM_PRINT_(L"; input %ls\n\n", lang_ctx->id_table.data[node->right->data.value.id_index]);
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -243,6 +269,8 @@ LangErr_t AssembleHlt(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_VERIFY_(IS_OPERATOR_(node, OP_ABORT));
     ASM_VERIFY_(node->left  == NULL);
     ASM_VERIFY_(node->right == NULL);
+
+    ASM_PRINT_(L"; halt\n\n");
 
     ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
     ASM_PRINT_(L"\n");

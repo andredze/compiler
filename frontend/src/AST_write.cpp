@@ -43,7 +43,7 @@ static void ASTWriteNode(LangCtx_t* lang_ctx, const TreeNode_t* node, FILE* fp, 
 {
     assert(fp != NULL);
 
-    for (int i = 0; i < rank; i++)
+w    for (int i = 0; i < rank; i++)
         fwprintf(fp, L"\t");
 
     if (node == NULL)
