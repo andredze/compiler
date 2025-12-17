@@ -602,9 +602,13 @@ static void DumpNodeDataNumber      (NodeDumpParams_t* params, LangCtx_t* lang_c
 
 void (* const DUMP_NODE_DATA_TABLE[]) (NodeDumpParams_t* params, LangCtx_t* lang_ctx) =
 {
-    [TYPE_OP ] = DumpNodeDataOperator,
-    [TYPE_ID ] = DumpNodeDataIdentifier,
-    [TYPE_NUM] = DumpNodeDataNumber
+    [TYPE_OP       ] = DumpNodeDataOperator,
+    [TYPE_ID       ] = DumpNodeDataIdentifier,
+    [TYPE_NUM      ] = DumpNodeDataNumber,
+    [TYPE_VAR      ] = DumpNodeDataIdentifier,
+    [TYPE_VAR_DECL ] = DumpNodeDataIdentifier,
+    [TYPE_FUNC_CALL] = DumpNodeDataIdentifier,
+    [TYPE_FUNC_DECL] = DumpNodeDataIdentifier
 };
 
 //——————————————————————————————————————————————————————————————————————————————————————————

@@ -292,9 +292,6 @@ LangErr_t AssembleInput(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_VERIFY_(node->right && IS_IDENTIFIER_(node->right));
 
     ASM_PRINT_(L"; input %ls\n\n", lang_ctx->id_table.data[node->right->data.value.id_index]);
-
-    LangErr_t error = LANG_SUCCESS;
-
     ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
 
     /* get value from stack to a variable */

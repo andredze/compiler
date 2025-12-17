@@ -79,23 +79,31 @@ static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE*
     assert(data);
     assert(fp);
 
+    fwprintf(fp, L"\"%ls ", TYPE_CASES_TABLE[data->type].ast_format);
+
     switch (data->type)
     {
         case TYPE_OP:
-            fwprintf(fp, L"\"%ls\"", OP_CASES_TABLE[data->value.opcode].ast_format);
+            fwprintf(fp, L"%ls", OP_CASES_TABLE[data->value.opcode].ast_format);
             break;
 
         case TYPE_ID:
-            fwprintf(fp, L"\"%ls\"", lang_ctx->id_table.data[data->value.id_index]);
+        case TYPE_VAR:
+        case TYPE_VAR_DECL:
+        case TYPE_FUNC_CALL:
+        case TYPE_FUNC_DECL:
+            fwprintf(fp, L"%ls", lang_ctx->id_table.data[data->value.id_index]);
             break;
 
         case TYPE_NUM:
-            fwprintf(fp, L"\"%lg\"", data->value.number);
+            fwprintf(fp, L"%lg", data->value.number);
             break;
 
         default:
             return;
     }
+
+    fwprintf(fp, L"\"");
 }
 
 //------------------------------------------------------------------------------------------

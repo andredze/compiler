@@ -5,9 +5,16 @@
 
 typedef enum TokenType
 {
-    TYPE_OP   = 0,
-    TYPE_ID   = 1,
-    TYPE_NUM  = 2
+    TYPE_OP        = 0,
+    TYPE_ID        = 1,
+    TYPE_NUM       = 2,
+
+    TYPE_VAR       = 3,
+    TYPE_VAR_DECL  = 4,
+
+    TYPE_FUNC_CALL = 5,
+    TYPE_FUNC_DECL = 6
+
 } TokenType_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -27,8 +34,8 @@ typedef enum Operator
     OP_BLOCK_END            = 10,
     OP_FUNCTION_BLOCK_BEGIN = 11,
     OP_FUNCTION_BLOCK_END   = 12,
-    OP_FUNCTION_DECL_LEFT   = 13,
-    OP_FUNCTION_DECL_RIGHT  = 14,
+    OP_FUNCTION_DECL_LHS    = 13,
+    OP_FUNCTION_DECL_RHS    = 14,
     OP_FUNCTION_CALL_LHS    = 15,
     OP_FUNCTION_CALL_RHS    = 16,
     OP_PARAMS_SEPARATOR     = 17,
@@ -40,7 +47,8 @@ typedef enum Operator
     OP_POW                  = 23,
     OP_OUTPUT               = 24,
     OP_INPUT                = 25,
-    OP_ABORT                = 26
+    OP_ABORT                = 26,
+    OP_VARIABLE_DECL        = 27
 } Operator_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————

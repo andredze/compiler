@@ -79,70 +79,73 @@ printf(res);
 
 ## Грамматика в расширенной форме Бэкуса — Наура
 ```
-Program             ::= Body '\0'
+Program                ::= Body '\0'
 
-Body                ::= {Statement OperatorSeparator}*
+Body                   ::= FunctionDeclaration* Main?
 
-OperatorSeparator   ::= 'ЗАМОЛЧИ'
+FunctionDeclaration    ::= 'за' Identifier 'отомсти' FunctionParameters?
+                            FunctionBlockStatement
 
-ReturnStatement     ::= 'оставь' Expression
+FunctionParameters     ::= Identifier { 'и' Identifier }*
 
-Statement           ::= IfStatement
-                      | WhileStatement
-                      | FunctionDeclaration
-                      | Assignment
-                      | Expression
+FunctionBlockStatement ::= 'за что? за что? за что?'
+                           {FunctionStatement OperatorSeparator}+
+                           'нет нет нет нет все кончено?'
 
-FunctionDeclaration ::= 'за' Identifier 'отомсти' FunctionParameters?
-                            'за что? за что? за что?'
-                            {FunctionStatement OperatorSeparator}+
-                            'нет нет нет нет все кончено?'
+FunctionStatement      ::= Statement | ReturnStatement
 
-FunctionStatement   ::= Statement | ReturnStatement
+ReturnStatement        ::= 'оставь' Expression
 
-FunctionParameters  ::= Identifier { 'и' Identifier }*
+Main                   ::= {Statement OperatorSeparator}*
 
-IfStatement         ::= 'ты думаешь' Expression 'сможет что-то изменить'
+OperatorSeparator      ::= 'ЗАМОЛЧИ'
+
+Statement              ::= IfStatement
+                         | WhileStatement
+                         | Assignment
+                         | Expression
+
+IfStatement            ::= 'ты думаешь' Expression 'сможет что-то изменить'
                          BlockStatement
                          ElseStatement?
 
-ElseStatement       ::= 'не верь им'
+ElseStatement          ::= 'не верь им'
                          BlockStatement
 
-WhileStatement      ::=  'снова и снова'
-                         'снова и снова'
-                         'снова и снова'
-                         'снова и снова'
-                         'снова и снова'
-                         Expression
-                         BlockStatement
+WhileStatement         ::=  'снова и снова'
+                            'снова и снова'
+                            'снова и снова'
+                            'снова и снова'
+                            'снова и снова'
+                            Expression
+                            BlockStatement
 
-BlockStatement      ::= 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ'
-                         {Statement OperatorSeparator}*
-                        'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ'
+BlockStatement         ::= 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ' 'ЗАТКНИСЬ'
+                            {Statement OperatorSeparator}*
+                           'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ' 'ОНИ СМОТРЯТ'
 
-Assignment          ::= 'пересади в' Identifier Expression
+Assignment             ::= 'пересади в' Identifier Expression
 
-Expression          ::= Term   { ['нарастить на''избавить от']  Term   }*
-Term                ::= Power  { ['усилить в''расщепить на']    Power  }*
-Power               ::= Factor { 'расплодить в'                 Factor }*
+Expression             ::= Term   { ['нарастить на''избавить от']  Term   }*
+Term                   ::= Power  { ['усилить в''расщепить на']    Power  }*
+Power                  ::= Factor { 'расплодить в'                 Factor }*
 
-Factor              ::= '(' Expression ')'
-                      | UnaryOperatorCall
-                      | FunctionCall
-                      | Number
-                      | Identifier
+Factor                 ::= '(' Expression ')'
+                         | UnaryOperatorCall
+                         | FunctionCall
+                         | Number
+                         | Identifier
 
-UnaryOperatorCall   ::= UnaryOperator Expression
+UnaryOperatorCall      ::= UnaryOperator Expression
 
-UnaryOperator       ::= 'заставь их услышать' | 'скажи мне кто ты,'
+UnaryOperator          ::= 'заставь их услышать' | 'скажи мне кто ты,'
 
-FunctionCall        ::= 'ритуал: во имя' Identifier 'принеси в жертву' FunctionArguments?
+FunctionCall           ::= 'ритуал: во имя' Identifier 'принеси в жертву' FunctionArguments?
 
-FunctionArguments   ::= Expression { 'и' Expression }*
+FunctionArguments      ::= Expression { 'и' Expression }*
 
-Identifier          ::= ['A'-'Z''a'-'z''А'-'Я''а'-'я''_']['A'-'Z''a'-'z''А'-'Я''а'-'я''_''0'-'9']+
-Number              ::= ['0'-'9']+ | ['0'-'9']+ '.' ['0'-'9']+
+Identifier             ::= ['A'-'Z''a'-'z''А'-'Я''а'-'я''_']['A'-'Z''a'-'z''А'-'Я''а'-'я''_''0'-'9']+
+Number                 ::= ['0'-'9']+ | ['0'-'9']+ '.' ['0'-'9']+
 
 ```
 

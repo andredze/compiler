@@ -13,9 +13,11 @@
 
 //------------------------------------------------------------------------------------------
 
+#define IS_TYPE_(node, _type)       ((node)->data.type == (_type))
 #define IS_OPERATOR_(node, op_code) ((node)->data.type == TYPE_OP && (node)->data.value.opcode == (op_code))
 #define IS_IDENTIFIER_(node)        ((node)->data.type == TYPE_ID )
 #define IS_NUMBER_(node)            ((node)->data.type == TYPE_NUM)
+#define HAS_OPCODE_(node, op_code)  ((node)->data.value.opcode == (op_code))
 
 //------------------------------------------------------------------------------------------
 
@@ -62,9 +64,11 @@
 #undef IDENTIFIER_
 #undef NUMBER_
 
+#undef IS_TYPE_
 #undef IS_OPERATOR_
 #undef IS_IDENTIFIER_
 #undef IS_NUMBER_
+#undef HAS_OPCODE_
 
 #undef ISVALUE_
 
@@ -77,6 +81,7 @@
 #undef UNARY_
 
 #undef ASM_PRINT_
+#undef ASM_VERIFY_
 
 //------------------------------------------------------------------------------------------
 

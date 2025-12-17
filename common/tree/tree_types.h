@@ -144,20 +144,27 @@ typedef struct TypeCase
     const wchar_t* fillcolor;
     const wchar_t* fontcolor;
 
+    const wchar_t* ast_format;
+
 } TypeCase_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define SET_TYPE_CASE_(code,   name,   shape,   color,   fillcolor,   fontcolor) \
-        [(code)]   = {(code), (name), (shape), (color), (fillcolor), (fontcolor)}
+#define SET_TYPE_CASE_(code,   name,   shape,   color,   fillcolor,   fontcolor,   ast_format) \
+        [(code)]   = {(code), (name), (shape), (color), (fillcolor), (fontcolor), (ast_format)}
 
 //------------------------------------------------------------------------------------------
 
 const TypeCase_t TYPE_CASES_TABLE[] =
 {
-    SET_TYPE_CASE_(TYPE_OP , "OP" , L"Mrecord", L"#000064", L"#C0C0FF", L"#000064"),
-    SET_TYPE_CASE_(TYPE_ID , "ID" , L"Mrecord", L"#006400", L"#C0FFC0", L"#006400"),
-    SET_TYPE_CASE_(TYPE_NUM, "NUM", L"Mrecord", L"#990000", L"#FFC0C0", L"#990000")
+//                      code        dump_name   dump_shape  boundaries_color fill_color      font_color    ast_format
+    SET_TYPE_CASE_(TYPE_OP       , "OP"       , L"Mrecord", L"#000064"  , L"#C0C0FF"  , L"#000064"  , L"OPER"     ),
+    SET_TYPE_CASE_(TYPE_ID       , "ID"       , L"Mrecord", L"#006400"  , L"#C0FFC0"  , L"#006400"  , L""         ),
+    SET_TYPE_CASE_(TYPE_NUM      , "NUM"      , L"Mrecord", L"#990000"  , L"#FFC0C0"  , L"#990000"  , L"NUM"      ),
+    SET_TYPE_CASE_(TYPE_VAR      , "VAR"      , L"Mrecord", L"#2f8cdeff", L"#5fefffff", L"#2f8cdeff", L"VAR"      ),
+    SET_TYPE_CASE_(TYPE_VAR_DECL , "VAR_DECL" , L"Mrecord", L"#4e43ebff", L"#a37fd5ff", L"#4e43ebff", L"VAR_INIT" ),
+    SET_TYPE_CASE_(TYPE_FUNC_CALL, "FUNC_CALL", L"Mrecord", L"#8d128dff", L"#ed96d7ff", L"#8d128dff", L"FUNC"     ),
+    SET_TYPE_CASE_(TYPE_FUNC_DECL, "FUNC_DECL", L"Mrecord", L"#89224bff", L"#c84d6dff", L"#89224bff", L"FUNC_INIT")
 };
 
 //------------------------------------------------------------------------------------------

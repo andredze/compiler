@@ -80,12 +80,12 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_BLOCK_END           ,   4,   L"ОНИ СМОТРЯТ"                 , L""               , NULL                   , L""    ), // сжимать все пробелы до 1 либо совмещать 2 токена в 1 на этапе лексики
     SET_OP_CASE_(OP_FUNCTION_BLOCK_BEGIN,   3,   L"за что?"                     , L""               , NULL                   , L""    ),
     SET_OP_CASE_(OP_FUNCTION_BLOCK_END  ,   1,   L"нет нет нет нет все кончено?", L""               , NULL                   , L""    ),
-    SET_OP_CASE_(OP_FUNCTION_DECL_LEFT  ,   1,   L"за"                          , L""               , NULL                   , L""    ),
-    SET_OP_CASE_(OP_FUNCTION_DECL_RIGHT ,   1,   L"отомсти"                     , L""               , NULL                   , L""    ),
+    SET_OP_CASE_(OP_FUNCTION_DECL_LHS   ,   1,   L"за"                          , L""               , NULL                   , L""    ),
+    SET_OP_CASE_(OP_FUNCTION_DECL_RHS   ,   1,   L"отомсти"                     , L""               , NULL                   , L""    ),
     SET_OP_CASE_(OP_FUNCTION_CALL_LHS   ,   1,   L"ритуал: во имя"              , L""               , NULL                   , L"CALL"),
     SET_OP_CASE_(OP_FUNCTION_CALL_RHS   ,   1,   L"принеси в жертву"            , L""               , NULL                   , L""    ),
     SET_OP_CASE_(OP_PARAMS_SEPARATOR    ,   1,   L"и"                           , L""               , NULL                   , L""    ),
-    SET_OP_CASE_(OP_RETURN              ,   1,   L"оставь"                      , L""               , NULL                   , L"RET" ),
+    SET_OP_CASE_(OP_RETURN              ,   1,   L"оставь"                      , L"_COMMA_"        , NULL                   , L"RET" ),
     SET_OP_CASE_(OP_ADD                 ,   1,   L"нарастить на"                , L"_MATH_ADD_"     , AssembleMathOperation  , L"ADD" ),
     SET_OP_CASE_(OP_SUB                 ,   1,   L"избавить от"                 , L"_MATH_SUB_"     , AssembleMathOperation  , L"SUB" ),
     SET_OP_CASE_(OP_MUL                 ,   1,   L"усилить в"                   , L"_MATH_MUL_"     , AssembleMathOperation  , L"MUL" ),
@@ -93,7 +93,8 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_POW                 ,   1,   L"расплодить в"                , L"_MATH_POW_"     , AssembleMathOperation  , L"POW" ),
     SET_OP_CASE_(OP_OUTPUT              ,   1,   L"заставь их услышать"         , L"_OUTPUT_"       , AssembleUnaryOperation , L"OUT" ),
     SET_OP_CASE_(OP_INPUT               ,   1,   L"скажи мне кто ты,"           , L"_INPUT_"        , AssembleInput          , L"IN"  ),
-    SET_OP_CASE_(OP_ABORT               ,   1,   L"аборт"                       , L"_ABORT_"        , AssembleHlt            , L"HLT" )
+    SET_OP_CASE_(OP_ABORT               ,   1,   L"аборт"                       , L"_ABORT_"        , AssembleHlt            , L"HLT" ),
+    SET_OP_CASE_(OP_VARIABLE_DECL       ,   1,   L"голос в голове"              , L""               , NULL                   , L"HLT" )
 };
 
 //------------------------------------------------------------------------------------------
