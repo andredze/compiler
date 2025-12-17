@@ -43,31 +43,31 @@ static void ASTWriteNode(LangCtx_t* lang_ctx, const TreeNode_t* node, FILE* fp, 
 {
     assert(fp != NULL);
 
-    if (node == NULL)
-    {
-        fwprintf(fp, L" nil");
-        return;
-    }
-
     for (int i = 0; i < rank; i++)
         fwprintf(fp, L"\t");
+
+    if (node == NULL)
+    {
+        fwprintf(fp, L"nil\n");
+        return;
+    }
 
     fwprintf(fp, L"( ");
     ASTWriteNodeData(lang_ctx, &node->data, fp);
 
-    if (node->left != NULL)
-        fwprintf(fp, L"\n");
+    if (node->left == NULL && node->right == NULL)
+    {
+        fwprintf(fp, L" nil nil )\n");
+        return;
+    }
+
+    fwprintf(fp, L"\n");
 
     ASTWriteNode(lang_ctx, node->left , fp, rank + 1);
     ASTWriteNode(lang_ctx, node->right, fp, rank + 1);
 
-    if (node->left != NULL)
-    {
-        for (int i = 0; i < rank; i++)
-            fwprintf(fp, L"\t");
-    }
-    else
-        fwprintf(fp, L" ");
+    for (int i = 0; i < rank; i++)
+        fwprintf(fp, L"\t");
 
     fwprintf(fp, L")\n");
 }

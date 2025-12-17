@@ -146,7 +146,7 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
 #define PUSH_TOKEN_(lang_ctx, __token)                                                          \
         TreeNode_t* _token = __token;                                                           \
         TreeDumpInfo_t _dump_info_ = {TREE_SUCCESS, __func__, __FILE__, __LINE__};              \
-        GraphDump(lang_ctx, (_token), &_dump_info_, DUMP_FULL, L"pushing token %p\n", (_token)); \
+        GraphDump(lang_ctx, (_token), &_dump_info_, DUMP_SHORT, L"pushing token %p\n", (_token)); \
                                                                                                 \
         WDPRINTF(L"Pushing token %p\n", (_token));                                              \
                                                                                                 \

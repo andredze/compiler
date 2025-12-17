@@ -155,9 +155,9 @@ typedef struct TypeCase
 
 const TypeCase_t TYPE_CASES_TABLE[] =
 {
-    SET_TYPE_CASE_(TYPE_OP , "OP" , L"rectangle", L"#000064", L"#C0C0FF", L"#000064"),
-    SET_TYPE_CASE_(TYPE_ID , "ID" , L"octagon"  , L"#006400", L"#C0FFC0", L"#006400"),
-    SET_TYPE_CASE_(TYPE_NUM, "NUM", L"ellipse"  , L"#990000", L"#FFC0C0", L"#990000")
+    SET_TYPE_CASE_(TYPE_OP , "OP" , L"Mrecord", L"#000064", L"#C0C0FF", L"#000064"),
+    SET_TYPE_CASE_(TYPE_ID , "ID" , L"Mrecord", L"#006400", L"#C0FFC0", L"#006400"),
+    SET_TYPE_CASE_(TYPE_NUM, "NUM", L"Mrecord", L"#990000", L"#FFC0C0", L"#990000")
 };
 
 //------------------------------------------------------------------------------------------

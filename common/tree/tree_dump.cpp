@@ -684,7 +684,7 @@ static void DumpDefaultTreeNode(NodeDumpParams_t* params, FILE* fp)
 
     if (params->dump_type == DUMP_SHORT)
     {
-        swprintf(params->label, sizeof(params->label), L"%ls", params->str_data);
+        swprintf(params->label, sizeof(params->label), L"{ %ls | { LEFT | RIGHT }}", params->str_data);
     }
     else if (DumpAllowsRecordLabel(params))
     {

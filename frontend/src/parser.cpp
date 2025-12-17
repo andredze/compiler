@@ -9,7 +9,7 @@
 
 #define PARSER_DUMP_(node, fmt, ...)                                              \
         BEGIN                                                                     \
-        GRAPH_DUMP_(lang_ctx, (node), DUMP_FULL, fmt, ##__VA_ARGS__);             \
+        GRAPH_DUMP_(lang_ctx, (node), DUMP_SHORT, fmt, ##__VA_ARGS__);            \
         if (node)                                                                 \
             wfcprintf(stderr, PURPLE, L"dump %-30ls | %5p | %20s | type = %-3s |" \
                                       L"l = %-15p | r = %-15p      \n",           \
@@ -117,11 +117,11 @@ static TreeNode_t* ParseBody(LangCtx_t* lang_ctx)
                  (left for compatibility with other people)
         */
 
-        separator->left = statement;
-        statement = separator;
-
         if (next_statement == NULL)
             break;
+
+        separator->left = statement;
+        statement = separator;
 
         statement->right = next_statement;
     }
@@ -254,16 +254,16 @@ static TreeNode_t* ParseBlockStatement(LangCtx_t* lang_ctx)
 
         next_statement = ParseStatement(lang_ctx);
 
-        /*NOTE - to not make empty nodes with semicolons,
-                 move two next lines after if
-                 (left for compatibility with other people)
-        */
-
-        separator->left = statement;
-        statement = separator;
+        // /*NOTE - to not make empty nodes with semicolons,
+        //          move two next lines after if
+        //          (left for compatibility with other people)
+        // */
 
         if (next_statement == NULL)
             break;
+
+        separator->left = statement;
+        statement = separator;
 
         statement->right = next_statement;
     }
