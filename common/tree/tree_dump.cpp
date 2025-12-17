@@ -539,7 +539,7 @@ static void ASTDumpNodeWithEdges(TreeNode_t* node,     FILE*          fp,
                                  LangCtx_t*  lang_ctx, NodeDumpType_t dump_type);
 
 static void DumpNode         (NodeDumpParams_t* params, FILE* fp);
-static void DumpEdge         (EdgeDumpParams_t* params, FILE* fp);
+static void DumpEdge         (EdgeDumpParams_t* params, FILE* fp, int side);
 static void ASTDumpSingleNode(NodeDumpParams_t* params, FILE* fp, LangCtx_t* lang_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -583,12 +583,12 @@ static void ASTDumpNodeWithEdges(TreeNode_t* node,     FILE*          fp,
     if (node->left != NULL)
     {
         swprintf(edge_params.node2, sizeof(edge_params.node2), L"node%p", node->left);
-        DumpEdge(&edge_params, fp);
+        DumpEdge(&edge_params, fp, 0);
     }
     if (node->right != NULL)
     {
         swprintf(edge_params.node2, sizeof(edge_params.node2), L"node%p", node->right);
-        DumpEdge(&edge_params, fp);
+        DumpEdge(&edge_params, fp, 1);
     }
 }
 
@@ -688,19 +688,19 @@ static void DumpDefaultTreeNode(NodeDumpParams_t* params, FILE* fp)
 
     if (params->dump_type == DUMP_SHORT)
     {
-        swprintf(params->label, sizeof(params->label), L"{ %ls | { LEFT | RIGHT }}", params->str_data);
+        swprintf(params->label, sizeof(params->label), L"{ %ls | { <left> LEFT | <right> RIGHT }}", params->str_data);
     }
     else if (DumpAllowsRecordLabel(params))
     {
         swprintf(params->label, sizeof(params->label),
-                 L"{ %p | %ls | parent = %p | { left = %p | right = %p }}",
-                 node, params->str_data, node->parent, node->left, node->right);
+                 L"{ %p | %ls | { <left> left = %p | <right> right = %p }}",
+                 node, params->str_data, node->left, node->right);
     }
     else
     {
         swprintf(params->label, sizeof(params->label),
-                 L"%p \\n %ls \\n parent = %p \\n left = %p \\n right = %p",
-                 node, params->str_data, node->parent, node->left, node->right);
+                 L"%p \\n %ls \\n left = %p \\n right = %p",
+                 node, params->str_data, node->left, node->right);
     }
 
     DumpNode(params, fp);
@@ -748,12 +748,16 @@ static void DumpNode(NodeDumpParams_t* params, FILE* fp)
 
 //------------------------------------------------------------------------------------------
 
-static void DumpEdge(EdgeDumpParams_t* params, FILE* fp)
+// left side = 0; right side = 1;
+static void DumpEdge(EdgeDumpParams_t* params, FILE* fp, int side)
 {
     assert(params != NULL);
     assert(fp     != NULL);
 
-    fwprintf(fp, L"\t%ls->%ls", params->node1, params->node2);
+    if (side == 0) // left
+        fwprintf(fp, L"\t%ls:left->%ls", params->node1, params->node2);
+    else
+        fwprintf(fp, L"\t%ls:right->%ls", params->node1, params->node2);
 
     bool is_first_arg = true;
 
