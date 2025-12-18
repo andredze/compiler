@@ -72,15 +72,19 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
 
     TreeDtor(&lang_ctx->tree);
 
-    if (lang_ctx->output_file != NULL)
-        fclose(lang_ctx->output_file);
-
     LangIdTableDtor  (&lang_ctx->main_id_table);
     // LangIdTableDtor  (&lang_ctx->func_id_table);
 
 #endif /* BACKEND */
 
-    LangNamesPoolDtor(&lang_ctx->names_pool   );
+#ifdef REVERSE
+    TreeDtor(&lang_ctx->tree);
+#endif /* REVERSE */
+
+    if (lang_ctx->output_file != NULL)
+        fclose(lang_ctx->output_file);
+
+    LangNamesPoolDtor(&lang_ctx->names_pool);
 
     free(lang_ctx->buffer);
 
@@ -114,6 +118,32 @@ LangErr_t LangOpenAsmFile(LangCtx_t* lang_ctx)
 #ifdef BACKEND
     lang_ctx->output_file = asm_fp;
 #endif /* BACKEND */
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+LangErr_t LangOpenReverseFile(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    char src_file_path[MAX_FILE_NAME_LEN];
+
+    snprintf(src_file_path, sizeof(src_file_path), "reversed/%s.psy", lang_ctx->ast_file_name);
+
+    WDPRINTF(L"Reversed code file name: %s\n", lang_ctx->ast_file_name);
+    WDPRINTF(L"Opening file %s\n\n", src_file_path);
+
+    FILE* src_fp = fopen(src_file_path, "w");
+
+    if (src_fp == NULL)
+    {
+        WPRINTERR(L"Failed opening file %s", src_file_path);
+        return LANG_FILE_ERROR;
+    }
+
+    lang_ctx->output_file = src_fp;
 
     return LANG_SUCCESS;
 }

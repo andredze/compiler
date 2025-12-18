@@ -74,8 +74,8 @@ typedef struct LangCtx
 
     size_t        cur_token_index; // for parser rename
 
-#ifdef BACKEND
     FILE*         output_file;
+#ifdef BACKEND
     size_t        endif_labels_count;
     size_t        while_labels_count;
 
@@ -91,6 +91,12 @@ typedef struct LangCtx
     bool          assembling_args;
 
 #endif /* BACKEND */
+
+#ifdef REVERSE
+
+    size_t        tabs;
+
+#endif /* REVERSE */
 
 } LangCtx_t;
 
@@ -110,6 +116,7 @@ typedef enum LangErr
     LANG_BACKEND_AST_SYNTAX_ERROR,
     LANG_UNKNOWN_TOKEN_TYPE,
     LANG_UNASSEMBLE_OPERATOR,
+    LANG_REVERSEBLE_OPERATOR,
     LANG_VAR_REDECLARATION,
     LANG_VAR_NOT_DECLARED,
     LANG_FUNC_DECL_IN_FUNC,

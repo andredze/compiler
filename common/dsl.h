@@ -42,6 +42,26 @@
 
 //------------------------------------------------------------------------------------------
 
+#define SRC_PRINT_TABS_()                                                \
+        BEGIN                                                            \
+        fwprintf(lang_ctx->output_file, L"%*s", 4*lang_ctx->tabs, L" "); \
+        END
+
+#define SRC_PRINT_(...)                                                  \
+        BEGIN                                                            \
+        fwprintf(lang_ctx->output_file, ##__VA_ARGS__);                  \
+        END
+
+#define SRC_PRINT_ID_(node__)                                                   \
+        BEGIN                                                                   \
+        SRC_PRINT_(L"%ls", lang_ctx->names_pool.data[(node__)->data.value.id]); \
+        END
+
+#define SRC_PRINT_OP_(opcode_)                              \
+        BEGIN                                               \
+        SRC_PRINT_(L"%ls", OP_CASES_TABLE[(opcode_)].name); \
+        END
+
 #define ASM_PRINT_(...)                                 \
         BEGIN                                           \
         fwprintf(lang_ctx->output_file, ##__VA_ARGS__); \
@@ -86,6 +106,10 @@
 #undef DIV_
 #undef POW_
 #undef UNARY_
+
+#undef SRC_PRINT_
+#undef SRC_PRINT_ID_
+#undef SRC_PRINT_OP_
 
 #undef ASM_PRINT_
 #undef ASM_VERIFY_

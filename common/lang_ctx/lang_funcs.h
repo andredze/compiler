@@ -15,6 +15,8 @@ void        LangCtxDtor           (LangCtx_t* lang_ctx);
 
 LangErr_t   LangOpenAsmFile       (LangCtx_t* lang_ctx);
 
+LangErr_t   LangOpenReverseFile   (LangCtx_t* lang_ctx);
+
 //------------------------------------------------------------------------------------------
 
 LangErr_t LangNamesPoolCtor       (NamesPool_t* names_pool);
