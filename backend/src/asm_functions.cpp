@@ -516,6 +516,8 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleCondition(lang_ctx, node->left)))
         return error;
 
+    ASM_PRINT_(L" :endif_%zu\n", lang_ctx->endif_labels_count);
+
     ASM_PRINT_(L"; ----------------statement----------------\n\n");
 
     if ((error = AssembleNode(lang_ctx, node->right)))
