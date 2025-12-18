@@ -387,11 +387,11 @@ LangErr_t AssembleFunctionArguments(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     if (!IS_OPERATOR_(node->left, OP_PARAMS_SEPARATOR))
     {
-        ASM_PRINT_(L"; rsp++\n");
-        ASM_PRINT_(L"PUSHR RHX\n");
-        ASM_PRINT_(L"PUSH 1\n");
-        ASM_PRINT_(L"ADD\n");
-        ASM_PRINT_(L"POPR RHX\n");
+        // ASM_PRINT_(L"; rsp++\n");
+        // ASM_PRINT_(L"PUSHR RHX\n");
+        // ASM_PRINT_(L"PUSH 1\n");
+        // ASM_PRINT_(L"ADD\n");
+        // ASM_PRINT_(L"POPR RHX\n");
 
         ASM_PRINT_(L"POPM [RHX]\n\n");
         // ASM_PRINT_(L"POPR RBX\n");
@@ -429,7 +429,13 @@ LangErr_t AssembleReturn(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
 
+    ASM_PRINT_(L"; set rsp (RHX) to current rbp (RGX)\n");
+    ASM_PRINT_(L"PUSHR RGX\n");
+    ASM_PRINT_(L"POPR RHX\n\n");
     ASM_PRINT_(L"POPR RAX ; put return value in RAX\n");
+    ASM_PRINT_(L"; get previous rbp (RGX) from stack\n");
+    ASM_PRINT_(L"POPR RGX\n\n");
+
     ASM_PRINT_(L"RET\n");
     ASM_PRINT_(L"\n");
 
