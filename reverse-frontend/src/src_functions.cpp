@@ -129,6 +129,7 @@ LangErr_t SrcUnaryOperator(LangCtx_t* lang_ctx, TreeNode_t* node)
     SRC_PRINT_(L" ");
 
     SRC_PRINT_OP_(OP_CMD_SEPARATOR);
+    SRC_PRINT_(L"\n");
 
     return LANG_SUCCESS;
 }
@@ -418,6 +419,10 @@ static LangErr_t SrcFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
     SRC_PRINT_(L" ");
 
     SRC_PRINT_OP_(OP_FUNCTION_CALL_RHS);
+    SRC_PRINT_(L" ");
+
+    if (node->left)
+        SrcNode(lang_ctx, node->left);
     SRC_PRINT_(L" ");
 
     return LANG_SUCCESS;
