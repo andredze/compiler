@@ -13,7 +13,7 @@ typedef enum TokenType
     TYPE_VAR_DECL  = 4,
 
     TYPE_FUNC_CALL = 5,
-    
+
     TYPE_FUNC_DECL = 6
 
 } TokenType_t;
@@ -49,7 +49,10 @@ typedef enum Operator
     OP_OUTPUT               = 24,
     OP_INPUT                = 25,
     OP_ABORT                = 26,
-    OP_VARIABLE_DECL        = 27
+    OP_VARIABLE_DECL        = 27,
+    OP_EQUAL                = 28,
+    OP_BIGGER               = 29,
+    OP_SMALLER              = 30
 } Operator_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————

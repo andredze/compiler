@@ -40,7 +40,7 @@ addr	cmd			code	value
 [0069]	PUSHM [RBX] 	22  	0   
 [0070]	SUB       	7   
 [0072]	PUSH 0    	1   	0   
-[0074]	JE :while_end_0	18  	0   
+[0074]	JBE :while_end_0	15  	0   
 [0076]	PUSHR RGX 	20  	0   
 [0078]	PUSH 2    	1   	2   
 [0079]	ADD       	6   

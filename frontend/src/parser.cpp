@@ -443,6 +443,10 @@ static TreeNode_t* ParseReturn(LangCtx_t* lang_ctx)
 
 //------------------------------------------------------------------------------------------
 
+static TreeNode_t* ParseCondition(LangCtx_t* lang_ctx);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 static TreeNode_t* ParseIfStatement(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
@@ -456,11 +460,11 @@ static TreeNode_t* ParseIfStatement(LangCtx_t* lang_ctx)
 
     PARSER_DUMP_(if_lhs, L"if_lhs");
 
-    TreeNode_t* condition = ParseExpression(lang_ctx);
+    TreeNode_t* condition = ParseCondition(lang_ctx);
 
     if (condition == NULL)
     {
-        WPRINTERR("There should be an expression inside if");
+        WPRINTERR("There should be a condition inside if");
         return NULL;
     }
 
@@ -511,11 +515,11 @@ static TreeNode_t* ParseWhileStatement(LangCtx_t* lang_ctx)
 
     PARSER_DUMP_(while_token, L"while");
 
-    TreeNode_t* condition = ParseExpression(lang_ctx);
+    TreeNode_t* condition = ParseCondition(lang_ctx);
 
     if (condition == NULL)
     {
-        WPRINTERR("There should be an expression inside if");
+        WPRINTERR("Expected condition inside while");
         return NULL;
     }
 
@@ -537,6 +541,52 @@ static TreeNode_t* ParseWhileStatement(LangCtx_t* lang_ctx)
     PARSER_DUMP_(while_token, L"while finale");
 
     return while_token;
+}
+
+//------------------------------------------------------------------------------------------
+
+static TreeNode_t* ParseCondition(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    TreeNode_t* lhs = ParseExpression(lang_ctx);
+
+    if (lhs == NULL)
+        return NULL;
+
+    PARSER_DUMP_(lhs, L"condition: lhs");
+
+    TreeNode_t* comp = LangGetCurrentToken(lang_ctx);
+
+    if (comp == NULL || !IS_TYPE_(comp, TYPE_OP) ||
+        !(HAS_OPCODE_(comp, OP_EQUAL  ) ||
+          HAS_OPCODE_(comp, OP_BIGGER ) ||
+          HAS_OPCODE_(comp, OP_SMALLER)))
+    {
+        WPRINTERR("Expected comparison sign in condition");
+        return NULL;
+    }
+
+    PARSER_DUMP_(comp, L"condition: comp sign");
+
+    lang_ctx->cur_token_index++;
+
+    TreeNode_t* rhs = ParseExpression(lang_ctx);
+
+    if (rhs == NULL)
+    {
+        WPRINTERR("Expected second expression after sign in condition");
+        return NULL;
+    }
+
+    PARSER_DUMP_(rhs, L"condition: rhs");
+
+    comp->left  = lhs;
+    comp->right = rhs;
+
+    PARSER_DUMP_(comp, L"condition finale");
+
+    return comp;
 }
 
 //------------------------------------------------------------------------------------------

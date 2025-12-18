@@ -96,7 +96,10 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_OUTPUT              ,   1,   L"заставь их услышать"         , L"_OUTPUT_"       , AssembleUnaryOperation , L"OUT" ),
     SET_OP_CASE_(OP_INPUT               ,   1,   L"скажи мне кто ты,"           , L"_INPUT_"        , AssembleInput          , L"IN"  ),
     SET_OP_CASE_(OP_ABORT               ,   1,   L"аборт"                       , L"_ABORT_"        , AssembleHlt            , L"HLT" ),
-    SET_OP_CASE_(OP_VARIABLE_DECL       ,   1,   L"голос в голове"              , L""               , NULL                   , L""    )
+    SET_OP_CASE_(OP_VARIABLE_DECL       ,   1,   L"голос в голове"              , L""               , NULL                   , L""    ),
+    SET_OP_CASE_(OP_EQUAL               ,   1,   L"такой же как"                , L"_LOG_EQUAL_"    , NULL                   , L"JNE" ),
+    SET_OP_CASE_(OP_BIGGER              ,   1,   L"больше"                      , L"_LOG_MORE_"     , NULL                   , L"JBE" ),
+    SET_OP_CASE_(OP_SMALLER             ,   1,   L"меньше"                      , L"_KIG_LESS_"     , NULL                   , L"JAE" )
 };
 
 //------------------------------------------------------------------------------------------

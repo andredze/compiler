@@ -495,6 +495,10 @@ LangErr_t AssembleCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 
 //------------------------------------------------------------------------------------------
 
+static LangErr_t AssembleCondition(LangCtx_t* lang_ctx, TreeNode_t* node);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
     assert(lang_ctx);
@@ -509,11 +513,8 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     LangErr_t error = LANG_SUCCESS;
 
-    if ((error = AssembleNode(lang_ctx, node->left)))
+    if ((error = AssembleCondition(lang_ctx, node->left)))
         return error;
-
-    ASM_PRINT_(L"PUSH 0\n\n");
-    ASM_PRINT_(L"JE :endif_%zu\n", lang_ctx->endif_labels_count);
 
     ASM_PRINT_(L"; ----------------statement----------------\n\n");
 
@@ -549,11 +550,10 @@ LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     LangErr_t error = LANG_SUCCESS;
 
-    if ((error = AssembleNode(lang_ctx, node->left)))
+    if ((error = AssembleCondition(lang_ctx, node->left)))
         return error;
 
-    ASM_PRINT_(L"PUSH 0\n\n");
-    ASM_PRINT_(L"JE :while_end_%zu\n", lang_ctx->while_labels_count);
+    ASM_PRINT_(L" :while_end_%zu\n", lang_ctx->while_labels_count);
 
     ASM_PRINT_(L"; ----------------statement----------------\n\n");
 
@@ -568,6 +568,30 @@ LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     lang_ctx->while_labels_count++;
 
     ASM_PRINT_(L"\n");
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+static LangErr_t AssembleCondition(LangCtx_t* lang_ctx, TreeNode_t* node)
+{
+    assert(lang_ctx);
+    assert(node);
+
+    ASM_VERIFY_(IS_TYPE_(node, TYPE_OP));
+    ASM_VERIFY_(node->left );
+    ASM_VERIFY_(node->right);
+
+    LangErr_t error = LANG_SUCCESS;
+
+    if ((error = AssembleNode(lang_ctx, node->left)))
+        return error;
+
+    if ((error = AssembleNode(lang_ctx, node->right)))
+        return error;
+
+    ASM_PRINT_(L"%ls", OP_CASES_TABLE[node->data.value.opcode].asm_name);
 
     return LANG_SUCCESS;
 }

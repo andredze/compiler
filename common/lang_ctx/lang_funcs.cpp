@@ -29,9 +29,6 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 
 #ifdef BACKEND
 
-    lang_ctx->rbp = 0;
-    lang_ctx->rsp = 0;
-
     if ((error = LangIdTableCtor(&lang_ctx->main_id_table)))
         return error;
 
