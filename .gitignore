@@ -12,6 +12,8 @@ example.cpp
 *.asm
 *.bin
 
+*.lst
+
 back
 front
 
