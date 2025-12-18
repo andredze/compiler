@@ -17,7 +17,7 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path)
 
     if (fp == NULL)
     {
-        WPRINTERR("Error with opening file: %s", ast_file_path);
+        WPRINTERR(L"Error with opening file: %s", ast_file_path);
         return LANG_FILE_ERROR;
     }
 
