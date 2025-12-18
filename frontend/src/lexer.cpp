@@ -238,7 +238,7 @@ static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
     assert(do_continue);
     assert(lang_ctx);
 
-    if (!isdigit(*lang_ctx->cur_symbol_ptr))
+    if ((*lang_ctx->cur_symbol_ptr != L'-') && !isdigit(*lang_ctx->cur_symbol_ptr))
         return LANG_SUCCESS;
 
     *do_continue = true;

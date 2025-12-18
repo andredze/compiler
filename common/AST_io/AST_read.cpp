@@ -234,7 +234,7 @@ static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data)
     assert(string_data != NULL);
     assert(node_data   != NULL);
 
-    if (!iswdigit(string_data[0]))
+    if (string_data[0] != L'-' && !iswdigit(string_data[0]))
     {
         WPRINTERR("Not a number in AST with type number");
         return LANG_INVALID_AST_INPUT;

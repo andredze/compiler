@@ -1129,6 +1129,7 @@ static TreeNode_t* ParseUnaryOperator(LangCtx_t* lang_ctx)
 
     if ((cur_token->data.value.opcode == OP_OUTPUT) |
         (cur_token->data.value.opcode == OP_INPUT ) |
+        (cur_token->data.value.opcode == OP_SQRT  ) |
         (cur_token->data.value.opcode == OP_RETURN))
     {
         PARSER_DUMP_(cur_token, L"unary operator");

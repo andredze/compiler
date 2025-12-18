@@ -666,7 +666,8 @@ LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(node);
 
     ASM_VERIFY_(IS_OPERATOR_(node, OP_INPUT ) ||
-                IS_OPERATOR_(node, OP_OUTPUT));
+                IS_OPERATOR_(node, OP_OUTPUT) ||
+                IS_OPERATOR_(node, OP_SQRT));
 
     ASM_VERIFY_(node->left == NULL);
     ASM_VERIFY_(node->right);
