@@ -28,6 +28,8 @@ typedef struct IdData
 
     size_t    addr;
 
+    size_t    n_params;
+
 } IdData_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -68,9 +70,6 @@ typedef struct LangCtx
 
     NamesPool_t   names_pool;
 
-    IdTable_t     main_id_table;
-    IdTable_t     func_id_table;
-
     TreeDebugData debug;
 
     size_t        cur_token_index; // for parser rename
@@ -79,6 +78,17 @@ typedef struct LangCtx
     FILE*         output_file;
     size_t        endif_labels_count;
     size_t        while_labels_count;
+
+    IdTable_t     main_id_table;
+    IdTable_t     func_id_table;
+
+    bool          is_in_function;
+
+    size_t        cur_addr;
+
+    size_t        params_count;
+
+    bool          assembling_args;
 #endif /* BACKEND */
 
 } LangCtx_t;
@@ -98,7 +108,14 @@ typedef enum LangErr
     LANG_INVALID_AST_INPUT,
     LANG_BACKEND_AST_SYNTAX_ERROR,
     LANG_UNKNOWN_TOKEN_TYPE,
-    LANG_UNASSEMBLE_OPERATOR
+    LANG_UNASSEMBLE_OPERATOR,
+    LANG_VAR_REDECLARATION,
+    LANG_VAR_NOT_DECLARED,
+    LANG_FUNC_DECL_IN_FUNC,
+    LANG_FUNC_REDECLARATION,
+    LANG_FUNC_NOT_DECLARED,
+    LANG_FUNC_USED_AS_VAR,
+    LANG_WRONG_ARGS_COUNT
 
 } LangErr_t;
 

@@ -27,8 +27,8 @@ int main(int argc, char* argv[])
         if (LangOpenAsmFile(&lang_ctx))
             break;
 
-        // if (AssembleProgram(&lang_ctx))
-        //     break;
+        if (AssembleProgram(&lang_ctx))
+            break;
 
     } while (0);
 

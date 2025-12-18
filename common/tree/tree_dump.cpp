@@ -648,21 +648,11 @@ static void DumpNodeDataIdentifier(NodeDumpParams_t* params, LangCtx_t* lang_ctx
     assert(lang_ctx != NULL);
     assert(params   != NULL);
 
-#ifdef FRONTEND
     swprintf(params->str_data, sizeof(params->str_data),
              L"type = %s | value = %ls (%zu)",
              TYPE_CASES_TABLE[params->node->data.type].name,
              lang_ctx->names_pool.data[params->node->data.value.id],
              params->node->data.value.id);
-#endif /* FRONTEND */
-
-#ifdef BACKEND
-    swprintf(params->str_data, sizeof(params->str_data),
-             L"type = %s | value = %ls (%zu)",
-             TYPE_CASES_TABLE[params->node->data.type].name,
-             lang_ctx->names_pool.data[params->node->data.value.id.name_index],
-             params->node->data.value.id.name_index);
-#endif /* BACKEND */
 }
 
 //------------------------------------------------------------------------------------------

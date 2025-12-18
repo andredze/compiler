@@ -262,7 +262,7 @@ static LangErr_t GetNodeDataId(LangCtx_t* lang_ctx, TokenData_t* node_data, wcha
     if ((error = LangNamesPoolPush(&lang_ctx->names_pool, string_data, &name_index)))
         return error;
 
-    node_data->value.id.name_index = name_index;
+    node_data->value.id = name_index;
 
     return LANG_SUCCESS;
 }

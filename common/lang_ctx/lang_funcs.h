@@ -25,7 +25,13 @@ LangErr_t LangNamesPoolPush       (NamesPool_t* names_pool, const wchar_t* name_
 
 LangErr_t   LangIdTableCtor       (IdTable_t* id_table);
 void        LangIdTableDtor       (IdTable_t* id_table);
-LangErr_t   LangIdTablePush       (IdTable_t* id_table, IdData_t data, size_t* id_index);
+LangErr_t   LangIdTablePush       (LangCtx_t* lang_ctx, IdTable_t* id_table,
+                                   Identifier_t id, IdType_t type, size_t n_params);
+
+LangErr_t   LangCheckVariableIsNotFunction(IdTable_t* id_table, Identifier_t id);
+LangErr_t   LangIdTableGetAddress         (IdTable_t* id_table, Identifier_t id, size_t* addr);
+bool        LangGetIdInTable              (IdTable_t* id_table, Identifier_t id, size_t* id_index);
+bool        LangIdInTable                 (IdTable_t* id_table, Identifier_t id);
 
 //------------------------------------------------------------------------------------------
 

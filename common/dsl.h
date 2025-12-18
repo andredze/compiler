@@ -18,6 +18,10 @@
 
 #define IS_TYPE_(node, _type)       ((node)->data.type == (_type))
 #define IS_OPERATOR_(node, op_code) ((node)->data.type == TYPE_OP && (node)->data.value.opcode == (op_code))
+#define IS_VARIABLE_(node)          ((node)->data.type == TYPE_VAR       )
+#define IS_VAR_DECL_(node)          ((node)->data.type == TYPE_VAR_DECL  )
+#define IS_FUNC_DECL_(node)         ((node)->data.type == TYPE_FUNC_DECL )
+#define IS_FUNC_CALL_(node)         ((node)->data.type == TYPE_FUNC_CALL )
 #define IS_IDENTIFIER_(node)        ((node)->data.type == TYPE_ID )
 #define IS_NUMBER_(node)            ((node)->data.type == TYPE_NUM)
 #define HAS_OPCODE_(node, op_code)  ((node)->data.value.opcode == (op_code))

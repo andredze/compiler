@@ -276,19 +276,11 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t LangIdTablePush(IdTable_t* id_table, IdData_t data, size_t* id_index)
+LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, IdTable_t* id_table, Identifier_t id,
+                          IdType_t type, size_t n_params)
 {
+    assert(lang_ctx != NULL);
     assert(id_table != NULL);
-    assert(id_index != NULL);
-
-    for (size_t i = 0; i < id_table->size; i++)
-    {
-        if (id_table->data[i].name_index == data.name_index)
-        {
-            *id_index = i;
-            return LANG_SUCCESS;
-        }
-    }
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -298,10 +290,89 @@ LangErr_t LangIdTablePush(IdTable_t* id_table, IdData_t data, size_t* id_index)
             return error;
     }
 
-    *id_index = id_table->size;
-    id_table->data[id_table->size++] = data;
+    id_table->data[id_table->size++].name_index = id;
+    id_table->data[id_table->size++].type       = type;
+
+    if (type == ID_TYPE_VARIABLE)
+    {
+        id_table->data[id_table->size++].addr = lang_ctx->cur_addr;
+        lang_ctx->cur_addr++;
+    }
+    else
+    {
+        id_table->data[id_table->size++].n_params = n_params;
+    }
 
     return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+bool LangGetIdInTable(IdTable_t* id_table, Identifier_t id, size_t* id_index)
+{
+    assert(id_table);
+
+    for (size_t i = 0; i < id_table->size; i++)
+    {
+        if (id_table->data[i].name_index == id)
+        {
+            *id_index = i;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+//------------------------------------------------------------------------------------------
+
+bool LangIdInTable(IdTable_t* id_table, Identifier_t id)
+{
+    assert(id_table);
+
+    for (size_t i = 0; i < id_table->size; i++)
+    {
+        if (id_table->data[i].name_index == id)
+            return true;
+    }
+
+    return false;
+}
+
+//------------------------------------------------------------------------------------------
+
+LangErr_t LangCheckVariableIsNotFunction(IdTable_t* id_table, Identifier_t id)
+{
+    assert(id_table);
+
+    for (size_t i = 0; i < id_table->size; i++)
+    {
+        if (id_table->data[i].name_index == id && id_table->data[i].type != ID_TYPE_VARIABLE)
+        {
+            return LANG_FUNC_USED_AS_VAR;
+        }
+    }
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+LangErr_t LangIdTableGetAddress(IdTable_t* id_table, Identifier_t id, size_t* addr)
+{
+    assert(id_table);
+    assert(addr);
+
+    for (size_t i = 0; i < id_table->size; i++)
+    {
+        if (id_table->data[i].name_index == id)
+        {
+            *addr = id_table->data[i].addr;
+            return LANG_SUCCESS;
+        }
+    }
+
+    return LANG_VAR_NOT_DECLARED;
 }
 
 //------------------------------------------------------------------------------------------

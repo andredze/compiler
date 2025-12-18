@@ -8,24 +8,24 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#ifdef BACKEND
-
-typedef struct Identifier
-{
-    size_t name_index;
-    size_t id_index;
-
-    bool   is_global;
-
-} Identifier_t;
-
-#endif /* BACKEND */
-
-#ifdef FRONTEND
+// #ifdef BACKEND
+//
+// typedef struct Identifier
+// {
+//     size_t name_index;
+//     size_t id_index;
+//
+//     // bool   is_global;
+//
+// } Identifier_t;
+//
+// #endif /* BACKEND */
+//
+// #ifdef FRONTEND
 
 typedef size_t Identifier_t;
 
-#endif /* FRONTEND */
+// #endif /* FRONTEND */
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
