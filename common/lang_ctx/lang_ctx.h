@@ -90,6 +90,8 @@ typedef struct LangCtx
 
     bool          assembling_args;
 
+    bool          getting_function_params;
+
 #endif /* BACKEND */
 
 #ifdef REVERSE

@@ -32,8 +32,7 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
     if ((error = LangIdTableCtor(&lang_ctx->main_id_table)))
         return error;
 
-    // if ((error = LangIdTableCtor(&lang_ctx->func_id_table)))
-    //     return error;
+    lang_ctx->getting_function_params = false;
 
 #endif /* BACKEND */
 

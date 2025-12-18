@@ -217,7 +217,7 @@ static TreeNode_t* ParseFunctionParameters(LangCtx_t* lang_ctx)
     if (cur_token == NULL || !IS_IDENTIFIER_(cur_token))
         return NULL;
 
-    SetIdentifierTokenType(lang_ctx, cur_token, TYPE_VAR_DECL);
+    SetIdentifierTokenType(lang_ctx, cur_token, TYPE_VAR);
 
     lang_ctx->cur_token_index++;
 
@@ -246,7 +246,7 @@ static TreeNode_t* ParseFunctionParameters(LangCtx_t* lang_ctx)
             return NULL;
         }
 
-        SetIdentifierTokenType(lang_ctx, next_param, TYPE_VAR_DECL);
+        SetIdentifierTokenType(lang_ctx, next_param, TYPE_VAR);
 
         lang_ctx->cur_token_index++;
 

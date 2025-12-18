@@ -13,6 +13,7 @@ static LangErr_t AssembleVariable            (LangCtx_t* lang_ctx, TreeNode_t* n
 static LangErr_t AssembleVariableBody        (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t AssembleVariableDeclaration (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t AssembleFunctionDeclaration (LangCtx_t* lang_ctx, TreeNode_t* node);
+static LangErr_t AssembleNewVariable         (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t AssembleFunctionParameters  (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t AssembleFunctionCall        (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t AssembleFunctionArguments   (LangCtx_t* lang_ctx, TreeNode_t* node);
@@ -92,6 +93,11 @@ static LangErr_t AssembleVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleVariableBody(lang_ctx, node)))
         return error;
 
+    if (lang_ctx->getting_function_params == true)
+    {
+        return LANG_SUCCESS;
+    }
+
     ASM_PRINT_(L"PUSHM [RBX] ; push [rbx + addr] \n");
     ASM_PRINT_(L"\n");
 
@@ -104,6 +110,11 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
     assert(lang_ctx);
     assert(node);
+
+    if (lang_ctx->getting_function_params == true)
+    {
+        return AssembleNewVariable(lang_ctx, node);
+    }
 
     ASM_VERIFY_(IS_VARIABLE_(node));
     ASM_VERIFY_(node->left  == NULL);
@@ -160,6 +171,21 @@ static LangErr_t AssembleVariableDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
     ASM_VERIFY_(IS_VAR_DECL_(node));
     ASM_VERIFY_(node->left  == NULL);
     ASM_VERIFY_(node->right == NULL);
+
+    LangErr_t error = LANG_SUCCESS;
+
+    if ((error = AssembleNewVariable(lang_ctx, node)))
+        return error;
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------
+
+static LangErr_t AssembleNewVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
+{
+    assert(lang_ctx);
+    assert(node);
 
     ASM_PRINT_(L"; variable declaration: %ls\n\n",
                lang_ctx->names_pool.data[node->data.value.id]);
@@ -237,6 +263,8 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
     ASM_PRINT_(L"PUSHR RHX \n");
     ASM_PRINT_(L"POPR RGX \n");
 
+    lang_ctx->getting_function_params = true;
+
     if (node->left)
     {
         if ((error = AssembleFunctionParameters(lang_ctx, node)))
@@ -245,6 +273,9 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
             return error;
         }
     }
+
+    lang_ctx->getting_function_params = false;
+
     if ((error = LangIdTablePush(lang_ctx, &lang_ctx->main_id_table, node->data.value.id,
                                  ID_TYPE_FUNCTION, lang_ctx->params_count)))
     {

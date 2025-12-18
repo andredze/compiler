@@ -128,7 +128,7 @@ TreeNode_t* TreeNodeCtor(Tree_t*        tree,
         PRINTERR("Memory allocation for a new node failed");
         return NULL;
     }
-    DPRINTF(L"Allocated %p\n", node);
+    // DPRINTF(L"Allocated %p\n", node);
 
     node->parent = parent;
 
@@ -303,7 +303,7 @@ TreeErr_t TreeSingleNodeDtor(TreeNode_t* node, Tree_t* tree)
     node->right  = NULL;
     node->parent = NULL;
 
-    cprintf(BLUE, "\t\tfreed ptr %p\n", node);
+    // cprintf(BLUE, "\t\tfreed ptr %p\n", node);
 
     free(node);
 
