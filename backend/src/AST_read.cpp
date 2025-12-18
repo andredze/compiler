@@ -223,7 +223,8 @@ static LangErr_t GetNodeDataOp(TokenData_t* node_data, wchar_t* string_data)
         }
     }
 
-    WPRINTERR("Unknown operator in AST");
+    WPRINTERR("Unknown operator in AST %ls", string_data);
+
     return LANG_INVALID_AST_INPUT;
 }
 

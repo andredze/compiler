@@ -84,7 +84,7 @@ typedef struct LangCtx
 
     bool          is_in_function;
 
-    size_t        cur_addr;
+    int           cur_addr;
 
     size_t        params_count;
 

@@ -31,7 +31,7 @@ LangErr_t   LangIdTablePush       (LangCtx_t* lang_ctx, IdTable_t* id_table,
                                    Identifier_t id, IdType_t type, size_t n_params);
 
 LangErr_t   LangCheckVariableIsNotFunction(IdTable_t* id_table, Identifier_t id);
-LangErr_t   LangIdTableGetAddress         (IdTable_t* id_table, Identifier_t id, size_t* addr);
+LangErr_t   LangIdTableGetAddress         (IdTable_t* id_table, Identifier_t id, int* addr);
 bool        LangGetIdInTable              (IdTable_t* id_table, Identifier_t id, size_t* id_index);
 bool        LangIdInTable                 (IdTable_t* id_table, Identifier_t id);
 

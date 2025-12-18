@@ -391,7 +391,7 @@ LangErr_t LangCheckVariableIsNotFunction(IdTable_t* id_table, Identifier_t id)
 
 //------------------------------------------------------------------------------------------
 
-LangErr_t LangIdTableGetAddress(IdTable_t* id_table, Identifier_t id, size_t* addr)
+LangErr_t LangIdTableGetAddress(IdTable_t* id_table, Identifier_t id, int* addr)
 {
     assert(id_table);
     assert(addr);

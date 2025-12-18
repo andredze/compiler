@@ -127,7 +127,7 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
     else
         id_table = &lang_ctx->main_id_table;
 
-    size_t addr = 0;
+    int addr = 0;
 
     if (LangCheckVariableIsNotFunction(&lang_ctx->main_id_table, node->data.value.id))
     {
@@ -137,8 +137,10 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
     }
     if (LangIdTableGetAddress(id_table, node->data.value.id, &addr))
     {
-        WPRINTERR(L"Syntax error: variable %ls was not declared",
-                    lang_ctx->names_pool.data[node->data.value.id]);
+        WPRINTERR(L"Syntax error: variable %ls was not declared\n"
+                  L"lang_ctx->is_in_function = %d\n",
+                    lang_ctx->names_pool.data[node->data.value.id],
+                    lang_ctx->is_in_function ? 1 : 0);
         return LANG_VAR_NOT_DECLARED;
     }
 
@@ -193,15 +195,26 @@ static LangErr_t AssembleNewVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
     IdTable_t* id_table = NULL;
 
     if (lang_ctx->is_in_function)
+    {
         id_table = &lang_ctx->func_id_table;
+    }
     else
+    {
         id_table = &lang_ctx->main_id_table;
+    }
 
     if (LangIdInTable(id_table, node->data.value.id))
     {
-        WPRINTERR(L"Syntax error: redeclaration of variable %ls",
-                    lang_ctx->names_pool.data[node->data.value.id]);
+        WPRINTERR(L"Syntax error: redeclaration of variable %ls\n"
+                  L"lang_ctx->is_in_function = %d\n",
+                    lang_ctx->names_pool.data[node->data.value.id],
+                    lang_ctx->is_in_function ? 1 : 0);
         return LANG_VAR_REDECLARATION;
+    }
+
+    if (lang_ctx->getting_function_params)
+    {
+        lang_ctx->params_count++;
     }
 
     LangErr_t error = LANG_SUCCESS;
@@ -227,7 +240,7 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
     assert(lang_ctx);
     assert(node);
 
-    size_t last_cur_addr = lang_ctx->cur_addr;
+    int last_cur_addr = lang_ctx->cur_addr;
 
     ASM_VERIFY_(IS_FUNC_DECL_(node));
     ASM_VERIFY_(node->right != NULL);
@@ -258,23 +271,17 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
     ASM_PRINT_(L"JMP :%ls_end\n", lang_ctx->names_pool.data[node->data.value.id]);
     ASM_PRINT_(L":%ls\n", lang_ctx->names_pool.data[node->data.value.id]);
 
-    ASM_PRINT_(L"PUSHR RGX ; save rbp\n\n");
-    ASM_PRINT_(L"; copy rsp to rbp\n");
-    ASM_PRINT_(L"PUSHR RHX \n");
-    ASM_PRINT_(L"POPR RGX \n");
-
-    lang_ctx->getting_function_params = true;
-
     if (node->left)
     {
         if ((error = AssembleFunctionParameters(lang_ctx, node)))
         {
             LangIdTableDtor(&lang_ctx->func_id_table);
+            WPRINTERR("Parameters error");
             return error;
         }
     }
 
-    lang_ctx->getting_function_params = false;
+    wfcprintf(stderr, RED, L"pushing in table: n_params = %zu\n", lang_ctx->params_count);
 
     if ((error = LangIdTablePush(lang_ctx, &lang_ctx->main_id_table, node->data.value.id,
                                  ID_TYPE_FUNCTION, lang_ctx->params_count)))
@@ -288,15 +295,9 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
         return error;
     }
 
-    ASM_PRINT_(L"; set rsp to the start\n\n");
-
-    ASM_PRINT_(L"PUSHR RGX \n");
-    ASM_PRINT_(L"POPR RHX \n\n");
-    ASM_PRINT_(L"POPR RGX ; get previous rbp\n\n");
-
     ASM_PRINT_(L":%ls_end\n", lang_ctx->names_pool.data[node->data.value.id]);
 
-    lang_ctx->is_in_function = 0;
+    lang_ctx->is_in_function = false;
     lang_ctx->cur_addr = last_cur_addr;
 
     LangIdTableDtor(&lang_ctx->func_id_table);
@@ -324,6 +325,11 @@ static LangErr_t AssembleFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     ASM_PRINT_(L"; function call %ls\n\n", lang_ctx->names_pool.data[node->data.value.id]);
 
+    ASM_PRINT_(L"PUSHR RGX ; save rbp\n\n");
+    ASM_PRINT_(L"; copy rsp to rbp\n");
+    ASM_PRINT_(L"PUSHR RHX \n");
+    ASM_PRINT_(L"POPR RGX \n");
+
     LangErr_t error = LANG_SUCCESS;
 
     size_t n_params = lang_ctx->main_id_table.data[id_index].n_params;
@@ -338,8 +344,10 @@ static LangErr_t AssembleFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
     {
         WDPRINTF(L"n_params = %zu | lang_ctx->params_count = %zu\n",
                  n_params, lang_ctx->params_count);
+
         WPRINTERR(L"Syntax error: wrong args count for %ls",
                   lang_ctx->names_pool.data[node->data.value.id]);
+
         return LANG_WRONG_ARGS_COUNT;
     }
 
@@ -361,6 +369,7 @@ LangErr_t AssembleFunctionParameters(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_PRINT_(L"; function parameters\n\n");
 
     lang_ctx->params_count = 0;
+    lang_ctx->getting_function_params = true;
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -369,11 +378,13 @@ LangErr_t AssembleFunctionParameters(LangCtx_t* lang_ctx, TreeNode_t* node)
         if ((error = AssembleNode(lang_ctx, node->left)))
             return error;
     }
+    // if (node->right)
+    // {
+    //     if ((error = AssembleNode(lang_ctx, node->right)))
+    //         return error;
+    // }
 
-    if (!IS_OPERATOR_(node->left, OP_PARAMS_SEPARATOR))
-    {
-        lang_ctx->params_count++;
-    }
+    lang_ctx->getting_function_params = false;
 
     return LANG_SUCCESS;
 }
@@ -404,6 +415,9 @@ LangErr_t AssembleFunctionArguments(LangCtx_t* lang_ctx, TreeNode_t* node)
         lang_ctx->params_count++;
         lang_ctx->cur_addr++;
     }
+
+    // if ((error = AssembleNode(lang_ctx, node->right)))
+    //     return error;
 
     ASM_PRINT_(L"\n");
 
@@ -464,8 +478,6 @@ LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     ASM_VERIFY_(IS_OPERATOR_(node, OP_PARAMS_SEPARATOR));
     ASM_VERIFY_(node->left);
 
-    lang_ctx->params_count++;
-
     LangErr_t error = LANG_SUCCESS;
 
     if ((error = AssembleNode(lang_ctx, node->left)))
@@ -473,8 +485,9 @@ LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     if (lang_ctx->assembling_args)
     {
-        AsmIncrementRsp(lang_ctx);
+        lang_ctx->params_count++;
         ASM_PRINT_(L"POPM [RHX]\n\n");
+        AsmIncrementRsp(lang_ctx);
     }
 
     if (node->right)
@@ -484,9 +497,8 @@ LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 
         if (lang_ctx->assembling_args && !IS_OPERATOR_(node->right, OP_PARAMS_SEPARATOR))
         {
-            AsmIncrementRsp(lang_ctx);
-
             ASM_PRINT_(L"POPM [RHX]\n\n");
+            AsmIncrementRsp(lang_ctx);
             lang_ctx->params_count++;
         }
         else if (IS_VAR_DECL_(node->right))
@@ -547,18 +559,19 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleCondition(lang_ctx, node->left)))
         return error;
 
-    ASM_PRINT_(L" :endif_%zu\n", lang_ctx->endif_labels_count);
+    size_t label_count = lang_ctx->endif_labels_count;
+    lang_ctx->endif_labels_count++;
+
+    ASM_PRINT_(L" :endif_%zu\n", label_count);
 
     ASM_PRINT_(L"; ----------------statement----------------\n\n");
 
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
 
-    ASM_PRINT_(L":endif_%zu\n", lang_ctx->endif_labels_count);
+    ASM_PRINT_(L":endif_%zu\n", label_count);
 
     ASM_PRINT_(L"; ------------------endif------------------\n\n");
-
-    lang_ctx->endif_labels_count++;
 
     ASM_PRINT_(L"\n");
 
@@ -578,7 +591,10 @@ LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     ASM_PRINT_(L"; while\n");
 
-    ASM_PRINT_(L":while_start_%zu\n\n", lang_ctx->while_labels_count);
+    size_t labels_count = lang_ctx->while_labels_count;
+    lang_ctx->while_labels_count++;
+
+    ASM_PRINT_(L":while_start_%zu\n\n", labels_count);
     ASM_PRINT_(L"; ----------------condition----------------\n\n");
 
     LangErr_t error = LANG_SUCCESS;
@@ -586,19 +602,17 @@ LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleCondition(lang_ctx, node->left)))
         return error;
 
-    ASM_PRINT_(L" :while_end_%zu\n", lang_ctx->while_labels_count);
+    ASM_PRINT_(L" :while_end_%zu\n", labels_count);
 
     ASM_PRINT_(L"; ----------------statement----------------\n\n");
 
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
 
-    ASM_PRINT_(L"JMP :while_start_%zu\n", lang_ctx->while_labels_count);
-    ASM_PRINT_(L":while_end_%zu\n", lang_ctx->while_labels_count);
+    ASM_PRINT_(L"JMP :while_start_%zu\n", labels_count);
+    ASM_PRINT_(L":while_end_%zu\n", labels_count);
 
     ASM_PRINT_(L"; ----------------while_end----------------\n\n");
-
-    lang_ctx->while_labels_count++;
 
     ASM_PRINT_(L"\n");
 
