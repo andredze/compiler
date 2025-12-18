@@ -89,6 +89,9 @@ typedef struct LangCtx
     size_t        params_count;
 
     bool          assembling_args;
+
+    size_t        rbp;
+    size_t        rsp;
 #endif /* BACKEND */
 
 } LangCtx_t;

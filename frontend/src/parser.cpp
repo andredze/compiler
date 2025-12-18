@@ -25,7 +25,7 @@ static TreeNode_t* ParseBody               (LangCtx_t* lang_ctx);
 static TreeNode_t* ParseCmdSeparator       (LangCtx_t* lang_ctx);
 
 static TreeNode_t* ParseFunctionDeclaration(LangCtx_t* lang_ctx);
-static TreeNode_t* ParseFunctionParameters (LangCtx_t* lang_ctx, TreeNode_t* function_name);
+static TreeNode_t* ParseFunctionParameters (LangCtx_t* lang_ctx);
 
 static TreeNode_t* ParseStatement          (LangCtx_t* lang_ctx);
 static TreeNode_t* ParseFunctionStatement  (LangCtx_t* lang_ctx);
@@ -185,7 +185,7 @@ static TreeNode_t* ParseFunctionDeclaration(LangCtx_t* lang_ctx)
 
     PARSER_DUMP_(func_decl_rhs, L"function declaration rhs");
 
-    TreeNode_t* function_parameters = ParseFunctionParameters(lang_ctx, function_name);
+    TreeNode_t* function_parameters = ParseFunctionParameters(lang_ctx);
     //TODO - add check error
 
     TreeNode_t* function_block = ParseFunctionBlock(lang_ctx);
@@ -208,9 +208,59 @@ static TreeNode_t* ParseFunctionDeclaration(LangCtx_t* lang_ctx)
 
 //------------------------------------------------------------------------------------------
 
-static TreeNode_t* ParseFunctionParameters(LangCtx_t* lang_ctx, TreeNode_t* function_name)
+static TreeNode_t* ParseFunctionParameters(LangCtx_t* lang_ctx)
 {
-    return NULL;
+    assert(lang_ctx);
+
+    TreeNode_t* cur_token = LangGetCurrentToken(lang_ctx);
+
+    if (cur_token == NULL || !IS_IDENTIFIER_(cur_token))
+        return NULL;
+
+    SetIdentifierTokenType(lang_ctx, cur_token, TYPE_VAR_DECL);
+
+    lang_ctx->cur_token_index++;
+
+    PARSER_DUMP_(cur_token, L"function first parameter");
+
+    TreeNode_t* params_separator = LangGetCurrentToken(lang_ctx);
+
+    if (params_separator == NULL)
+        return cur_token;
+
+    TreeNode_t* next_param = NULL;
+
+    while (IS_OPERATOR_(params_separator, OP_PARAMS_SEPARATOR))
+    {
+        lang_ctx->cur_token_index++;
+
+        params_separator->right = cur_token;
+
+        cur_token = params_separator;
+
+        next_param = LangGetCurrentToken(lang_ctx);
+
+        if (next_param == NULL || !IS_IDENTIFIER_(next_param))
+        {
+            WPRINTERR("Should be an parameter after param separator");
+            return NULL;
+        }
+
+        SetIdentifierTokenType(lang_ctx, next_param, TYPE_VAR_DECL);
+
+        lang_ctx->cur_token_index++;
+
+        cur_token->left = next_param;
+
+        params_separator = LangGetCurrentToken(lang_ctx);
+
+        if (params_separator == NULL)
+            break;
+    }
+
+    PARSER_DUMP_(cur_token, L"function parameters all");
+
+    return cur_token;
 }
 
 //------------------------------------------------------------------------------------------
@@ -218,7 +268,7 @@ static TreeNode_t* ParseFunctionParameters(LangCtx_t* lang_ctx, TreeNode_t* func
 static TreeNode_t* ParseFunctionBlock(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
-    
+
     TreeNode_t* block_begin = LangGetCurrentToken(lang_ctx);
 
     if (block_begin == NULL || !IS_OPERATOR_(block_begin, OP_FUNCTION_BLOCK_BEGIN))
@@ -504,33 +554,12 @@ static TreeNode_t* ParseBlockStatement(LangCtx_t* lang_ctx)
 
     PARSER_DUMP_(block_open, L"block open");
 
-    TreeNode_t* statement      = ParseStatement(lang_ctx);
-    TreeNode_t* next_statement = NULL;
+    TreeNode_t* statement = ParseBody(lang_ctx);
 
-    while (statement != NULL)
+    if (statement == NULL)
     {
-        TreeNode_t* separator = ParseCmdSeparator(lang_ctx);
-
-        if (separator == NULL)
-        {
-            WPRINTERR("There should be a cmd separator after statement");
-            return NULL;
-        }
-
-        next_statement = ParseStatement(lang_ctx);
-
-        // /*NOTE - to not make empty nodes with semicolons,
-        //          move two next lines after if
-        //          (left for compatibility with other people)
-        // */
-
-        if (next_statement == NULL)
-            break;
-
-        separator->left = statement;
-        statement = separator;
-
-        statement->right = next_statement;
+        WPRINTERR("Expected block body");
+        return NULL;
     }
 
     TreeNode_t* block_close = LangGetCurrentToken(lang_ctx);
@@ -1041,16 +1070,16 @@ static TreeNode_t* ParseUnaryOperator(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
 
+    // WDPRINTF(L"Not an unary op\n");
+
     TreeNode_t* cur_token = LangGetCurrentToken(lang_ctx);
 
-    if (cur_token == NULL)
-        return NULL;
-
-    if (cur_token->data.type != TYPE_OP)
+    if (cur_token == NULL || cur_token->data.type != TYPE_OP)
         return NULL;
 
     if ((cur_token->data.value.opcode == OP_OUTPUT) |
-        (cur_token->data.value.opcode == OP_INPUT))
+        (cur_token->data.value.opcode == OP_INPUT ) |
+        (cur_token->data.value.opcode == OP_RETURN))
     {
         PARSER_DUMP_(cur_token, L"unary operator");
         lang_ctx->cur_token_index++;

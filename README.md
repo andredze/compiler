@@ -81,8 +81,6 @@ printf(res);
 ```
 Program                ::= Body '\0'
 
-Body                   ::= FunctionDeclaration* Main?
-
 FunctionDeclaration    ::= 'за' Identifier 'отомсти' FunctionParameters?
                             FunctionBlockStatement
 
@@ -96,12 +94,13 @@ FunctionStatement      ::= Statement | ReturnStatement
 
 ReturnStatement        ::= 'оставь' Expression
 
-Main                   ::= {Statement OperatorSeparator}*
+Body                   ::= {Statement OperatorSeparator}*
 
 OperatorSeparator      ::= 'ЗАМОЛЧИ'
 
 Statement              ::= IfStatement
                          | WhileStatement
+                         | FunctionDeclaration
                          | Assignment
                          | Expression
 

@@ -17,8 +17,6 @@ static LangErr_t AssembleFunctionParameters  (LangCtx_t* lang_ctx, TreeNode_t* n
 static LangErr_t AssembleFunctionCall        (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t AssembleFunctionArguments   (LangCtx_t* lang_ctx, TreeNode_t* node);
 
-static LangErr_t AssembleParamsSeparator     (LangCtx_t* lang_ctx, TreeNode_t* node);
-
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 LangErr_t AssembleNode(LangCtx_t* lang_ctx, TreeNode_t* node)
@@ -133,15 +131,16 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
         return LANG_VAR_NOT_DECLARED;
     }
 
-    ASM_PRINT_(L"; variable %ls\n\n", id_table->data[node->data.value.id]);
+    ASM_PRINT_(L"; variable %ls\n\n", lang_ctx->names_pool.data[node->data.value.id]);
 
     if (lang_ctx->is_in_function)
     {
-        ASM_PRINT_(L"; rbp + %zu (local address)\n", addr);
+        ASM_PRINT_(L"; %zu (rbp) + %zu (local address)\n", lang_ctx->rbp, addr);
+        ASM_PRINT_(L"PUSH %zu\n", lang_ctx->rbp + addr);
 
-        ASM_PRINT_(L"PUSHR RGX ; rbp\n");
-        ASM_PRINT_(L"PUSH %zu ; local addr\n", addr);
-        ASM_PRINT_(L"ADD\n", addr);
+        // ASM_PRINT_(L"PUSHR RGX ; rbp\n");
+        // ASM_PRINT_(L"PUSH %zu ; local addr\n", addr);
+        // ASM_PRINT_(L"ADD\n", addr);
     }
     else
     {
@@ -187,11 +186,12 @@ static LangErr_t AssembleVariableDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
         return error;
 
     ASM_PRINT_(L"; pushing stack of variables (rsp++)\n");
+    lang_ctx->rsp++;
 
-    ASM_PRINT_(L"PUSHR RHX ; rsp\n");
-    ASM_PRINT_(L"PUSH 1\n");
-    ASM_PRINT_(L"ADD\n");
-    ASM_PRINT_(L"POPR RHX ; rsp = rsp + 1\n");
+    // ASM_PRINT_(L"PUSHR RHX ; rsp\n");
+    // ASM_PRINT_(L"PUSH 1\n");
+    // ASM_PRINT_(L"ADD\n");
+    // ASM_PRINT_(L"POPR RHX ; rsp = rsp + 1\n");
     ASM_PRINT_(L"\n");
 
     return LANG_SUCCESS;
@@ -203,6 +203,8 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
 {
     assert(lang_ctx);
     assert(node);
+
+    size_t last_cur_addr = lang_ctx->cur_addr;
 
     ASM_VERIFY_(IS_FUNC_DECL_(node));
     ASM_VERIFY_(node->right != NULL);
@@ -219,42 +221,71 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
         return LANG_FUNC_REDECLARATION;
     }
 
-    lang_ctx->is_in_function = true;
     LangErr_t error = LANG_SUCCESS;
 
-    if (node->left)
-    {
-        if ((error = AssembleFunctionParameters(lang_ctx, node)))
-            return error;
-    }
-
-    if ((error = LangIdTablePush(lang_ctx, &lang_ctx->main_id_table, node->data.value.id,
-                                 ID_TYPE_FUNCTION, lang_ctx->params_count)))
+    if ((error = LangIdTableCtor(&lang_ctx->func_id_table)))
         return error;
+
+    lang_ctx->is_in_function = true;
 
     ASM_PRINT_(L"; function declaration: %ls\n\n",
                lang_ctx->names_pool.data[node->data.value.id]);
 
 //TODO - transliterate
+    ASM_PRINT_(L"JMP :%ls_end\n", lang_ctx->names_pool.data[node->data.value.id]);
     ASM_PRINT_(L":%ls\n", lang_ctx->names_pool.data[node->data.value.id]);
-    ASM_PRINT_(L"PUSHR RGX ; save rbp\n\n");
-    ASM_PRINT_(L"; copy rsp to rbp\n");
-    ASM_PRINT_(L"PUSHR RHX \n");
-    ASM_PRINT_(L"POPR RGX \n");
 
-    ASM_PRINT_(L" ; add params to rsp\n");
-    ASM_PRINT_(L"PUSHR RHX ; rsp\n");
-    ASM_PRINT_(L"PUSH %zu\n", lang_ctx->params_count);
-    ASM_PRINT_(L"ADD\n");
-    ASM_PRINT_(L"POPR RHX ; rsp += args_count\n");
+    size_t rbp = lang_ctx->rbp;
+
+    lang_ctx->rbp = lang_ctx->rsp;
+
+    // ASM_PRINT_(L"PUSHR RGX ; save rbp\n\n");
+    // ASM_PRINT_(L"; copy rsp to rbp\n");
+    // ASM_PRINT_(L"PUSHR RHX \n");
+    // ASM_PRINT_(L"POPR RGX \n");
+
+    if (node->left)
+    {
+        if ((error = AssembleFunctionParameters(lang_ctx, node)))
+        {
+            LangIdTableDtor(&lang_ctx->func_id_table);
+            return error;
+        }
+    }
+
+    if ((error = LangIdTablePush(lang_ctx, &lang_ctx->main_id_table, node->data.value.id,
+                                 ID_TYPE_FUNCTION, lang_ctx->params_count)))
+    {
+        LangIdTableDtor(&lang_ctx->func_id_table);
+        return error;
+    }
+
+//     ASM_PRINT_(L" ; add params to rsp\n");
+//     ASM_PRINT_(L"PUSHR RHX ; rsp\n");
+//     ASM_PRINT_(L"PUSH %zu\n", lang_ctx->params_count);
+//     ASM_PRINT_(L"ADD\n");
+//     ASM_PRINT_(L"POPR RHX ; rsp += args_count\n");
 
     if ((error = AssembleNode(lang_ctx, node->right)))
+    {
+        LangIdTableDtor(&lang_ctx->func_id_table);
         return error;
+    }
 
     ASM_PRINT_(L"; set rsp to the start\n\n");
-    ASM_PRINT_(L"PUSHR RGX \n");
-    ASM_PRINT_(L"POPR RHX \n\n");
-    ASM_PRINT_(L"POPR RGX ; get previous rbp\n\n");
+
+    lang_ctx->rsp = lang_ctx->rbp;
+    lang_ctx->rbp = rbp;
+    // ASM_PRINT_(L"PUSHR RGX \n");
+    // ASM_PRINT_(L"POPR RHX \n\n");
+    // ASM_PRINT_(L"POPR RGX ; get previous rbp\n\n");
+
+    ASM_PRINT_(L":%ls_end\n", lang_ctx->names_pool.data[node->data.value.id]);
+
+    lang_ctx->is_in_function = 0;
+    lang_ctx->cur_addr = last_cur_addr;
+
+    LangIdTableDtor(&lang_ctx->func_id_table);
 
     return LANG_SUCCESS;
 }
@@ -291,6 +322,8 @@ static LangErr_t AssembleFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     if (n_params != lang_ctx->params_count)
     {
+        WDPRINTF(L"n_params = %zu | lang_ctx->params_count = %zu\n",
+                 n_params, lang_ctx->params_count);
         WPRINTERR(L"Syntax error: wrong args count for %ls",
                   lang_ctx->names_pool.data[node->data.value.id]);
         return LANG_WRONG_ARGS_COUNT;
@@ -323,6 +356,11 @@ LangErr_t AssembleFunctionParameters(LangCtx_t* lang_ctx, TreeNode_t* node)
             return error;
     }
 
+    if (!IS_OPERATOR_(node->left, OP_PARAMS_SEPARATOR))
+    {
+        lang_ctx->params_count++;
+    }
+
     return LANG_SUCCESS;
 }
 
@@ -348,10 +386,15 @@ LangErr_t AssembleFunctionArguments(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     if (!IS_OPERATOR_(node->left, OP_PARAMS_SEPARATOR))
     {
-        ASM_PRINT_(L"PUSHR RHX\n");
-        ASM_PRINT_(L"PUSH %zu\n", lang_ctx->params_count);
-        ASM_PRINT_(L"ADD\n");
-        ASM_PRINT_(L"POPM [RHX]\n\n");
+        // ASM_PRINT_(L"PUSHR RHX\n");
+        // ASM_PRINT_(L"PUSH %zu\n", lang_ctx->params_count);
+        // ASM_PRINT_(L"ADD\n");
+        // ASM_PRINT_(L"POPM [RHX]\n\n");
+
+        ASM_PRINT_(L"PUSH %zu\n", lang_ctx->rsp);
+        ASM_PRINT_(L"POPR RBX\n");
+        ASM_PRINT_(L"POPM [RBX]\n\n");
+        lang_ctx->rsp++;
         lang_ctx->params_count++;
         lang_ctx->cur_addr++;
     }
@@ -381,6 +424,7 @@ LangErr_t AssembleReturn(LangCtx_t* lang_ctx, TreeNode_t* node)
         return error;
 
     ASM_PRINT_(L"POPR RAX ; put return value in RAX\n");
+    ASM_PRINT_(L"RET\n");
     ASM_PRINT_(L"\n");
 
     return LANG_SUCCESS;
@@ -388,7 +432,7 @@ LangErr_t AssembleReturn(LangCtx_t* lang_ctx, TreeNode_t* node)
 
 //------------------------------------------------------------------------------------------
 
-static LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
+LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
     assert(lang_ctx);
     assert(node);
@@ -405,29 +449,41 @@ static LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     if (lang_ctx->assembling_args)
     {
-        ASM_PRINT_(L"PUSHR RHX\n");
-        ASM_PRINT_(L"PUSH %zu\n", lang_ctx->params_count);
-        ASM_PRINT_(L"ADD\n");
-        ASM_PRINT_(L"POPM [RHX]\n\n");
+        // ASM_PRINT_(L"PUSHR RHX\n");
+        // ASM_PRINT_(L"PUSH %zu\n", lang_ctx->params_count);
+        // ASM_PRINT_(L"ADD\n");
+        // ASM_PRINT_(L"POPM [RHX]\n\n");
+
+        ASM_PRINT_(L"PUSH %zu\n", lang_ctx->rsp);
+        ASM_PRINT_(L"POPR RBX\n");
+        ASM_PRINT_(L"POPM [RBX]\n\n");
+
+        lang_ctx->rsp++;
         lang_ctx->cur_addr++;
     }
 
     if (node->right)
     {
+        if ((error = AssembleNode(lang_ctx, node->right)))
+            return error;
+
         if (lang_ctx->assembling_args && !IS_OPERATOR_(node->right, OP_PARAMS_SEPARATOR))
         {
-            ASM_PRINT_(L"PUSHR RHX\n");
-            ASM_PRINT_(L"PUSH %zu\n", lang_ctx->params_count);
-            ASM_PRINT_(L"ADD\n");
-            ASM_PRINT_(L"POPM [RHX]\n\n");
+            // ASM_PRINT_(L"PUSHR RHX\n");
+            // ASM_PRINT_(L"PUSH %zu\n", lang_ctx->params_count);
+            // ASM_PRINT_(L"ADD\n");
+            // ASM_PRINT_(L"POPM [RHX]\n\n");
+
+            ASM_PRINT_(L"PUSH %zu\n", lang_ctx->rsp);
+            ASM_PRINT_(L"POPR RBX\n");
+            ASM_PRINT_(L"POPM [RBX]\n\n");
+
+            lang_ctx->rsp++;
             lang_ctx->params_count++;
             lang_ctx->cur_addr++;
         }
-        else if (IS_VARIABLE_(node->right))
+        else if (IS_VAR_DECL_(node->right))
             lang_ctx->params_count++;
-
-        if ((error = AssembleNode(lang_ctx, node->right)))
-            return error;
     }
 
     return LANG_SUCCESS;
@@ -548,7 +604,7 @@ LangErr_t AssembleAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(node);
 
     ASM_VERIFY_(IS_OPERATOR_(node, OP_ASSIGNMENT));
-    ASM_VERIFY_(node->left && IS_IDENTIFIER_(node->left));
+    ASM_VERIFY_(node->left && IS_VARIABLE_(node->left));
     ASM_VERIFY_(node->right);
 
     ASM_PRINT_(L"; assignment:\n\n");

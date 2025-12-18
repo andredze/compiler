@@ -44,6 +44,7 @@ LangErr_t AssembleInput          (LangCtx_t* lang_ctx, TreeNode_t* node);
 // LangErr_t AssembleElse         (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleWhile          (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleCmdSeparator   (LangCtx_t* lang_ctx, TreeNode_t* node);
+LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleHlt            (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t AssembleReturn         (LangCtx_t* lang_ctx, TreeNode_t* node);
 
@@ -85,7 +86,7 @@ const OperatorCase_t OP_CASES_TABLE[] =
     SET_OP_CASE_(OP_FUNCTION_DECL_RHS   ,   1,   L"отомсти"                     , L""               , NULL                   , L""    ),
     SET_OP_CASE_(OP_FUNCTION_CALL_LHS   ,   1,   L"ритуал: во имя"              , L""               , NULL                   , L"CALL"),
     SET_OP_CASE_(OP_FUNCTION_CALL_RHS   ,   1,   L"принеси в жертву"            , L""               , NULL                   , L""    ),
-    SET_OP_CASE_(OP_PARAMS_SEPARATOR    ,   1,   L"и"                           , L"_COMMA_"        , NULL                   , L""    ),
+    SET_OP_CASE_(OP_PARAMS_SEPARATOR    ,   1,   L"и"                           , L"_COMMA_"        , AssembleParamsSeparator, L""    ),
     SET_OP_CASE_(OP_RETURN              ,   1,   L"оставь"                      , L"_RETURN_"       , AssembleReturn         , L"RET" ),
     SET_OP_CASE_(OP_ADD                 ,   1,   L"нарастить на"                , L"_MATH_ADD_"     , AssembleMathOperation  , L"ADD" ),
     SET_OP_CASE_(OP_SUB                 ,   1,   L"избавить от"                 , L"_MATH_SUB_"     , AssembleMathOperation  , L"SUB" ),

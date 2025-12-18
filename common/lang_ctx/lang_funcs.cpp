@@ -29,11 +29,14 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 
 #ifdef BACKEND
 
+    lang_ctx->rbp = 0;
+    lang_ctx->rsp = 0;
+
     if ((error = LangIdTableCtor(&lang_ctx->main_id_table)))
         return error;
 
-    if ((error = LangIdTableCtor(&lang_ctx->func_id_table)))
-        return error;
+    // if ((error = LangIdTableCtor(&lang_ctx->func_id_table)))
+    //     return error;
 
 #endif /* BACKEND */
 
@@ -76,7 +79,7 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
         fclose(lang_ctx->output_file);
 
     LangIdTableDtor  (&lang_ctx->main_id_table);
-    LangIdTableDtor  (&lang_ctx->func_id_table);
+    // LangIdTableDtor  (&lang_ctx->func_id_table);
 
 #endif /* BACKEND */
 
@@ -228,6 +231,8 @@ static LangErr_t LangNamesPoolRealloc(NamesPool_t* names_pool)
 
 //==========================================================================================
 
+#ifdef BACKEND
+
 LangErr_t LangIdTableCtor(IdTable_t* id_table)
 {
     assert(id_table);
@@ -290,18 +295,20 @@ LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, IdTable_t* id_table, Identifier_t
             return error;
     }
 
-    id_table->data[id_table->size++].name_index = id;
-    id_table->data[id_table->size++].type       = type;
+    id_table->data[id_table->size].name_index = id;
+    id_table->data[id_table->size].type       = type;
 
     if (type == ID_TYPE_VARIABLE)
     {
-        id_table->data[id_table->size++].addr = lang_ctx->cur_addr;
+        id_table->data[id_table->size].addr = lang_ctx->cur_addr;
         lang_ctx->cur_addr++;
     }
     else
     {
-        id_table->data[id_table->size++].n_params = n_params;
+        id_table->data[id_table->size].n_params = n_params;
     }
+
+    id_table->size++;
 
     return LANG_SUCCESS;
 }
@@ -396,6 +403,8 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table)
 
     return LANG_SUCCESS;
 }
+
+#endif /* BACKEND */
 
 //------------------------------------------------------------------------------------------
 
