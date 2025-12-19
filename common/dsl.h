@@ -14,7 +14,7 @@
 #define OPERATOR_(op_code)    LangOperatorNodeCtor      (lang_ctx, (op_code ), NULL, NULL)
 #define NUMBER_(number)       LangNumberNodeCtor        (lang_ctx, (number  ))
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #define IS_TYPE_(node, _type)       ((node)->data.type == (_type))
 #define IS_OPERATOR_(node, op_code) ((node)->data.type == TYPE_OP && (node)->data.value.opcode == (op_code))
@@ -26,7 +26,7 @@
 #define IS_NUMBER_(node)            ((node)->data.type == TYPE_NUM)
 #define HAS_OPCODE_(node, op_code)  ((node)->data.value.opcode == (op_code))
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 /* if operation has 1 argument, it should be placed in right node */
 
@@ -40,7 +40,7 @@
 #define POW_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_POW, (l),  (r))
 #define UNARY_(oper, r)     LangOperatorNodeCtor(lang_ctx, (oper), NULL, (r))
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #define SRC_PRINT_TABS_()                                                \
         BEGIN                                                            \
@@ -85,7 +85,7 @@
 
 #ifdef _DSL_UNDEF_
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #undef OPERATOR_
 #undef IDENTIFIER_
@@ -114,7 +114,7 @@
 #undef ASM_PRINT_
 #undef ASM_VERIFY_
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #undef    _DSL_UNDEF_
 #endif /* _DSL_UNDEF_*/

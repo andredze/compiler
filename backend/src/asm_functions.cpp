@@ -62,7 +62,7 @@ LangErr_t AssembleNode(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleNumber(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -81,7 +81,7 @@ static LangErr_t AssembleNumber(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -104,7 +104,7 @@ static LangErr_t AssembleVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -163,7 +163,7 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleVariableDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -182,7 +182,7 @@ static LangErr_t AssembleVariableDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleNewVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -233,7 +233,7 @@ static LangErr_t AssembleNewVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -305,7 +305,7 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -359,7 +359,7 @@ static LangErr_t AssembleFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleFunctionParameters(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -389,7 +389,7 @@ LangErr_t AssembleFunctionParameters(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleFunctionArguments(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -426,7 +426,7 @@ LangErr_t AssembleFunctionArguments(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleReturn(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -456,7 +456,7 @@ LangErr_t AssembleReturn(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void AsmIncrementRsp(LangCtx_t* lang_ctx)
 {
@@ -468,7 +468,7 @@ static void AsmIncrementRsp(LangCtx_t* lang_ctx)
     lang_ctx->cur_addr++;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -508,7 +508,7 @@ LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -536,7 +536,7 @@ LangErr_t AssembleCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleCondition(LangCtx_t* lang_ctx, TreeNode_t* node);
 
@@ -578,7 +578,7 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -619,7 +619,7 @@ LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t AssembleCondition(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -643,7 +643,7 @@ static LangErr_t AssembleCondition(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -670,7 +670,7 @@ LangErr_t AssembleAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -682,7 +682,7 @@ LangErr_t AssembleMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
                 IS_OPERATOR_(node, OP_MUL) ||
                 IS_OPERATOR_(node, OP_DIV) ||
                 IS_OPERATOR_(node, OP_POW));
-
++
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 
@@ -703,7 +703,38 @@ LangErr_t AssembleMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
+
+LangErr_t AssemblePoint(LangCtx_t* lang_ctx, TreeNode_t* node)
+{
+    assert(lang_ctx);
+    assert(node);
+
+    LangErr_t error = LANG_SUCCESS;
+
+    if (lang_ctx->first_point)
+    {
+        ASM_PRINT_(L"; start DRAW there\n");
+        ASM_PRINT_(L"PUSH RHX\n\n");
+        lang_ctx->first_point = false;
+    }
+
+    ASM_PRINT_(L"PUSH %d", '#');
+    ASM_PRINT_(L"PUSHR RHX\n");
+
+    if ((error = AssembleNode(lang_ctx, node->right)))
+    {
+        return error;
+    }
+
+    ASM_PRINT_(L"ADD\n");
+    ASM_PRINT_(L"POPR RCX\n");
+    ASM_PRINT_(L"POPM [RCX]\n");
+
+    return LANG_SUCCESS;
+}
+
+//==========================================================================================
 
 LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -712,7 +743,8 @@ LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     ASM_VERIFY_(IS_OPERATOR_(node, OP_INPUT ) ||
                 IS_OPERATOR_(node, OP_OUTPUT) ||
-                IS_OPERATOR_(node, OP_SQRT));
+                IS_OPERATOR_(node, OP_DRAW  ) ||
+                IS_OPERATOR_(node, OP_SQRT  ));
 
     ASM_VERIFY_(node->left == NULL);
     ASM_VERIFY_(node->right);
@@ -731,7 +763,7 @@ LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleInput(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -757,7 +789,7 @@ LangErr_t AssembleInput(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t AssembleHlt(LangCtx_t* lang_ctx, TreeNode_t* node)
 {

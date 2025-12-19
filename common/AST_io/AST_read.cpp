@@ -1,6 +1,6 @@
 #include "AST_read.h"
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void SkipSpaces(wchar_t* buffer, ssize_t* pos);
 static int  SkipLetter(wchar_t* buffer, ssize_t* pos, wchar_t letter);
@@ -51,7 +51,7 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t ReadNode(LangCtx_t* lang_ctx, TreeNode_t** node, wchar_t* buffer, ssize_t* pos)
 {
@@ -138,7 +138,7 @@ LangErr_t ReadNodeData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos, Token
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t GetNodeDataOp (TokenData_t* node_data, wchar_t* string_data);
 static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data);
@@ -203,7 +203,7 @@ static LangErr_t GetNodeData(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_
     return LANG_INVALID_AST_INPUT;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t GetNodeDataOp(TokenData_t* node_data, wchar_t* string_data)
 {
@@ -227,7 +227,7 @@ static LangErr_t GetNodeDataOp(TokenData_t* node_data, wchar_t* string_data)
     return LANG_INVALID_AST_INPUT;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data)
 {
@@ -248,7 +248,7 @@ static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t GetNodeDataId(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_t* string_data)
 {
@@ -267,7 +267,7 @@ static LangErr_t GetNodeDataId(LangCtx_t* lang_ctx, TokenData_t* node_data, wcha
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void SkipSpaces(wchar_t* buffer, ssize_t* pos)
 {
@@ -282,7 +282,7 @@ static void SkipSpaces(wchar_t* buffer, ssize_t* pos)
     }
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static int SkipLetter(wchar_t* buffer, ssize_t* pos, wchar_t letter)
 {
@@ -301,4 +301,4 @@ static int SkipLetter(wchar_t* buffer, ssize_t* pos, wchar_t letter)
     return 0;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================

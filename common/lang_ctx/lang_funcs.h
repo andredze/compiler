@@ -17,13 +17,13 @@ LangErr_t   LangOpenAsmFile       (LangCtx_t* lang_ctx);
 
 LangErr_t   LangOpenReverseFile   (LangCtx_t* lang_ctx);
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t LangNamesPoolCtor       (NamesPool_t* names_pool);
 void      LangNamesPoolDtor       (NamesPool_t* names_pool);
 LangErr_t LangNamesPoolPush       (NamesPool_t* names_pool, const wchar_t* name_buf, size_t* name_index);
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t   LangIdTableCtor       (IdTable_t* id_table);
 void        LangIdTableDtor       (IdTable_t* id_table);
@@ -35,7 +35,7 @@ LangErr_t   LangIdTableGetAddress         (IdTable_t* id_table, Identifier_t id,
 bool        LangGetIdInTable              (IdTable_t* id_table, Identifier_t id, size_t* id_index);
 bool        LangIdInTable                 (IdTable_t* id_table, Identifier_t id);
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeNode_t* LangGetCurrentToken   (LangCtx_t* lang_ctx);
 

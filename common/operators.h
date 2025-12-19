@@ -52,11 +52,13 @@ typedef enum Operator
     OP_VARIABLE_DECL        = 27,
     OP_EQUAL                = 28,
     OP_NOT_EQUAL            = 29,
-    OP_BIGGER               = 30,
-    OP_BIGGER_EQUAL         = 31,
-    OP_SMALLER              = 32,
-    OP_SMALLER_EQUAL        = 33,
-    OP_SQRT                 = 34
+    OP_BIGGER_EQUAL         = 30,
+    OP_BIGGER               = 31,
+    OP_SMALLER_EQUAL        = 32,
+    OP_SMALLER              = 33,
+    OP_SQRT                 = 34,
+    OP_DRAW                 = 35,
+    OP_POINT                = 36
 } Operator_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————

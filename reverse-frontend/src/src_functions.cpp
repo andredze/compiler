@@ -2,12 +2,12 @@
 #include "lang_ctx.h"
 #include "op_cases.h"
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #define _DSL_DEFINE_
 #include "dsl.h"
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t SrcNumber              (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t SrcRepetitionPrint     (LangCtx_t* lang_ctx, Operator_t opcode);
@@ -61,7 +61,7 @@ LangErr_t SrcNode(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -88,7 +88,7 @@ LangErr_t SrcAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcCompareOperator(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -112,7 +112,7 @@ LangErr_t SrcCompareOperator(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcUnaryOperator(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -134,7 +134,7 @@ LangErr_t SrcUnaryOperator(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -157,7 +157,7 @@ LangErr_t SrcMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcAbort(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -170,7 +170,7 @@ LangErr_t SrcAbort(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -190,7 +190,7 @@ LangErr_t SrcParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -229,7 +229,7 @@ LangErr_t SrcWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcIf(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -270,7 +270,7 @@ LangErr_t SrcIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t SrcCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -286,7 +286,7 @@ LangErr_t SrcCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t SrcRepetitionPrint(LangCtx_t* lang_ctx, Operator_t opcode)
 {
@@ -303,7 +303,7 @@ static LangErr_t SrcRepetitionPrint(LangCtx_t* lang_ctx, Operator_t opcode)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t SrcEnterRepetitionPrint(LangCtx_t* lang_ctx, Operator_t opcode)
 {
@@ -321,7 +321,7 @@ static LangErr_t SrcEnterRepetitionPrint(LangCtx_t* lang_ctx, Operator_t opcode)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t SrcNumber(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -333,7 +333,7 @@ static LangErr_t SrcNumber(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t SrcVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -345,7 +345,7 @@ static LangErr_t SrcVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t SrcVariableDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -364,7 +364,7 @@ static LangErr_t SrcVariableDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t SrcFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -405,7 +405,7 @@ static LangErr_t SrcFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t SrcFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
@@ -428,9 +428,9 @@ static LangErr_t SrcFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #define _DSL_UNDEF_
 #include "dsl.h"
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================

@@ -41,7 +41,7 @@ static TreeErr_t TreeDumpSetDebugFilePaths(LangCtx_t* lang_ctx)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void TreeDumpSetTime(LangCtx_t* lang_ctx)
 {
@@ -54,7 +54,7 @@ static void TreeDumpSetTime(LangCtx_t* lang_ctx)
     WDPRINTF(L"time = %ls\n", lang_ctx->debug.str_time);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static TreeErr_t TreeDumpMakeDirs(LangCtx_t* lang_ctx)
 {
@@ -77,7 +77,7 @@ static TreeErr_t TreeDumpMakeDirs(LangCtx_t* lang_ctx)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static TreeErr_t TreeDumpSetDirs(LangCtx_t* lang_ctx)
 {
@@ -103,7 +103,7 @@ static TreeErr_t TreeDumpSetDirs(LangCtx_t* lang_ctx)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static TreeErr_t TreeDumpSetLogFilePath(LangCtx_t* lang_ctx)
 {
@@ -117,7 +117,7 @@ static TreeErr_t TreeDumpSetLogFilePath(LangCtx_t* lang_ctx)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeDump(LangCtx_t*            lang_ctx,
                    const TreeDumpInfo_t* dump_info,
@@ -134,7 +134,7 @@ TreeErr_t TreeDump(LangCtx_t*            lang_ctx,
     return result;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* fmt, ...)
 {
@@ -177,7 +177,7 @@ LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* 
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...)
 {
@@ -221,7 +221,7 @@ TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t vTreeDump(LangCtx_t* lang_ctx,
                     const TreeDumpInfo_t* dump_info,
@@ -280,7 +280,7 @@ TreeErr_t vTreeDump(LangCtx_t* lang_ctx,
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeOpenLogFile(LangCtx_t* lang_ctx)
 {
@@ -302,7 +302,7 @@ TreeErr_t TreeOpenLogFile(LangCtx_t* lang_ctx)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 void TreeCloseLogFile(LangCtx_t* lang_ctx)
 {
@@ -310,7 +310,7 @@ void TreeCloseLogFile(LangCtx_t* lang_ctx)
     lang_ctx->debug.fp = NULL;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void ASTNodeDump(TreeNode_t* node,     FILE*          fp,
                         LangCtx_t*  lang_ctx, NodeDumpType_t dump_type);
@@ -461,7 +461,7 @@ TreeErr_t TreeGraphDump(LangCtx_t* lang_ctx, NodeDumpType_t dump_type)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 void SetGraphFilepaths(LangCtx_t* lang_ctx)
 {
@@ -484,7 +484,7 @@ void SetGraphFilepaths(LangCtx_t* lang_ctx)
              IMAGE_FILE_TYPE);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 void DumpGraphTitle(FILE* dot_file)
 {
@@ -505,7 +505,7 @@ void DumpGraphTitle(FILE* dot_file)
     L"\n");
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeConvertGraphFile(LangCtx_t* lang_ctx)
 {
@@ -558,7 +558,7 @@ static void ASTNodeDump(TreeNode_t* node,     FILE*          fp,
         ASTNodeDump(node->right, fp, lang_ctx, dump_type);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void ASTDumpNodeWithEdges(TreeNode_t* node,     FILE*          fp,
                                  LangCtx_t*  lang_ctx, NodeDumpType_t dump_type)
@@ -596,7 +596,7 @@ static void DumpNodeDataOperator    (NodeDumpParams_t* params, LangCtx_t* lang_c
 static void DumpNodeDataIdentifier  (NodeDumpParams_t* params, LangCtx_t* lang_ctx);
 static void DumpNodeDataNumber      (NodeDumpParams_t* params, LangCtx_t* lang_ctx);
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 void (* const DUMP_NODE_DATA_TABLE[]) (NodeDumpParams_t* params, LangCtx_t* lang_ctx) =
 {
@@ -627,7 +627,7 @@ static void ASTDumpSingleNode(NodeDumpParams_t* params, FILE* fp, LangCtx_t* lan
     DumpDefaultTreeNode(params, fp);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void DumpNodeDataOperator(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
 {
@@ -641,7 +641,7 @@ static void DumpNodeDataOperator(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
              OP_CASES_TABLE[params->node->data.value.opcode].name);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void DumpNodeDataIdentifier(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
 {
@@ -655,7 +655,7 @@ static void DumpNodeDataIdentifier(NodeDumpParams_t* params, LangCtx_t* lang_ctx
              params->node->data.value.id);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void DumpNodeDataNumber(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
 {
@@ -704,7 +704,7 @@ static void DumpDefaultTreeNode(NodeDumpParams_t* params, FILE* fp)
     DumpNode(params, fp);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static inline int DumpAllowsRecordLabel(NodeDumpParams_t* params)
 {
@@ -744,7 +744,7 @@ static void DumpNode(NodeDumpParams_t* params, FILE* fp)
     fwprintf(fp, L";\n");
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 // left side = 0; right side = 1;
 static void DumpEdge(EdgeDumpParams_t* params, FILE* fp, int side)
@@ -775,7 +775,7 @@ static void DumpEdge(EdgeDumpParams_t* params, FILE* fp, int side)
     fwprintf(fp, L";\n");
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void PrintArg(const char*    arg_name,
                      const wchar_t* arg_value,
@@ -802,4 +802,4 @@ static void PrintArg(const char*    arg_name,
     fwprintf(fp, L"%s = \"%ls\"", arg_name, arg_value);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================

@@ -4,7 +4,7 @@
 
 static void ASTWriteNode(LangCtx_t* lang_ctx, const TreeNode_t* node, FILE* fp, int rank);
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
 {
@@ -33,7 +33,7 @@ LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE* fp);
 
@@ -72,7 +72,7 @@ static void ASTWriteNode(LangCtx_t* lang_ctx, const TreeNode_t* node, FILE* fp, 
     fwprintf(fp, L")\n");
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE* fp)
 {
@@ -106,4 +106,4 @@ static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE*
     fwprintf(fp, L"\"");
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================

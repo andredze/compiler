@@ -1,6 +1,6 @@
 #include "tree_commands.h"
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #ifdef TREE_DEBUG
 
@@ -38,7 +38,7 @@ TreeErr_t TreeCheck(LangCtx_t*  lang_ctx,
 
 #endif /* TREE_DEBUG */
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode, TreeNode_t* left, TreeNode_t* right)
 {
@@ -52,7 +52,7 @@ TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode, TreeNod
     return TreeNodeCtor(&lang_ctx->tree, token_data, left, right, NULL);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, Identifier_t id)
 {
@@ -66,7 +66,7 @@ TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, Identifier_t id)
     return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeNode_t* LangNumberNodeCtor(LangCtx_t* lang_ctx, double number)
 {
@@ -107,7 +107,7 @@ TreeErr_t TreeCtor(Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeNode_t* TreeNodeCtor(Tree_t*        tree,
                          TreeElem_t     data,
@@ -141,7 +141,7 @@ TreeNode_t* TreeNodeCtor(Tree_t*        tree,
     return node;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeNode_t* TreeCopySubtree(Tree_t* dest_tree, TreeNode_t* node, TreeNode_t* parent)
 {
@@ -160,7 +160,7 @@ TreeNode_t* TreeCopySubtree(Tree_t* dest_tree, TreeNode_t* node, TreeNode_t* par
                         parent);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeDtor(Tree_t* tree)
 {
@@ -188,7 +188,7 @@ TreeErr_t TreeDtor(Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeSubtreesDtor(TreeNode_t* node, Tree_t* tree)
 {
@@ -203,7 +203,7 @@ TreeErr_t TreeSubtreesDtor(TreeNode_t* node, Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeLeftSubtreeDtor(TreeNode_t* node, Tree_t* tree)
 {
@@ -221,7 +221,7 @@ TreeErr_t TreeLeftSubtreeDtor(TreeNode_t* node, Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeRightSubtreeDtor(TreeNode_t* node, Tree_t* tree)
 {
@@ -239,7 +239,7 @@ TreeErr_t TreeRightSubtreeDtor(TreeNode_t* node, Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeSubtreeDtor(TreeNode_t** node_ptr, Tree_t* tree)
 {
@@ -262,7 +262,7 @@ TreeErr_t TreeSubtreeDtor(TreeNode_t** node_ptr, Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeNodeDtor(TreeNode_t* node, Tree_t* tree)
 {
@@ -289,7 +289,7 @@ TreeErr_t TreeNodeDtor(TreeNode_t* node, Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeSingleNodeDtor(TreeNode_t* node, Tree_t* tree)
 {
@@ -312,7 +312,7 @@ TreeErr_t TreeSingleNodeDtor(TreeNode_t* node, Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeNodeVerify(const Tree_t* tree,  TreeNode_t* node,
                          size_t* calls_count, TreeNode_t* parent)
@@ -352,7 +352,7 @@ TreeErr_t TreeNodeVerify(const Tree_t* tree,  TreeNode_t* node,
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeErr_t TreeVerify(const Tree_t* tree)
 {
@@ -378,7 +378,7 @@ TreeErr_t TreeVerify(const Tree_t* tree)
     return TREE_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int CompareDoubles(double val1, double val2)
 {
@@ -394,4 +394,4 @@ int CompareDoubles(double val1, double val2)
     return 0;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================

@@ -1,6 +1,6 @@
 #include "lang_funcs.h"
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 //FIXME - stack realloc дропается дамп, скорее всего реаллок не работает
 
@@ -28,6 +28,7 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
         return error;
 
 #ifdef BACKEND
+    lang_ctx->first_point = true;
 
     if ((error = LangIdTableCtor(&lang_ctx->main_id_table)))
         return error;
@@ -48,7 +49,7 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 void LangCtxDtor(LangCtx_t* lang_ctx)
 {
@@ -93,7 +94,7 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
     TreeCloseLogFile(lang_ctx);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t LangOpenAsmFile(LangCtx_t* lang_ctx)
 {
@@ -121,7 +122,7 @@ LangErr_t LangOpenAsmFile(LangCtx_t* lang_ctx)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t LangOpenReverseFile(LangCtx_t* lang_ctx)
 {
@@ -169,7 +170,7 @@ LangErr_t LangNamesPoolCtor(NamesPool_t* names_pool)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 void LangNamesPoolDtor(NamesPool_t* names_pool)
 {
@@ -190,7 +191,7 @@ void LangNamesPoolDtor(NamesPool_t* names_pool)
     WDPRINTF(L"------- NamesPool destroyed -------\n");
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t LangNamesPoolRealloc(NamesPool_t* names_pool);
 
@@ -233,7 +234,7 @@ LangErr_t LangNamesPoolPush(NamesPool_t* names_pool, const wchar_t* name_buf, si
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t LangNamesPoolRealloc(NamesPool_t* names_pool)
 {
@@ -279,7 +280,7 @@ LangErr_t LangIdTableCtor(IdTable_t* id_table)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 void LangIdTableDtor(IdTable_t* id_table)
 {
@@ -339,7 +340,7 @@ LangErr_t LangIdTablePush(LangCtx_t* lang_ctx, IdTable_t* id_table, Identifier_t
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 bool LangGetIdInTable(IdTable_t* id_table, Identifier_t id, size_t* id_index)
 {
@@ -357,7 +358,7 @@ bool LangGetIdInTable(IdTable_t* id_table, Identifier_t id, size_t* id_index)
     return false;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 bool LangIdInTable(IdTable_t* id_table, Identifier_t id)
 {
@@ -372,7 +373,7 @@ bool LangIdInTable(IdTable_t* id_table, Identifier_t id)
     return false;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t LangCheckVariableIsNotFunction(IdTable_t* id_table, Identifier_t id)
 {
@@ -389,7 +390,7 @@ LangErr_t LangCheckVariableIsNotFunction(IdTable_t* id_table, Identifier_t id)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t LangIdTableGetAddress(IdTable_t* id_table, Identifier_t id, int* addr)
 {
@@ -408,7 +409,7 @@ LangErr_t LangIdTableGetAddress(IdTable_t* id_table, Identifier_t id, int* addr)
     return LANG_VAR_NOT_DECLARED;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t LangIdTableRealloc(IdTable_t* id_table)
 {
@@ -432,7 +433,7 @@ static LangErr_t LangIdTableRealloc(IdTable_t* id_table)
 
 #endif /* BACKEND */
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 TreeNode_t* LangGetCurrentToken(LangCtx_t* lang_ctx)
 {
@@ -449,4 +450,4 @@ TreeNode_t* LangGetCurrentToken(LangCtx_t* lang_ctx)
     return token;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================

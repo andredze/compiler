@@ -174,7 +174,7 @@ typedef struct TypeCase
 #define SET_TYPE_CASE_(code,   name,   shape,   color,   fillcolor,   fontcolor,   ast_format) \
         [(code)]   = {(code), (name), (shape), (color), (fillcolor), (fontcolor), (ast_format)}
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 const TypeCase_t TYPE_CASES_TABLE[] =
 {
@@ -188,7 +188,7 @@ const TypeCase_t TYPE_CASES_TABLE[] =
     SET_TYPE_CASE_(TYPE_FUNC_DECL, "FUNC_DECL", L"Mrecord", L"#451126ff", L"#df7a93ff", L"#451126ff", L"FUNC_INIT")
 };
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #undef SET_TYPE_CASE_
 

@@ -19,7 +19,7 @@ static inline int IsAcceptableSymbol     (wint_t ch);
 static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* func,
                              const int  line,     const char* fmt, ...);
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #define SYNTAX_ERROR(lang_ctx, fmt, ...)                                                                \
         {   TreeDumpInfo_t dump_info = {TREE_SUCCESS, __PRETTY_FUNCTION__, __FILE__, __LINE__};         \
@@ -79,7 +79,7 @@ static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* 
     wfcprintf(stderr, BLUE, L"%ls\n", lang_ctx->cur_symbol_ptr + 1);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 LangErr_t Tokenize(LangCtx_t* lang_ctx)
 {
@@ -205,7 +205,7 @@ static LangErr_t ProcessOperatorTokenCase(LangCtx_t* lang_ctx, bool* do_continue
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t ProcessOperatorTokenRepetitions(LangCtx_t* lang_ctx, size_t op_code)
 {
@@ -231,7 +231,7 @@ static LangErr_t ProcessOperatorTokenRepetitions(LangCtx_t* lang_ctx, size_t op_
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
 {
@@ -255,7 +255,7 @@ static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
 {
@@ -289,25 +289,25 @@ static LangErr_t ProcessIdentifierTokenCase(LangCtx_t* lang_ctx, bool* do_contin
     return LANG_SUCCESS;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 #undef PUSH_TOKEN_
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static inline int IsAcceptableSymbol(wint_t ch)
 {
    return iswalnum(ch) || ch == '_';
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static inline int IsAcceptableFirstSymbol(wint_t ch)
 {
     return iswalpha(ch) || ch == '_';
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 static void ProcessSpacesCase(LangCtx_t* lang_ctx, bool* do_continue)
 {

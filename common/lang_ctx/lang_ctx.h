@@ -92,6 +92,8 @@ typedef struct LangCtx
 
     bool          getting_function_params;
 
+    bool          first_point;
+
 #endif /* BACKEND */
 
 #ifdef REVERSE

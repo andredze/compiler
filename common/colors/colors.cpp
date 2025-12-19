@@ -1,7 +1,7 @@
 #include "colors.h"
 #include <wchar.h>
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int cprintf(const char * const color, const char* fmt, ...)
 {
@@ -16,14 +16,14 @@ int cprintf(const char * const color, const char* fmt, ...)
     return return_value;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int vcprintf(const char * const color, const char* fmt, va_list args)
 {
     return vfcprintf(stdout, color, fmt, args);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int fcprintf(FILE* stream, const char * const color, const char* fmt, ...)
 {
@@ -38,7 +38,7 @@ int fcprintf(FILE* stream, const char * const color, const char* fmt, ...)
     return return_value;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int vfcprintf(FILE* stream, const char * const color, const char* fmt, va_list args)
 {
@@ -54,7 +54,7 @@ int vfcprintf(FILE* stream, const char * const color, const char* fmt, va_list a
     return fprintf(stream, "%s%s%s", color, print_buffer, RESET_COLOR);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int wcprintf(const char * const color, const wchar_t* fmt, ...)
 {
@@ -69,14 +69,14 @@ int wcprintf(const char * const color, const wchar_t* fmt, ...)
     return return_value;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int wvcprintf(const char * const color, const wchar_t* fmt, va_list args)
 {
     return wvfcprintf(stdout, color, fmt, args);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int wfcprintf(FILE* stream, const char * const color, const wchar_t* fmt, ...)
 {
@@ -91,7 +91,7 @@ int wfcprintf(FILE* stream, const char * const color, const wchar_t* fmt, ...)
     return return_value;
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
 
 int wvfcprintf(FILE* stream, const char * const color, const wchar_t* fmt, va_list args)
 {
@@ -107,4 +107,4 @@ int wvfcprintf(FILE* stream, const char * const color, const wchar_t* fmt, va_li
     return fwprintf(stream, L"%s%ls%s", color, print_buffer, RESET_COLOR);
 }
 
-//------------------------------------------------------------------------------------------
+//==========================================================================================
