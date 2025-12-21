@@ -7,6 +7,16 @@
 
 /* =============== Domain Specific Language for my programming language =============== */
 
+#define SET_LEXER_ERROR_(error, node, expected, ...)                                       \
+        BEGIN                                                                              \
+        LANG_SET_ERROR_(lang_ctx, LANG_LEXER_SYNTAX_ERROR, NULL, expected, ##__VA_ARGS__); \
+        END
+
+#define SET_PARSER_ERROR_(node, expected, ...)                                              \
+        BEGIN                                                                               \
+        LANG_SET_ERROR_(lang_ctx, LANG_PARSER_SYNTAX_ERROR, node, expected, ##__VA_ARGS__); \
+        END
+
 #ifdef FRONTEND
 #define IDENTIFIER_(id_index) LangIdentifierNodeCtor    (lang_ctx, (name_index))
 #endif /* FRONTEND */
@@ -62,6 +72,8 @@
         SRC_PRINT_(L"%ls", OP_CASES_TABLE[(opcode_)].name); \
         END
 
+//------------------------------------------------------------------------------------------
+
 #define ASM_PRINT_(...)                                 \
         BEGIN                                           \
         fwprintf(lang_ctx->output_file, ##__VA_ARGS__); \
@@ -86,6 +98,9 @@
 #ifdef _DSL_UNDEF_
 
 //==========================================================================================
+
+#undef SET_PARSER_ERROR_
+#undef SET_LEXER_ERROR_
 
 #undef OPERATOR_
 #undef IDENTIFIER_

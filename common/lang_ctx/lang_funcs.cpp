@@ -1,10 +1,235 @@
 #include "lang_funcs.h"
+#include "op_cases.h"
 
 //==========================================================================================
 
 //FIXME - stack realloc дропается дамп, скорее всего реаллок не работает
 
-//——————————————————————————————————————————————————————————————————————————————————————————
+//==========================================================================================
+
+void LangSetError(LangCtx_t*       lang_ctx,
+                  LangErrorInfo_t* error_info,
+                  const wchar_t*   message,
+                  ...)
+{
+    assert(lang_ctx);
+
+    va_list message_args = {};
+
+    va_start(message_args, message);
+
+    wchar_t buffer[MAX_BUFFER_SIZE] = {};
+
+    vswprintf(buffer, sizeof(buffer), message, message_args);
+
+    lang_ctx->error_info = *error_info;
+
+    wcsncpy(lang_ctx->error_info.message, buffer,
+            sizeof(lang_ctx->error_info.message));
+
+    va_end(message_args);
+}
+
+//==========================================================================================
+
+void LangPrintError(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    wprintf(L"%s", RED);
+
+    LangErrorInfo_t error_info = lang_ctx->error_info;
+
+    LangErr_t error = error_info.error;
+
+    wprintf(L"---------------------------------------------"
+            L"---------------------------------------------\n\n"
+            L"ERROR: %d in function %s at %s:%d\n\n",
+            error, error_info.func, error_info.file, error_info.line);
+
+    if (error == LANG_PARSER_SYNTAX_ERROR ||
+        error == LANG_LEXER_SYNTAX_ERROR)
+    {
+        LangPrintSyntaxError(lang_ctx);
+    }
+
+    wprintf(L"---------------------------------------------"
+            L"---------------------------------------------\n");
+
+    wprintf(L"%s", RESET_COLOR);
+}
+
+//==========================================================================================
+
+static void LangPrintErrorCodePart(LangCtx_t* lang_ctx, TreeNode_t* node);
+
+//------------------------------------------------------------------------------------------
+
+void LangPrintSyntaxError(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    LangErrorInfo_t error_info = lang_ctx->error_info;
+
+    if (error_info.error == LANG_PARSER_SYNTAX_ERROR)
+        wprintf(L"PARSER ERROR: \n\n");
+
+    if (error_info.error == LANG_LEXER_SYNTAX_ERROR)
+        wprintf(L"LEXER ERROR: \n\n");
+
+    wprintf(L"expected:\n"
+            L"\t%ls\n", error_info.message);
+
+    wprintf(L"got:\n");
+
+    LangPrintNode(lang_ctx, error_info.node);
+
+    wprintf(L"\n");
+    wprintf(L"syntax error\n\n");
+
+    LangPrintErrorCodePart(lang_ctx, error_info.node);
+}
+
+//==========================================================================================
+
+static wchar_t* FindLineStart(wchar_t* buffer_start, wchar_t* buffer_end, size_t line);
+
+//------------------------------------------------------------------------------------------
+
+static void LangPrintErrorCodePart(LangCtx_t* lang_ctx, TreeNode_t* node)
+{
+    assert(lang_ctx);
+    assert(node);
+
+    if (lang_ctx->buffer == NULL)
+    {
+        wprintf(L"\terror: can not print: no buffer given\n");
+        return;
+    }
+
+    wchar_t* buffer_start = lang_ctx->buffer;
+    wchar_t* buffer_end   = buffer_start + lang_ctx->buffer_size;
+
+    if (node->buf_pos == NULL || node->buf_pos > buffer_end)
+    {
+        wprintf(L"error: node->cur_pos was not set\n");
+        return;
+    }
+
+    wchar_t* cur_pos = FindLineStart(buffer_start, buffer_end, node->line);
+
+    if (cur_pos == NULL)
+        return;
+
+    wprintf(L"%s", RESET_COLOR);
+
+    wprintf(L"%-5d | ");
+
+    while (cur_pos < node->buf_pos)
+    {
+        putwc(*cur_pos, stdout);
+        cur_pos++;
+    }
+
+    wchar_t* line_end = wcschr(node->buf_pos, L'\n');
+
+    if (line_end != NULL)
+        *line_end = L'\0';
+
+    wprintf(L"%s", RED);
+
+    wprintf(L"%-5d | %ls"
+            L"      |\n"
+            L"      |\n",
+            node->line,
+            node->buf_pos);
+}
+
+//==========================================================================================
+
+static wchar_t* FindLineStart(wchar_t* buffer_start, wchar_t* buffer_end, size_t line)
+{
+    assert(buffer_start);
+    assert(buffer_end);
+
+    wchar_t* cur_pos = buffer_start;
+
+    size_t enters_count = 0;
+
+    while (enters_count + 1 < line)
+    {
+        cur_pos = wcschr(cur_pos, L'\n');
+
+        if (cur_pos == NULL || cur_pos >= buffer_end)
+        {
+            wprintf(L"\terror: cur_line is outside of buffer\n");
+            return NULL;
+        }
+
+        enters_count++;
+    }
+
+    return cur_pos;
+}
+
+//==========================================================================================
+
+void LangPrintNode(LangCtx_t* lang_ctx, TreeNode_t* node)
+{
+    assert(lang_ctx);
+
+    if (node == NULL)
+    {
+        wprintf(L"node = NULL\n");
+    }
+
+    wprintf(
+LR"(    node [%p]:
+        left  [%p]
+        right [%p]
+        type = %ls;
+        value = )",
+        node,
+        node->left,
+        node->right,
+        TYPE_CASES_TABLE[node->data.type].name);
+
+    switch (node->data.type)
+    {
+        case TYPE_NUM:
+            wprintf(LANG_NUM_SPEC, node->data.value.number);
+            break;
+
+        case TYPE_OP:
+            wprintf(L"%ls", OP_CASES_TABLE[node->data.value.opcode].name);
+            break;
+
+        case TYPE_ID:
+        case TYPE_VAR:
+        case TYPE_VAR_DECL:
+        case TYPE_FUNC_DECL:
+        case TYPE_FUNC_CALL:
+            wprintf(L"%ls", lang_ctx->names_pool.data[node->data.value.id]);
+            break;
+
+        default:
+            wprintf(L"UNKNOWN");
+    }
+
+    wprintf(L";\n");
+}
+
+//==========================================================================================
+
+const wchar_t* GetOpName(Operator_t opcode)
+{
+    if (!(0 <= opcode && opcode < OPERATORS_COUNT))
+        return NULL;
+
+    return OP_CASES_TABLE[opcode].name;
+}
+
+//==========================================================================================
 
 LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 {
@@ -232,6 +457,20 @@ LangErr_t LangNamesPoolPush(NamesPool_t* names_pool, const wchar_t* name_buf, si
     names_pool->data[names_pool->size++] = name;
 
     return LANG_SUCCESS;
+}
+
+//==========================================================================================
+
+wchar_t* LangGetIdName(NamesPool_t* names_pool, Identifier_t index)
+{
+    assert(names_pool);
+
+    if (!(index <= names_pool->size))
+    {
+        return NULL;
+    }
+
+    return names_pool->data[index];
 }
 
 //==========================================================================================

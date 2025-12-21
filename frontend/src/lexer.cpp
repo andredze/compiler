@@ -39,6 +39,8 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx);
     // TODO: mystrncmp позволяющий любой регистр
     // TODO: алгорифмы Маркова
 
+// FIXME: delete
+
 static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* func,
                              const int  line,     const char* fmt, ...)
 {
@@ -90,7 +92,7 @@ LangErr_t Tokenize(LangCtx_t* lang_ctx)
 
     wfcprintf(stderr, BLUE, L"Tokenizing...\n");
 
-    WDPRINTF(L"LEXER: code = %ls\n", lang_ctx->cur_symbol_ptr);
+    // WDPRINTF(L"LEXER: code = %ls\n", lang_ctx->cur_symbol_ptr);
 
     while (*lang_ctx->cur_symbol_ptr != '\0')
     {
@@ -139,7 +141,9 @@ static LangErr_t ParseToken(LangCtx_t* lang_ctx)
     if (status != LANG_SUCCESS || do_continue)
         return status;
 
-    SYNTAX_ERROR(lang_ctx, "Unknown symbol");
+    SET_LEXER_ERROR_(LANG_LEXER_SYNTAX_ERROR, NULL, L"Unacceptable symbol");
+
+    return LANG_LEXER_SYNTAX_ERROR;
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -222,7 +226,8 @@ static LangErr_t ProcessOperatorTokenRepetitions(LangCtx_t* lang_ctx, size_t op_
         if (!(wcsncmp(lang_ctx->cur_symbol_ptr, opname, opname_len) == 0 &&
               !IsAcceptableSymbol(lang_ctx->cur_symbol_ptr[opname_len])))
         {
-            SYNTAX_ERROR(lang_ctx, "operator should repeat %d times", op_repeat_times);
+            SET_LEXER_ERROR_(LANG_LEXER_SYNTAX_ERROR, NULL, L"operator should repeat %d times", op_repeat_times);
+            // SYNTAX_ERROR(lang_ctx, "operator should repeat %d times", op_repeat_times);
         }
 
         lang_ctx->cur_symbol_ptr += opname_len;
@@ -240,6 +245,14 @@ static LangErr_t ProcessNumberTokenCase(LangCtx_t* lang_ctx, bool* do_continue)
 
     if ((*lang_ctx->cur_symbol_ptr != L'-') && !isdigit(*lang_ctx->cur_symbol_ptr))
         return LANG_SUCCESS;
+
+    if (*lang_ctx->cur_symbol_ptr != L'-' && !isdigit(*lang_ctx->cur_symbol_ptr++))
+    {
+        SET_LEXER_ERROR_(LANG_LEXER_SYNTAX_ERROR, NULL,
+                         L"Invalid sequence: minus should be followed with a number");
+
+        return LANG_LEXER_SYNTAX_ERROR;
+    }
 
     *do_continue = true;
 

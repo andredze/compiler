@@ -327,6 +327,12 @@ TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDum
 
     FILE* fp = lang_ctx->debug.fp;
 
+    if (fp == NULL)
+    {
+        WPRINTERR("fp is NULL");
+        return TREE_SUCCESS;
+    }
+
     fwprintf(fp, L"<pre>\n<h3><font color=blue>");
 
     va_list args = {};

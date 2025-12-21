@@ -10,7 +10,7 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-int   ReadFile   (FILE* fp, wchar_t** buffer_ptr, const char* file_path);
+int   ReadFile   (FILE* fp, wchar_t** buffer_ptr, const char* file_path, size_t* buf_size);
 int   CountSize  (const char* file_path, size_t* size);
 char* GetFileName(char* file_path);
 

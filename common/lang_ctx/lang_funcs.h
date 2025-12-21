@@ -10,6 +10,29 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#define LANG_SET_ERROR_(lang_ctx, error, node, message, ...)                      \
+        BEGIN                                                                     \
+            LangErrorInfo_t info_ = {error, node, __func__, __FILE__, __LINE__};  \
+            LangSetError(lang_ctx, &info_, message, ##__VA_ARGS__);               \
+        END
+
+//------------------------------------------------------------------------------------------
+
+const wchar_t* GetOpName(Operator_t opcode);
+
+//------------------------------------------------------------------------------------------
+
+void LangSetError(LangCtx_t*       lang_ctx,
+                  LangErrorInfo_t* error_info,
+                  const wchar_t*   message,
+                  ...);
+
+void LangPrintNode       (LangCtx_t* lang_ctx, TreeNode_t* node);
+void LangPrintError      (LangCtx_t* lang_ctx);
+void LangPrintSyntaxError(LangCtx_t* lang_ctx);
+
+//------------------------------------------------------------------------------------------
+
 LangErr_t   LangCtxCtor           (LangCtx_t* lang_ctx);
 void        LangCtxDtor           (LangCtx_t* lang_ctx);
 
@@ -22,6 +45,7 @@ LangErr_t   LangOpenReverseFile   (LangCtx_t* lang_ctx);
 LangErr_t LangNamesPoolCtor       (NamesPool_t* names_pool);
 void      LangNamesPoolDtor       (NamesPool_t* names_pool);
 LangErr_t LangNamesPoolPush       (NamesPool_t* names_pool, const wchar_t* name_buf, size_t* name_index);
+wchar_t*  LangGetIdName           (NamesPool_t* names_pool, Identifier_t index);
 
 //==========================================================================================
 
@@ -43,6 +67,7 @@ TreeNode_t* LangGetCurrentToken   (LangCtx_t* lang_ctx);
 
 const size_t DEFAULT_ID_TABLE_CAPACITY   = 64;
 const size_t DEFAULT_NAMES_POOL_CAPACITY = 64;
+const size_t MAX_BUFFER_SIZE             = 256;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

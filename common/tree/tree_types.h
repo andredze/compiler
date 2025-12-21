@@ -63,6 +63,9 @@ typedef struct TreeNode
 
     TreeNode*  parent;
 
+    size_t     line;
+    wchar_t*   buf_pos;
+
 } TreeNode_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————

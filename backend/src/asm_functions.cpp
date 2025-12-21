@@ -682,7 +682,7 @@ LangErr_t AssembleMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
                 IS_OPERATOR_(node, OP_MUL) ||
                 IS_OPERATOR_(node, OP_DIV) ||
                 IS_OPERATOR_(node, OP_POW));
-+
+
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 

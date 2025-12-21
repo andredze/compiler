@@ -10,6 +10,10 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#define LANG_NUM_SPEC L"%lg"
+
+typedef double Number_t;
+
 typedef enum IdType
 {
     ID_TYPE_UNKNOWN  = 0,
@@ -18,8 +22,6 @@ typedef enum IdType
 } IdType_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
-
-//FIXME - структура id
 
 typedef struct IdData
 {
@@ -56,13 +58,68 @@ typedef struct IdTable
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+typedef enum LangErr
+{
+    LANG_SUCCESS = 0,
+
+    LANG_SYNTAX_ERROR,
+    LANG_MEMALLOC_ERROR,
+    LANG_FILE_ERROR,
+    LANG_STACK_ERROR,
+    LANG_TREE_ERROR,
+
+    LANG_INVALID_INPUT,
+    LANG_INVALID_AST_INPUT,
+    LANG_BACKEND_AST_SYNTAX_ERROR,
+    LANG_UNKNOWN_TOKEN_TYPE,
+    LANG_UNASSEMBLE_OPERATOR,
+    LANG_REVERSEBLE_OPERATOR,
+
+    LANG_PARSER_SYNTAX_ERROR,
+    LANG_LEXER_SYNTAX_ERROR,
+
+    LANG_VAR_REDECLARATION,
+    LANG_VAR_NOT_DECLARED,
+    LANG_FUNC_DECL_IN_FUNC,
+    LANG_FUNC_REDECLARATION,
+    LANG_FUNC_NOT_DECLARED,
+    LANG_FUNC_USED_AS_VAR,
+    LANG_WRONG_ARGS_COUNT
+
+} LangErr_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+const size_t MAX_MESSAGE_LEN = 128;
+
+//------------------------------------------------------------------------------------------
+
+typedef struct
+{
+    enum LangErr   error;
+
+    TreeNode_t*    node;
+
+    const char*    func;
+    const char*    file;
+    int            line;
+
+    wchar_t        message[MAX_MESSAGE_LEN];
+
+} LangErrorInfo_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 typedef struct LangCtx
 {
     char          ast_file_name[MAX_FILENAME_LEN];
 
+    LangErrorInfo_t error_info;
+
 //TODO: код ошибки вся инфа об ошибке передавать до main
     wchar_t*      cur_symbol_ptr; // cur
     wchar_t*      buffer;
+    size_t        buffer_size;
     size_t        current_line;
 
     Stack_t       tokens;
@@ -103,43 +160,6 @@ typedef struct LangCtx
 #endif /* REVERSE */
 
 } LangCtx_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef enum LangErr
-{
-    LANG_SUCCESS = 0,
-
-    LANG_SYNTAX_ERROR,
-    LANG_MEMALLOC_ERROR,
-    LANG_FILE_ERROR,
-    LANG_STACK_ERROR,
-    LANG_TREE_ERROR,
-    LANG_INVALID_INPUT,
-    LANG_INVALID_AST_INPUT,
-    LANG_BACKEND_AST_SYNTAX_ERROR,
-    LANG_UNKNOWN_TOKEN_TYPE,
-    LANG_UNASSEMBLE_OPERATOR,
-    LANG_REVERSEBLE_OPERATOR,
-    LANG_VAR_REDECLARATION,
-    LANG_VAR_NOT_DECLARED,
-    LANG_FUNC_DECL_IN_FUNC,
-    LANG_FUNC_REDECLARATION,
-    LANG_FUNC_NOT_DECLARED,
-    LANG_FUNC_USED_AS_VAR,
-    LANG_WRONG_ARGS_COUNT
-
-} LangErr_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-// const char* const LANG_STR_ERRORS[] =
-// {
-//     [LANG_SUCCESS]          = "Lang ctx is ok",
-//     [LANG_SYNTAX_ERROR]     = "",
-//     [LANG_MEMALLOC_ERROR]   = "",
-//     [LANG_FILE_ERROR]       = ""
-// };
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

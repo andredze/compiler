@@ -4,7 +4,7 @@
 
 //==========================================================================================
 
-int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path)
+int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path, size_t* buf_size)
 {
     assert(buffer_ptr != NULL);
     assert(file_path  != NULL);
@@ -57,6 +57,7 @@ int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path)
     WDPRINTF(L"wchar_count = %zu wchar_t;\n", wchar_count);
 
     *buffer_ptr = (wchar_t*) calloc(wchar_count + 1, sizeof(wchar_t));
+    *buf_size   = wchar_count;
 
     if (*buffer_ptr == NULL)
     {

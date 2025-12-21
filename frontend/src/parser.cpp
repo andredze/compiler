@@ -19,45 +19,45 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static TreeNode_t* ParseProgram            (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseBody               (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseProgram             (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseBody                (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseCmdSeparator       (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseCmdSeparator        (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseFunctionDeclaration(LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseFunctionParameters (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseFunctionDeclaration (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseFunctionParameters  (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseStatement          (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseFunctionStatement  (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseFunctionBlock      (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseStatement           (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseFunctionStatement   (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseFunctionBlock       (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseReturn             (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseReturn              (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseIfStatement        (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseWhileStatement     (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseBlockStatement     (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseIfStatement         (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseWhileStatement      (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseBlockStatement      (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseVariableDeclaration(LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseVariableDeclaration (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseAssignment         (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseAssignment          (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseExpression         (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseTerm               (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParsePower              (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseFactor             (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseExpression          (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseTerm                (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParsePower               (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseFactor              (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseVariable           (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseVariable            (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseBracketsExpression (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseFunctionCall       (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseFunctionArguments  (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseBracketsExpression  (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseFunctionCall        (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseFunctionArguments   (LangCtx_t*  lang_ctx);
 
-static TreeNode_t* ParseUnaryOperatorCall  (LangCtx_t*  lang_ctx);
-static TreeNode_t* ParseUnaryOperator      (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseUnaryOperatorCall   (LangCtx_t*  lang_ctx);
+static TreeNode_t* ParseUnaryOperator       (LangCtx_t*  lang_ctx);
 
-static void        SetIdentifierTokenType  (LangCtx_t*  lang_ctx,
-                                            TreeNode_t* cur_token,
-                                            TokenType_t new_type);
+static void        SetIdentifierTokenType   (LangCtx_t*  lang_ctx,
+                                             TreeNode_t* cur_token,
+                                             TokenType_t new_type);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -125,10 +125,11 @@ static TreeNode_t* ParseBody(LangCtx_t* lang_ctx)
 
         if (separator == NULL)
         {
-            WPRINTERR("There should be a cmd separator after statement, cur_tok_ind = %zu",
-                        lang_ctx->cur_token_index);
-            PARSER_DUMP_(lang_ctx->tokens.data[lang_ctx->cur_token_index - 1],
-                            L"expected to have a separator after");
+            SET_PARSER_ERROR_(statement, L"Missing \"%ls\"", GetOpName(OP_CMD_SEPARATOR));
+            // WPRINTERR("There should be a cmd separator after statement, cur_tok_ind = %zu",
+            //             lang_ctx->cur_token_index);
+            // PARSER_DUMP_(lang_ctx->tokens.data[lang_ctx->cur_token_index - 1],
+            //                 L"expected to have a separator after");
             return NULL;
         }
 
@@ -166,7 +167,11 @@ static TreeNode_t* ParseFunctionDeclaration(LangCtx_t* lang_ctx)
 
     if (function_name == NULL || !IS_IDENTIFIER_(function_name))
     {
+        SET_PARSER_ERROR_(func_decl_lhs, L"Missing function name after \"%ls\"",
+                                         GetOpName(OP_FUNCTION_DECL_LHS));
+
         WPRINTERR(L"Expected function name after function declaration lhs");
+
         return NULL;
     }
 
@@ -193,6 +198,9 @@ static TreeNode_t* ParseFunctionDeclaration(LangCtx_t* lang_ctx)
 
     if (function_block == NULL)
     {
+        SET_PARSER_ERROR_(func_decl_rhs, L"Missing function \"%ls\" body",
+                          LangGetIdName(&lang_ctx->names_pool, function_name->data.value.id));
+
         WPRINTERR(L"Expected function block after function declaration");
         return NULL;
     }
@@ -330,62 +338,34 @@ static TreeNode_t* ParseFunctionBlock(LangCtx_t* lang_ctx)
 
 //==========================================================================================
 
+#define TRY_PARSING_(ParseFunc_, message)                               \
+        BEGIN                                                           \
+            cur_token = ParseFunc_(lang_ctx);                           \
+                                                                        \
+            if (cur_token != NULL)                                      \
+            {                                                           \
+                PARSER_DUMP_(cur_token, L"statement: got %ls" message); \
+                return cur_token;                                       \
+            }                                                           \
+        END
+
 static TreeNode_t* ParseStatement(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
 
     TreeNode_t* cur_token = NULL;
 
-    cur_token = ParseIfStatement(lang_ctx);
-
-    if (cur_token != NULL)
-    {
-        PARSER_DUMP_(cur_token, L"statement: got if statement");
-        return cur_token;
-    }
-
-    cur_token = ParseWhileStatement(lang_ctx);
-
-    if (cur_token != NULL)
-    {
-        PARSER_DUMP_(cur_token, L"statement: got while statement");
-        return cur_token;
-    }
-
-    cur_token = ParseVariableDeclaration(lang_ctx);
-
-    if (cur_token != NULL)
-    {
-        PARSER_DUMP_(cur_token, L"statement: got variable declaration");
-        return cur_token;
-    }
-
-    cur_token = ParseFunctionDeclaration(lang_ctx);
-
-    if (cur_token != NULL)
-    {
-        PARSER_DUMP_(cur_token, L"statement: got function declaration");
-        return cur_token;
-    }
-
-    cur_token = ParseAssignment(lang_ctx);
-
-    if (cur_token != NULL)
-    {
-        PARSER_DUMP_(cur_token, L"statement: got assignment");
-        return cur_token;
-    }
-
-    cur_token = ParseExpression(lang_ctx);
-
-    if (cur_token != NULL)
-    {
-        PARSER_DUMP_(cur_token, L"statement: got expression");
-        return cur_token;
-    }
+    TRY_PARSING_(ParseIfStatement,          L"statement");
+    TRY_PARSING_(ParseWhileStatement,       L"statement");
+    TRY_PARSING_(ParseVariableDeclaration,  L"declaration");
+    TRY_PARSING_(ParseFunctionDeclaration,  L"declaration");
+    TRY_PARSING_(ParseAssignment,           L"assignment");
+    TRY_PARSING_(ParseExpression,           L"expression");
 
     return NULL;
 }
+
+#undef TRY_PARSING_
 
 //==========================================================================================
 

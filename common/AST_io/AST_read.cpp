@@ -23,7 +23,7 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path)
 
     wchar_t* buffer = NULL;
 
-    if (ReadFile(fp, &buffer, ast_file_path))
+    if (ReadFile(fp, &buffer, ast_file_path, &lang_ctx->buffer_size))
     {
         WPRINTERR("Error with reading file");
         free(buffer);
