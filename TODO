@@ -7,3 +7,6 @@
 4) syntax errors
 5) clean debug info
 6) dump processor clean
+
+
+сделать аргументы с помощью getopt и --help

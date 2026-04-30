@@ -300,6 +300,8 @@ TreeErr_t TreeOpenLogFile(LangCtx_t* lang_ctx)
         return TREE_FILE_ERROR;
     }
 
+    WDPRINTF(L"Opened logfile %ls\n", lang_ctx->debug.log_file_path);
+
     return TREE_SUCCESS;
 }
 
@@ -307,7 +309,9 @@ TreeErr_t TreeOpenLogFile(LangCtx_t* lang_ctx)
 
 void TreeCloseLogFile(LangCtx_t* lang_ctx)
 {
-    fclose(lang_ctx->debug.fp);
+    if (lang_ctx->debug.fp)
+        fclose(lang_ctx->debug.fp);
+    
     lang_ctx->debug.fp = NULL;
 }
 

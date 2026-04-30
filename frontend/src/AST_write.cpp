@@ -16,7 +16,8 @@ LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
 
     WDPRINTF(L"ast filename = %s;", lang_ctx->ast_file_name);
 
-    snprintf(data_file_path, sizeof(data_file_path), "AST/%s.txt", lang_ctx->ast_file_name);
+    snprintf(data_file_path, sizeof(data_file_path), "%s/%s.txt", 
+             AST_DIR_NAME, lang_ctx->ast_file_name);
 
     FILE* fp = fopen(data_file_path, "w");
 

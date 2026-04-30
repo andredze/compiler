@@ -43,10 +43,12 @@ int main(int argc, char* argv[])
 
     } while (0);
 
-    if (lang_ctx.error_info.error != LANG_SUCCESS)
-        LangPrintError(&lang_ctx);
+    // if (lang_ctx.error_info.error != LANG_SUCCESS)
+    //     LangPrintError(&lang_ctx);
 
-    LangCtxDtor(&lang_ctx);
+    LangShowLogs(&lang_ctx);
+    
+    LangCtxDtor(&lang_ctx);    
 
     return EXIT_SUCCESS;
 }

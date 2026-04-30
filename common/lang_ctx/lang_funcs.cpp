@@ -273,6 +273,38 @@ LangErr_t LangCtxCtor(LangCtx_t* lang_ctx)
 
 //==========================================================================================
 
+LangErr_t LangShowLogs(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    WDPRINTF(L"Showing logs %ls start\n", lang_ctx->debug.log_file_path);
+
+    if (lang_ctx->debug.log_file_path[0] == L'\0')
+    {
+        return LANG_SUCCESS;
+    }
+
+    char command      [MAX_COMMAND_LEN]  = {};
+    char log_file_path[MAX_DIR_PATH_LEN] = {};
+
+    wcstombs(log_file_path, lang_ctx->debug.log_file_path, 
+             wcslen(lang_ctx->debug.log_file_path));
+
+    snprintf(command, sizeof(command), "xdg-open %s", log_file_path);
+
+    if (system(command) < 0)
+    {
+        PRINTERR("System command %s failed", command);
+        return LANG_SYSTEM_ERROR;
+    }
+
+    WDPRINTF(L"Showing logs end");
+
+    return LANG_SUCCESS;
+}
+
+//==========================================================================================
+
 void LangCtxDtor(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
