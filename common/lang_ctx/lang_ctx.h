@@ -3,64 +3,11 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#include "id_types.h"
 #include "tree_types.h"
 #include "stack.h"
 #include <stdio.h>
 #include <wchar.h>
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-#define LANG_NUM_SPEC L"%lg"
-
-typedef double Number_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef enum IdType
-{
-    ID_TYPE_UNKNOWN  = 0,
-    ID_TYPE_VARIABLE = 1,
-    ID_TYPE_FUNCTION = 2
-} IdType_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef struct IdData
-{
-    size_t    name_index;
-
-    wchar_t*  name;
-
-    IdType_t  type;
-
-    size_t    memory_needed;
-    size_t    n_params;
-
-    int       addr;
-
-} IdData_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef struct NamesPool
-{
-    wchar_t** data;
-
-    size_t    size;
-    size_t    capacity;
-
-} NamesPool_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef struct IdTable
-{
-    IdData_t* data;
-
-    size_t    size;
-    size_t    capacity;
-
-} IdTable_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -117,6 +64,21 @@ typedef struct
     wchar_t        message[MAX_MESSAGE_LEN];
 
 } LangErrorInfo_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+// typedef struct LangCtx
+// {
+//     Tree_t      tree;
+
+//     NamesPool_t names_pool;
+
+//     IdTable_t   main_id_table;
+//     IdTable_t   func_id_table;
+
+//     size_t      global_vars_count;
+// }
+// LangCtx_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

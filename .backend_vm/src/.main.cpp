@@ -1,8 +1,6 @@
 #include "backend.h"
 #include "AST_read.h"
 #include "lang_funcs.h"
-#include "backend.h"
-#include "emission.h"
 #include <locale.h>
 
 //==========================================================================================
@@ -13,26 +11,25 @@ int main(int argc, char* argv[])
 
     if (argc == 1)
     {
-        WPRINTERR("Expected AST input file path through terminal args");
+        WPRINTERR("Expected ast input file through terminal args");
         return EXIT_FAILURE;
     }
 
-    BackendCtx_t backend_ctx = {};
+    LangCtx_t lang_ctx = {};
 
-    do
-    {
-        if (BackendCtor(&backend_ctx))
+    if (LangCtxCtor(&lang_ctx))
+        return EXIT_FAILURE;
+
+    do {
+        if (ASTReadData(&lang_ctx, argv[1]))
             break;
 
-        if (ASTReadData(&backend_ctx->lang, argv[1]))
+        LangIdTableDump(&lang_ctx.main_id_table);
+
+        if (LangOpenAsmFile(&lang_ctx))
             break;
 
-        LangIdTableDump(&backend_ctx->lang.main_id_table);
-
-        if (BackendOpenAsmFile(&backend_ctx))
-            break;
-
-        if (EmitProgram(&backend_ctx))
+        if (AssembleProgram(&lang_ctx))
             break;
 
     }

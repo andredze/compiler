@@ -7,6 +7,7 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#ifdef DEBUG
 #define PARSER_DUMP_(node, fmt, ...)                                              \
         BEGIN                                                                     \
         GRAPH_DUMP_(lang_ctx, (node), DUMP_SHORT, fmt, ##__VA_ARGS__);            \
@@ -16,6 +17,9 @@
                    (fmt), (node), #node, TYPE_CASES_TABLE[(node)->data.type].name,\
                    (node)->left, (node)->right);                                  \
         END
+#else
+#define PARSER_DUMP_(node, fmt, ...) ;
+#endif /* DEBUG */
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -1137,7 +1141,7 @@ static TreeNode_t* ParseFunctionCall(LangCtx_t* lang_ctx)
 
     //TODO - check args_count in ID_TABLE
     //TODO - устанавливать ошибку внутри функции
-    if (LangFuncCallRightArgs(lang_ctx, func_id_index, args_count))
+    if (LangIsFuncCallArgsCorrect(lang_ctx, func_id_index, args_count))
     {
         return NULL;
     }

@@ -74,9 +74,19 @@
 
 //------------------------------------------------------------------------------------------
 
-#define ASM_PRINT_(...)                                 \
+#define ASM_PRINT_NO_TAB(...)                           \
         BEGIN                                           \
-        fwprintf(lang_ctx->output_file, ##__VA_ARGS__); \
+        fwprintf(backend_ctx->asm_file, ##__VA_ARGS__); \
+        END
+
+#define ASM_PRINT_(...)                                     \
+        BEGIN                                               \
+        fwprintf(backend_ctx->asm_file, L"\t" __VA_ARGS__); \
+        END
+
+#define ELF_BYTE_SET_(byte)                                       \
+        BEGIN                                                     \
+        backend_ctx->code_buffer[backend_ctx->code_pos++] = byte; \
         END
 
 #define ASM_VERIFY_(cond)                                 \
@@ -84,7 +94,7 @@
         if (!(cond))                                      \
         {                                                 \
             WPRINTERR(L"ASM_VERIFY_(%s) dropped", #cond); \
-            return LANG_BACKEND_AST_SYNTAX_ERROR;         \
+            return BACKEND_INVALID_AST_INPUT;             \
         }                                                 \
         END
 

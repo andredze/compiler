@@ -46,7 +46,9 @@ int main(int argc, char* argv[])
     // if (lang_ctx.error_info.error != LANG_SUCCESS)
     //     LangPrintError(&lang_ctx);
 
+#ifdef TREE_DEBUG
     LangShowLogs(&lang_ctx);
+#endif /* TREE_DEBUG */
     
     LangCtxDtor(&lang_ctx);    
 

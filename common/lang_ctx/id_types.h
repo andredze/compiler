@@ -1,42 +1,65 @@
-#ifndef BACKEND_H
-#define BACKEND_H
+#ifndef ID_TYPES_H
+#define ID_TYPES_H
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#include "common.h"
-#include "tree_types.h"
-#include "id_types.h"
+#include <stdlib.h>
+#include <wchar.h>
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const size_t TYPE_INT_SIZE_IN_BYTES = 4;
+#define LANG_NUM_SPEC L"%d"
+
+typedef int Number_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-typedef struct Backend
+typedef enum IdType
 {
-    char        ast_file_name[MAX_FILENAME_LEN];
-    FILE*       asm_file;
-
-    LangCtx_t   lang;
-
-    size_t      endif_labels_count;
-    size_t      while_labels_count;
-}
-BackendCtx_t;
+    ID_TYPE_UNKNOWN  = 0,
+    ID_TYPE_VARIABLE = 1,
+    ID_TYPE_FUNCTION = 2
+} IdType_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-typedef enum BackendErr
+typedef struct IdData
 {
-    BACKEND_SUCCESS,
-    BACKEND_INVALID_AST_INPUT,
-    BACKEND_CANT_EMIT_OPERATOR,
-    BACKEND_UNKNOWN_TOKEN_TYPE,
-    BACKEND_FILE_ERROR
-}
-BackendErr_t;
+    size_t    name_index;
+
+    wchar_t*  name;
+
+    IdType_t  type;
+
+    size_t    memory_needed;
+    size_t    n_params;
+
+    int       addr;
+
+} IdData_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#endif /* BACKEND_H */
+typedef struct NamesPool
+{
+    wchar_t** data;
+
+    size_t    size;
+    size_t    capacity;
+
+} NamesPool_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+typedef struct IdTable
+{
+    IdData_t* data;
+
+    size_t    size;
+    size_t    capacity;
+
+} IdTable_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+#endif /* ID_TYPES_H */

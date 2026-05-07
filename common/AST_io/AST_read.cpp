@@ -282,7 +282,7 @@ static LangErr_t GetNodeData(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_
             return GetNodeDataNum(node_data, string_data);
 
         case TYPE_ID:
-            WPRINTERR("Type identifier should not be in back end");
+            WPRINTERR("Type identifier should not be in back-end");
             return LANG_INVALID_AST_INPUT;
 
         case TYPE_VAR:

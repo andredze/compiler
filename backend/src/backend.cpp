@@ -1,38 +1,56 @@
 #include "backend.h"
-#include "lang_funcs.h"
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-#define _DSL_DEFINE_
-#include "dsl.h"
+#include "common.h"
 
 //==========================================================================================
 
-LangErr_t AssembleProgram(LangCtx_t* lang_ctx)
+BackendErr_t BackendCtor(BackendCtx_t* backend_ctx)
 {
-    assert(lang_ctx);
+    assert(backend_ctx);
 
-    ASM_PRINT_(L"; push rbp for all global vars\n");
-    ASM_PRINT_(L"PUSH %zu\n", lang_ctx->global_vars_count);
-    ASM_PRINT_(L"POPR RGX\n");
-    ASM_PRINT_(L"PUSHR RGX\n");
-    ASM_PRINT_(L"POPR RHX\n\n");
+    if (LangCtxCtor())
+    {
+        
+    }
 
-    LangErr_t error = LANG_SUCCESS;
-
-    if ((error = AssembleNode(lang_ctx, lang_ctx->tree.dummy->right)))
-        return error;
-
-    ASM_PRINT_(L"; end program\n\n");
-
-    ASM_PRINT_(L"HLT\n");
-
-    return LANG_SUCCESS;
+    return BACKEND_SUCCESS;
 }
 
-//——————————————————————————————————————————————————————————————————————————————————————————
+//==========================================================================================
 
-#define _DSL_UNDEF_
-#include "dsl.h"
+BackendErr_t BackendOpenAsmFile(BackendCtx_t* backend_ctx)
+{
+    assert(backend_ctx);
 
-//——————————————————————————————————————————————————————————————————————————————————————————
+    
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t BackendOpenAsmFile(BackendCtx_t* backend_ctx)
+{
+    assert(backend_ctx);
+
+    char asm_file_path[MAX_FILE_NAME_LEN] = {};
+
+    snprintf(asm_file_path, sizeof(asm_file_path), "asm/%s.asm", 
+             backend_ctx->ast_file_name);
+
+    WDPRINTF(L"Asm file name: %s\n", backend_ctx->ast_file_name);
+    WDPRINTF(L"Opening file %s\n\n", asm_file_path);
+
+    FILE* asm_fp = fopen(asm_file_path, "w");
+
+    if (asm_fp == NULL)
+    {
+        WPRINTERR(L"Failed opening file %s", asm_file_path);        
+        return BACKEND_FILE_ERROR;
+    }
+
+    backend_ctx->asm_file = asm_fp;
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================

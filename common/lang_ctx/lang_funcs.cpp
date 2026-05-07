@@ -347,34 +347,6 @@ void LangCtxDtor(LangCtx_t* lang_ctx)
 
 //==========================================================================================
 
-LangErr_t LangOpenAsmFile(LangCtx_t* lang_ctx)
-{
-    assert(lang_ctx);
-
-    char asm_file_path[MAX_FILE_NAME_LEN];
-
-    snprintf(asm_file_path, sizeof(asm_file_path), "asm/%s.asm", lang_ctx->ast_file_name);
-
-    WDPRINTF(L"Asm file name: %s\n", lang_ctx->ast_file_name);
-    WDPRINTF(L"Opening file %s\n\n",   asm_file_path);
-
-    FILE* asm_fp = fopen(asm_file_path, "w");
-
-    if (asm_fp == NULL)
-    {
-        WPRINTERR(L"Failed opening file %s", asm_file_path);
-        return LANG_FILE_ERROR;
-    }
-
-#ifdef BACKEND
-    lang_ctx->output_file = asm_fp;
-#endif /* BACKEND */
-
-    return LANG_SUCCESS;
-}
-
-//==========================================================================================
-
 LangErr_t LangOpenReverseFile(LangCtx_t* lang_ctx)
 {
     assert(lang_ctx);
@@ -448,7 +420,9 @@ static LangErr_t LangNamesPoolRealloc(NamesPool_t* names_pool);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t LangNamesPoolPush(NamesPool_t* names_pool, const wchar_t* name_buf, size_t* name_index)
+LangErr_t LangNamesPoolPush(NamesPool_t*    names_pool, 
+                            const wchar_t*  name_buf, 
+                            size_t*         name_index)
 {
     assert(name_index != NULL);
     assert(names_pool != NULL);
@@ -548,9 +522,9 @@ LangErr_t LangIdTableCtor(IdTable_t* id_table)
 void LangIdTableDump(IdTable_t* id_table)
 {
     wprintf(L"\n---------dumping id_table %p-----------\n", id_table);
-    wprintf(L".size = %zu\n",  id_table->size);
-    wprintf(L".cap  = %zu\n",  id_table->capacity);
-    wprintf(L".data = %p\n", id_table->data);
+    wprintf(L".size = %zu\n", id_table->size);
+    wprintf(L".cap  = %zu\n", id_table->capacity);
+    wprintf(L".data = %p\n",  id_table->data);
 
     IdData_t* id_data = NULL;
 
@@ -717,7 +691,7 @@ size_t LangIdTableCountVars(IdTable_t* id_table)
 
 //==========================================================================================
 
-LangErr_t LangFuncCallRightArgs(LangCtx_t* lang_ctx, size_t func_id_index, int args_count)
+LangErr_t LangIsFuncCallArgsCorrect(LangCtx_t* lang_ctx, size_t func_id_index, int args_count)
 {
     assert(lang_ctx);
 
