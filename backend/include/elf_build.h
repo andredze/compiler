@@ -1,16 +1,18 @@
-#ifndef AST_WRITE_H
-#define AST_WRITE_H
+#ifndef ELF_BUILD_H
+#define ELF_BUILD_H
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#include "tree_commands.h"
-#include "lang_ctx.h"
-#include "op_cases.h"
+#include "backend.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t ASTWriteData(LangCtx_t* lang_ctx);
+const char * const ELF_DIR_NAME = "elf";
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#endif /* AST_WRITE_H */
+BackendErr_t BuildElf(BackendCtx_t* backend_ctx);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+#endif /* ELF_BUILD_H */

@@ -8,6 +8,9 @@
 5) clean debug info
 6) dump processor clean
 
+MAKEFILE???
+DRIVER
+
 сделать аргументы с помощью getopt и --help
 
 ссылки на источники сохранить когда буду байтики писать вместо асма

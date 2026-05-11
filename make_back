@@ -39,6 +39,7 @@ BACKEND_INCLUDES  := -D BACKEND 		\
 BACKEND_SOURCES := backend/src/main.cpp 			\
                    backend/src/backend.cpp 			\
                    backend/src/emission.cpp 		\
+                   backend/src/elf_build.cpp 		\
                    backend/src/encoding.cpp 		\
                    common/lang_ctx/lang_funcs.cpp 	\
                    common/stack/stack.cpp 			\
@@ -55,7 +56,7 @@ BACKEND_OBJECTS  := $(BACKEND_SOURCES:.cpp=.o)
 BACKEND_TARGET  := back
 
 ifdef DEBUG
-CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG -D DEBUG
+CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG -D DEBUG -D FUNC_BT_DEBUG -D BACKEND_DEBUG
 endif
 
 all: back

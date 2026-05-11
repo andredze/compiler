@@ -18,7 +18,9 @@ const size_t TYPE_INT_SIZE_IN_BYTES = 4;
 typedef struct Backend
 {
     char        ast_file_name[MAX_FILENAME_LEN];
+
     FILE*       asm_file;
+    FILE*       elf_file;
 
     LangCtx_t   lang_ctx;
 

@@ -47,17 +47,22 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define DPRINT_FUNC_ENTER_MSG()                               \
-        BEGIN                                                 \
-        wfcprintf(stderr, PURPLE, L"[Entering] %s (%s:%d)\n", \
-                          __func__, __FILE__, __LINE__);      \
-        END
+#ifdef FUNC_BT_DEBUG
+        #define DPRINT_FUNC_ENTER_MSG()                               \
+                BEGIN                                                 \
+                wfcprintf(stderr, PURPLE, L"[Entering] %s (%s:%d)\n", \
+                                __func__, __FILE__, __LINE__);      \
+                END
 
-#define DPRINT_FUNC_LEAVE_MSG()                               \
-        BEGIN                                                 \
-        wfcprintf(stderr, PURPLE, L"[Leaving ] %s (%s:%d)\n", \
-                          __func__, __FILE__, __LINE__);      \
-        END
+        #define DPRINT_FUNC_LEAVE_MSG()                               \
+                BEGIN                                                 \
+                wfcprintf(stderr, PURPLE, L"[Leaving ] %s (%s:%d)\n", \
+                                __func__, __FILE__, __LINE__);      \
+                END
+#else
+        #define DPRINT_FUNC_ENTER_MSG() ;
+        #define DPRINT_FUNC_LEAVE_MSG() ;
+#endif /* FUNC_BT_DEBUG */
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

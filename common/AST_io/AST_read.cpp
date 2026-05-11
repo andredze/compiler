@@ -1,4 +1,5 @@
 #include "AST_read.h"
+#include "lang_funcs.h"
 
 //==========================================================================================
 
@@ -104,6 +105,10 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx,
     ReadIdTable(lang_ctx, buffer, &i);
 
     free(buffer);
+
+    #ifdef TREE_DEBUG
+        LangIdTableDump(&lang_ctx->main_id_table);
+    #endif /* TREE_DEBUG */
 
     TREE_CALL_DUMP(lang_ctx, NULL, "DUMP AFTER TREE READ DATA %s", ast_file_path);
 

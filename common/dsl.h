@@ -3,7 +3,11 @@
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #include "tree_types.h"
-#include "frontend.h"
+
+#ifdef FRONTEND
+        #include "frontend.h"
+#endif /* FRONTEND */
+
 #include "tree_commands.h"
 
 /* =============== Domain Specific Language for my programming language =============== */

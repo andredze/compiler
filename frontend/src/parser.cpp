@@ -71,8 +71,6 @@ LangErr_t ParseTokens(FrontendCtx_t* frontend_ctx)
 {
     assert(frontend_ctx);
 
-    wfcprintf(stderr, BLUE, L"Parsing tokens...\n");
-
     TreeNode_t* root = ParseProgram(frontend_ctx);
 
     if (root == NULL)
@@ -81,8 +79,6 @@ LangErr_t ParseTokens(FrontendCtx_t* frontend_ctx)
     frontend_ctx->lang_ctx.tree.dummy->right = root;
 
     TREE_CALL_DUMP(&frontend_ctx->lang_ctx, frontend_ctx->buffer, "parser");
-
-    wfcprintf(stderr, GREEN, L"Parsing success\n");
 
     return LANG_SUCCESS;
 }

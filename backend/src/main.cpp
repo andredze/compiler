@@ -2,6 +2,7 @@
 #include "AST_read.h"
 #include "lang_funcs.h"
 #include "backend.h"
+#include "elf_build.h"
 #include "emission.h"
 #include <locale.h>
 
@@ -29,15 +30,36 @@ int main(int argc, char* argv[])
         if (ASTReadData(&backend_ctx.lang_ctx, argv[1], backend_ctx.ast_file_name))
             break;
 
-        LangIdTableDump(&backend_ctx.lang_ctx.main_id_table);
+        wcprintf(BLUE, L"Скомпилить скомпилить скомпилить\n"
+                        "\t%s/%s.txt\n"
+                        "\t%s/%s.txt\n"
+                        "\t%s/%s.txt\n",
+                 AST_DIR_NAME, backend_ctx.ast_file_name,
+                 AST_DIR_NAME, backend_ctx.ast_file_name,
+                 AST_DIR_NAME, backend_ctx.ast_file_name);
 
         if (BackendOpenAsmFile(&backend_ctx))
             break;
 
         if (EmitProgram(&backend_ctx))
             break;
+
+        if (BuildElf(&backend_ctx))
+            break;
     }
     while (0);
+
+    wcprintf(GREEN, L"ГОТОВО ГОТОВО ГО Т ,Юб ВО?./???\n"
+                     "\t%s/%s\n"
+                     "\t%s/%s\n"
+                     "\t%s/%s\n",
+             ELF_DIR_NAME, backend_ctx.ast_file_name,
+             ELF_DIR_NAME, backend_ctx.ast_file_name,
+             ELF_DIR_NAME, backend_ctx.ast_file_name);
+
+#ifdef TREE_DEBUG
+    TreeShowLogs(&backend_ctx.lang_ctx.tree);
+#endif /* TREE_DEBUG */
 
     BackendCtxDtor(&backend_ctx);
 

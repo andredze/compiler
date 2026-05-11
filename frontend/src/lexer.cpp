@@ -93,15 +93,11 @@ LangErr_t Tokenize(FrontendCtx_t* frontend_ctx)
 
     LangErr_t status = LANG_SUCCESS;
 
-    wfcprintf(stderr, BLUE, L"Tokenizing...\n");
-
     while (*frontend_ctx->cur_symbol_ptr != '\0')
     {
         if ((status = ParseToken(frontend_ctx)))
             return status;
     }
-
-    wfcprintf(stderr, GREEN, L"Tokenizing success\n");
 
     return LANG_SUCCESS;
 }

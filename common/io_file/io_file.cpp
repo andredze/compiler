@@ -40,9 +40,11 @@ int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path, size_t* buf_
 
     buffer[size - 1] = '\0';
 
+#ifdef READFILE_DEBUG
     fprintf(stderr, "buffer (UTF-8):\n\"%s\"\n\n"
                     "------------------------------------\n",
                     buffer);
+#endif /* READFILE_DEBUG */
 
     size_t wchar_count = mbstowcs(NULL, buffer, 0);
 
@@ -83,9 +85,9 @@ int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path, size_t* buf_
     WDPRINTF(L"Successfully converted UTF-8 to wchar_t\n");
     WDPRINTF(L"buffer_ptr = %p\n", *buffer_ptr);
 
-    fwprintf(stderr, L"Converted wchar_t string:\n\"%ls\"\n\n"
-                     L"------------------------------------\n",
-                     *buffer_ptr);
+    // fwprintf(stderr, L"Converted wchar_t string:\n\"%ls\"\n\n"
+    //                  L"------------------------------------\n",
+    //                  *buffer_ptr);
 
     free(buffer);
 

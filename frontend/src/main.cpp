@@ -30,8 +30,12 @@ int main(int argc, char* argv[])
         if (FrontendReadInputInTree(&frontend_ctx, argv[1]))
             break;
 
+        wfcprintf(stderr, BLUE, L"%s.psy, я разделю тебя на токены...\n", argv[1]);
+
         if (Tokenize(&frontend_ctx))
             break;
+
+        wfcprintf(stderr, PURPLE, L"и добью рекурсивно\n");
 
         if (ParseTokens(&frontend_ctx))
             break;

@@ -44,6 +44,14 @@ LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
 
     WDPRINTF(L"AST stored in file: %s\n", data_file_path);
 
+    wfcprintf(stderr, GREEN, L"теперь ты просто дерево\n"
+              L"\t%s\n"
+              L"\t%s\n"
+              L"\t%s\n",
+              data_file_path,
+              data_file_path,
+              data_file_path);
+
     return LANG_SUCCESS;
 }
 
