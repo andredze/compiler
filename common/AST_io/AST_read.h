@@ -13,9 +13,24 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path);
-LangErr_t ReadNode(LangCtx_t* lang_ctx, TreeNode_t** node, wchar_t* buffer, ssize_t* pos);
-LangErr_t ReadNodeData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos, TokenData_t* node_data);
+TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, 
+                             const char* cur_symbol_ptr,
+                             const char* buffer,
+                             const char* fmt, ...);
+
+LangErr_t ASTReadData   (LangCtx_t* lang_ctx, 
+                         char*      ast_file_path, 
+                         char       src_file_name[MAX_FILENAME_LEN]);
+
+LangErr_t ReadNode      (LangCtx_t*     lang_ctx, 
+                         TreeNode_t**   node, 
+                         wchar_t*       buffer, 
+                         ssize_t*       pos);
+
+LangErr_t ReadNodeData  (LangCtx_t*     lang_ctx, 
+                         wchar_t*       buffer, 
+                         ssize_t*       pos, 
+                         TokenData_t*   node_data);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

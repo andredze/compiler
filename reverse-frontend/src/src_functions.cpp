@@ -17,6 +17,57 @@ static LangErr_t SrcVariableDeclaration (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t SrcFunctionDeclaration (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t SrcFunctionCall        (LangCtx_t* lang_ctx, TreeNode_t* node);
 
+//==========================================================================================
+
+// typedef struct FrontendCtx
+// {
+//     LangErrorInfo_t error_info;
+
+//     wchar_t*      cur_symbol_ptr;
+//     wchar_t*      buffer;
+//     size_t        buffer_size;
+//     size_t        current_line;
+
+//     Stack_t       tokens;
+//     size_t        cur_token_index; // for parser rename
+
+//     FILE*         output_file;
+
+//     bool          is_in_func;
+//     int           in_func_vars_count;
+
+//     LangCtx_t     lang_ctx;
+
+// } FrontendCtx_t;
+
+// #ifdef REVERSE
+//     size_t        tabs;
+// #endif /* REVERSE */
+
+// LangErr_t LangOpenReverseFile(LangCtx_t* lang_ctx)
+// {
+//     assert(lang_ctx);
+
+//     char src_file_path[MAX_FILE_NAME_LEN];
+
+//     snprintf(src_file_path, sizeof(src_file_path), "reversed/%s.psy", lang_ctx->ast_file_name);
+
+//     WDPRINTF(L"Reversed code file name: %s\n", lang_ctx->ast_file_name);
+//     WDPRINTF(L"Opening file %s\n\n", src_file_path);
+
+//     FILE* src_fp = fopen(src_file_path, "w");
+
+//     if (src_fp == NULL)
+//     {
+//         WPRINTERR(L"Failed opening file %s", src_file_path);
+//         return LANG_FILE_ERROR;
+//     }
+
+//     lang_ctx->output_file = src_fp;
+
+//     return LANG_SUCCESS;
+// }
+
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 LangErr_t SrcNode(LangCtx_t* lang_ctx, TreeNode_t* node)

@@ -99,10 +99,12 @@ typedef struct TreeDebugData
 
 typedef struct Tree
 {
-    TreeNode_t* dummy; // null (fake) element
-    size_t      size;
+    TreeNode_t*   dummy; // null (fake) element
+    size_t        size;
 
-    char* buffer;
+    char*         buffer;
+
+    TreeDebugData debug;
 
 } Tree_t;
 
@@ -123,7 +125,8 @@ typedef enum TreeErr
 
     TREE_INVALID_INPUT     = 9,
     TREE_DTOR_ERROR        = 10,
-    TREE_LOST_CONNECTION   = 11
+    TREE_LOST_CONNECTION   = 11,
+    TREE_SYSTEM_ERROR      = 12
 
 } TreeErr_t;
 

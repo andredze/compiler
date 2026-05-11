@@ -1,5 +1,6 @@
 #include "tree_dump.h"
 #include <wchar.h>
+// #include "frontend.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -13,6 +14,7 @@ static void      TreeDumpSetTime            (LangCtx_t* lang_ctx);
 
 static TreeErr_t TreeDumpSetDebugFilePaths(LangCtx_t* lang_ctx)
 {
+    DPRINT_FUNC_ENTER_MSG();
     assert(lang_ctx);
 
     TreeDumpSetTime(lang_ctx);
@@ -24,9 +26,9 @@ static TreeErr_t TreeDumpSetDebugFilePaths(LangCtx_t* lang_ctx)
              L"\tlog_dir: %ls\n"
              L"\timg_dir: %ls\n"
              L"\tdot_dir: %ls\n",
-             lang_ctx->debug.log_dir,
-             lang_ctx->debug.img_dir,
-             lang_ctx->debug.dot_dir);
+             lang_ctx->tree.debug.log_dir,
+             lang_ctx->tree.debug.img_dir,
+             lang_ctx->tree.debug.dot_dir);
 
     if (TreeDumpMakeDirs(lang_ctx))
         return TREE_FILE_ERROR;
@@ -36,8 +38,9 @@ static TreeErr_t TreeDumpSetDebugFilePaths(LangCtx_t* lang_ctx)
     if (TreeDumpSetLogFilePath(lang_ctx))
         return TREE_FILE_ERROR;
 
-    WDPRINTF(L"> TREE LOG file path: \"%ls\"\n", lang_ctx->debug.log_file_path);
+    WDPRINTF(L"> TREE LOG file path: \"%ls\"\n", lang_ctx->tree.debug.log_file_path);
 
+    DPRINT_FUNC_LEAVE_MSG();
     return TREE_SUCCESS;
 }
 
@@ -49,9 +52,11 @@ static void TreeDumpSetTime(LangCtx_t* lang_ctx)
 
     struct tm* info = localtime(&rawtime);
 
-    wcsftime(lang_ctx->debug.str_time, sizeof(lang_ctx->debug.str_time), L"[%Y-%m-%d_%H%M%S]", info);
+    wcsftime(lang_ctx->tree.debug.str_time, 
+             sizeof(lang_ctx->tree.debug.str_time), 
+             L"[%Y-%m-%d_%H%M%S]", info);
 
-    WDPRINTF(L"time = %ls\n", lang_ctx->debug.str_time);
+    WDPRINTF(L"time = %ls\n", lang_ctx->tree.debug.str_time);
 }
 
 //==========================================================================================
@@ -62,9 +67,11 @@ static TreeErr_t TreeDumpMakeDirs(LangCtx_t* lang_ctx)
     char img_dir[MAX_DIR_PATH_LEN] = "";
     char dot_dir[MAX_DIR_PATH_LEN] = "";
 
-    wcstombs(log_dir, lang_ctx->debug.log_dir, wcslen(lang_ctx->debug.log_dir));
-    wcstombs(img_dir, lang_ctx->debug.img_dir, wcslen(lang_ctx->debug.img_dir));
-    wcstombs(dot_dir, lang_ctx->debug.dot_dir, wcslen(lang_ctx->debug.dot_dir));
+    TreeDebugData_t* debug = &lang_ctx->tree.debug; 
+
+    wcstombs(log_dir, debug->log_dir, wcslen(debug->log_dir));
+    wcstombs(img_dir, debug->img_dir, wcslen(debug->img_dir));
+    wcstombs(dot_dir, debug->dot_dir, wcslen(debug->dot_dir));
 
     WDPRINTF(L"log_dir = %s\n"
              L"img_dir = %s\n",
@@ -81,26 +88,30 @@ static TreeErr_t TreeDumpMakeDirs(LangCtx_t* lang_ctx)
 
 static TreeErr_t TreeDumpSetDirs(LangCtx_t* lang_ctx)
 {
-    // if (swprintf(lang_ctx->debug.log_dir, sizeof(lang_ctx->debug.log_dir), L"log/%ls",
-    //              lang_ctx->debug.str_time) < 0)
-    if (swprintf(lang_ctx->debug.log_dir, sizeof(lang_ctx->debug.log_dir), L"log") < 0)
+    DPRINT_FUNC_ENTER_MSG();
+
+    TreeDebugData_t* debug = &lang_ctx->tree.debug;
+
+    if (swprintf(debug->log_dir, sizeof(debug->log_dir) / sizeof(debug->log_dir[0]), 
+                 L"log") < 0)
     {
         WPRINTERR(L"Error with setting \"log_dir\"");
         return TREE_FILE_ERROR;
     }
-    if (swprintf(lang_ctx->debug.img_dir, sizeof(lang_ctx->debug.img_dir), L"%ls/%ls",
-                 lang_ctx->debug.log_dir, IMAGE_FILE_TYPE) < 0)
+    if (swprintf(debug->img_dir, sizeof(debug->img_dir) / sizeof(debug->img_dir[0]), 
+                 L"%ls/%ls", debug->log_dir, IMAGE_FILE_TYPE) < 0)
     {
         WPRINTERR(L"Error with setting \"img_dir\"");
         return TREE_FILE_ERROR;
     }
-    if (swprintf(lang_ctx->debug.dot_dir, sizeof(lang_ctx->debug.dot_dir), L"%ls/dot",
-                 lang_ctx->debug.log_dir) < 0)
+    if (swprintf(debug->dot_dir, sizeof(debug->dot_dir) / sizeof(debug->dot_dir[0]), 
+                 L"%ls/dot", debug->log_dir) < 0)
     {
         WPRINTERR(L"Error with setting \"dot_dir\"");
         return TREE_FILE_ERROR;
     }
 
+    DPRINT_FUNC_LEAVE_MSG();
     return TREE_SUCCESS;
 }
 
@@ -108,8 +119,13 @@ static TreeErr_t TreeDumpSetDirs(LangCtx_t* lang_ctx)
 
 static TreeErr_t TreeDumpSetLogFilePath(LangCtx_t* lang_ctx)
 {
-    if (swprintf(lang_ctx->debug.log_file_path, sizeof(lang_ctx->debug.log_file_path),
-                 L"%ls/tree.html", lang_ctx->debug.log_dir) < 0)
+    assert(lang_ctx);
+
+    TreeDebugData_t* debug = &lang_ctx->tree.debug;
+
+    if (swprintf(debug->log_file_path,
+                 sizeof(debug->log_file_path) / sizeof(debug->log_file_path[0]),
+                 L"%ls/tree.html", debug->log_dir) < 0)
     {
         WPRINTERR(L"Error with setting log_file_path");
         return TREE_FILE_ERROR;
@@ -120,15 +136,17 @@ static TreeErr_t TreeDumpSetLogFilePath(LangCtx_t* lang_ctx)
 
 //==========================================================================================
 
-TreeErr_t TreeDump(LangCtx_t*            lang_ctx,
-                   const TreeDumpInfo_t* dump_info,
-                   NodeDumpType_t dump_type,
-                   const char* fmt, ...)
+TreeErr_t TreeDump(LangCtx_t*              lang_ctx,
+                   const TreeDumpInfo_t*   dump_info,
+                   NodeDumpType_t          dump_type,
+                   const char*             code,
+                   const char*             fmt, 
+                   ...)
 {
     va_list args = {};
     va_start(args, fmt);
 
-    TreeErr_t result = vTreeDump(lang_ctx, dump_info, dump_type, fmt, args);
+    TreeErr_t result = vTreeDump(lang_ctx, dump_info, dump_type, code, fmt, args);
 
     va_end(args);
 
@@ -142,7 +160,7 @@ LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* 
     va_list args = {};
     va_start(args, fmt);
 
-    FILE* fp = lang_ctx->debug.fp;
+    FILE* fp = lang_ctx->tree.debug.fp;
 
     fwprintf(fp, L"<pre><h4><font color=blue>");
 
@@ -180,60 +198,18 @@ LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* 
 
 //==========================================================================================
 
-TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...)
-{
-    assert(fmt != NULL);
-
-    int      pos    = (int) (lang_ctx->cur_symbol_ptr - lang_ctx->buffer);
-    wchar_t* buffer = lang_ctx->buffer;
-
-    va_list args = {};
-    va_start(args, fmt);
-
-    FILE* fp = lang_ctx->debug.fp;
-
-    fwprintf(fp, L"<pre><h4><font color=green>");
-
-    // vfprintf(fp, fmt, args);
-
-    fwprintf(fp, L"</h4></font>\n"
-                L"<font color=gray>");
-
-    fwprintf(fp, L"\"");
-
-    for (int i = 0; i < pos; i++)
-    {
-        fwprintf(fp, L"%lc", buffer[i]);
-    }
-
-    fwprintf(fp, L"</font><font color=red>%c</font>", buffer[pos]);
-
-    if (*(buffer + pos) != '\0')
-    {
-        fwprintf(fp, L"<font color=blue>%ls</font>\n\n", buffer + pos + 1);
-    }
-
-    fwprintf(fp, L"\"");
-
-    va_end(args);
-
-    fflush(fp);
-
-    return TREE_SUCCESS;
-}
-
-//==========================================================================================
-
-TreeErr_t vTreeDump(LangCtx_t* lang_ctx,
-                    const TreeDumpInfo_t* dump_info,
-                    NodeDumpType_t dump_type,
-                    const char* fmt, va_list args)
+TreeErr_t vTreeDump(LangCtx_t*              lang_ctx,
+                    const TreeDumpInfo_t*   dump_info,
+                    NodeDumpType_t          dump_type,
+                    const char*             code,
+                    const char*             fmt, 
+                    va_list                 args)
 {
     assert(dump_info != NULL);
     assert(lang_ctx  != NULL);
 
     Tree_t* tree = &lang_ctx->tree;
-    FILE*   fp   = lang_ctx->debug.fp;
+    FILE*   fp   = lang_ctx->tree.debug.fp;
 
     fwprintf(fp, L"<pre>\n<h3><font color=blue>");
 
@@ -259,7 +235,10 @@ TreeErr_t vTreeDump(LangCtx_t* lang_ctx,
                  L"dummy = %p;\n",
                  tree, tree->size, tree->dummy);
 
-    fwprintf(fp, L"code = \"%ls\"\n\n", lang_ctx->buffer);
+    if (code)
+    {
+        fwprintf(fp, L"code = \"%ls\"\n\n", code);
+    }
 
     TreeErr_t graph_error = TREE_SUCCESS;
 
@@ -274,7 +253,7 @@ TreeErr_t vTreeDump(LangCtx_t* lang_ctx,
     fwprintf(fp, L"\n<img src = svg/%ls.svg width = %d%%>\n\n"
                  L"============================================================="
                  L"=============================================================\n\n",
-                 lang_ctx->debug.graph_file_name, image_width);
+                 lang_ctx->tree.debug.graph_file_name, image_width);
 
     fflush(fp);
 
@@ -290,17 +269,19 @@ TreeErr_t TreeOpenLogFile(LangCtx_t* lang_ctx)
 
     char log_fp[MAX_FILE_NAME_LEN] = "";
 
-    wcstombs(log_fp, lang_ctx->debug.log_file_path, wcslen(lang_ctx->debug.log_file_path));
+    TreeDebugData_t* debug = &lang_ctx->tree.debug;
 
-    lang_ctx->debug.fp = fopen(log_fp, "w");
+    wcstombs(log_fp, debug->log_file_path, wcslen(debug->log_file_path));
 
-    if (lang_ctx->debug.fp == NULL)
+    debug->fp = fopen(log_fp, "w");
+
+    if (debug->fp == NULL)
     {
-        PRINTERR(L"Opening logfile %ls failed", lang_ctx->debug.log_file_path);
+        PRINTERR(L"Opening logfile %ls failed", debug->log_file_path);
         return TREE_FILE_ERROR;
     }
 
-    WDPRINTF(L"Opened logfile %ls\n", lang_ctx->debug.log_file_path);
+    WDPRINTF(L"Opened logfile %ls\n", debug->log_file_path);
 
     return TREE_SUCCESS;
 }
@@ -309,10 +290,10 @@ TreeErr_t TreeOpenLogFile(LangCtx_t* lang_ctx)
 
 void TreeCloseLogFile(LangCtx_t* lang_ctx)
 {
-    if (lang_ctx->debug.fp)
-        fclose(lang_ctx->debug.fp);
+    if (lang_ctx->tree.debug.fp)
+        fclose(lang_ctx->tree.debug.fp);
     
-    lang_ctx->debug.fp = NULL;
+    lang_ctx->tree.debug.fp = NULL;
 }
 
 //==========================================================================================
@@ -322,15 +303,18 @@ static void ASTNodeDump(TreeNode_t* node,     FILE*          fp,
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDumpInfo_t* dump_info,
-                    NodeDumpType_t dump_type, const wchar_t* fmt, ...)
+TreeErr_t GraphDump(LangCtx_t*            lang_ctx,  TreeNode_t*    node, 
+                    const TreeDumpInfo_t* dump_info, NodeDumpType_t dump_type, 
+                    const wchar_t* fmt, ...)
 {
     assert(lang_ctx != NULL);
 
     Tree_t*   tree  = &lang_ctx->tree;
     TreeErr_t error = TREE_SUCCESS;
 
-    FILE* fp = lang_ctx->debug.fp;
+    TreeDebugData_t* debug_data = &lang_ctx->tree.debug;
+
+    FILE* fp = debug_data->fp;
 
     if (fp == NULL)
     {
@@ -373,14 +357,14 @@ TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDum
         return    TREE_NULL;
     }
 
-    SetGraphFilepaths(lang_ctx);
+    SetGraphFilepaths(debug_data);
 
     char dot_fp[MAX_FILE_NAME_LEN] = "";
-    wcstombs(dot_fp, lang_ctx->debug.dot_file_path, MAX_FILE_NAME_LEN);
+    wcstombs(dot_fp, debug_data->dot_file_path, MAX_FILE_NAME_LEN);
 
     FILE* dot_file = fopen(dot_fp, "w");
 
-    lang_ctx->debug.graphs_count++;
+    debug_data->graphs_count++;
 
     if (dot_file == NULL)
     {
@@ -391,9 +375,13 @@ TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDum
     DumpGraphTitle(dot_file);
 
     if (node != NULL)
+    {
         ASTNodeDump(node, dot_file, lang_ctx, dump_type);
+    }
     else
+    {
         fwprintf(fp, L"<font color=red><b> NODE IS A NULL POINTER </b></font>\n");
+    }
 
     fwprintf(dot_file, L"}\n");
 
@@ -404,10 +392,10 @@ TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDum
 
     int image_width = tree->size <= 5 ? 25 : 50;
 
-    fwprintf(lang_ctx->debug.fp, L"\n<img src = svg/%ls.svg width = %d%%>\n\n"
-                                 L"============================================================="
-                                 L"=============================================================\n\n",
-                                  lang_ctx->debug.graph_file_name, image_width);
+    fwprintf(debug_data->fp, L"\n<img src = svg/%ls.svg width = %d%%>\n\n"
+                             L"============================================================="
+                             L"=============================================================\n\n",
+                             debug_data->graph_file_name, image_width);
 
     return TREE_SUCCESS;
 }
@@ -425,20 +413,22 @@ TreeErr_t TreeGraphDump(LangCtx_t* lang_ctx, NodeDumpType_t dump_type)
     Tree_t*   tree  = &lang_ctx->tree;
     TreeErr_t error = TREE_SUCCESS;
 
+    TreeDebugData* debug_data = &lang_ctx->tree.debug; 
+
     if (tree == NULL)
     {
         PRINTERR("TREE_NULL");
         return    TREE_NULL;
     }
 
-    SetGraphFilepaths(lang_ctx);
+    SetGraphFilepaths(debug_data);
 
     char dot_fp[MAX_FILE_NAME_LEN] = "";
-    wcstombs(dot_fp, lang_ctx->debug.dot_file_path, wcslen(lang_ctx->debug.dot_file_path));
+    wcstombs(dot_fp, debug_data->dot_file_path, wcslen(debug_data->dot_file_path));
 
     FILE* dot_file = fopen(dot_fp, "w");
 
-    lang_ctx->debug.graphs_count++;
+    debug_data->graphs_count++;
 
     if (dot_file == NULL)
     {
@@ -474,24 +464,27 @@ TreeErr_t TreeGraphDump(LangCtx_t* lang_ctx, NodeDumpType_t dump_type)
 
 //==========================================================================================
 
-void SetGraphFilepaths(LangCtx_t* lang_ctx)
+void SetGraphFilepaths(TreeDebugData* debug_data)
 {
-    swprintf(lang_ctx->debug.graph_file_name,
-             sizeof(lang_ctx->debug.graph_file_name),
+    swprintf(debug_data->graph_file_name,
+             sizeof(debug_data->graph_file_name) / 
+             sizeof(debug_data->graph_file_name[0]),
              L"graph_%04d",
-             lang_ctx->debug.graphs_count);
+             debug_data->graphs_count);
 
-    swprintf(lang_ctx->debug.dot_file_path,
-             sizeof(lang_ctx->debug.dot_file_path),
+    swprintf(debug_data->dot_file_path,
+             sizeof (debug_data->dot_file_path) /
+             sizeof(debug_data->dot_file_path[0]),
              L"%ls/%ls.dot",
-             lang_ctx->debug.dot_dir,
-             lang_ctx->debug.graph_file_name);
+             debug_data->dot_dir,
+             debug_data->graph_file_name);
 
-    swprintf(lang_ctx->debug.img_file_path,
-             sizeof(lang_ctx->debug.img_file_path),
+    swprintf(debug_data->img_file_path,
+             sizeof(debug_data->img_file_path) / 
+             sizeof(debug_data->dot_file_path[0]),
              L"%ls/%ls.%ls",
-             lang_ctx->debug.img_dir,
-             lang_ctx->debug.graph_file_name,
+             debug_data->img_dir,
+             debug_data->graph_file_name,
              IMAGE_FILE_TYPE);
 }
 
@@ -522,10 +515,11 @@ TreeErr_t TreeConvertGraphFile(LangCtx_t* lang_ctx)
 {
     wchar_t command[MAX_COMMAND_LEN] = {};
 
-    swprintf(command, sizeof(command), L"dot %ls -T %ls -o %ls",
-                                       lang_ctx->debug.dot_file_path,
-                                       IMAGE_FILE_TYPE,
-                                       lang_ctx->debug.img_file_path);
+    swprintf(command, sizeof(command) / sizeof(command[0]), 
+             L"dot %ls -T %ls -o %ls",
+             lang_ctx->tree.debug.dot_file_path,
+             IMAGE_FILE_TYPE,
+             lang_ctx->tree.debug.img_file_path);
 
     char command_ch[MAX_COMMAND_LEN] = {};
 
@@ -579,7 +573,8 @@ static void ASTDumpNodeWithEdges(TreeNode_t* node,     FILE*          fp,
     node_params.node      = node;
     node_params.dump_type = dump_type;
 
-    swprintf(node_params.name, sizeof(node_params.name), L"node%p", node);
+    swprintf(node_params.name, sizeof(node_params.name) / sizeof(node_params.name[0]), 
+             L"node%p", node);
 
     ASTDumpSingleNode(&node_params, fp, lang_ctx);
 
@@ -587,16 +582,23 @@ static void ASTDumpNodeWithEdges(TreeNode_t* node,     FILE*          fp,
 
     EdgeDumpParams_t edge_params = { .color = DEFAULT_EDGE_COLOR };
 
-    swprintf(edge_params.node1, sizeof(edge_params.node1), L"node%p", node);
+    swprintf(edge_params.node1, sizeof(edge_params.node1) / sizeof(edge_params.node1[0]), 
+             L"node%p", node);
 
     if (node->left != NULL)
     {
-        swprintf(edge_params.node2, sizeof(edge_params.node2), L"node%p", node->left);
+        swprintf(edge_params.node2, 
+                 sizeof(edge_params.node2) / sizeof(edge_params.node2[0]), 
+                 L"node%p", node->left);
+
         DumpEdge(&edge_params, fp, 0);
     }
     if (node->right != NULL)
     {
-        swprintf(edge_params.node2, sizeof(edge_params.node2), L"node%p", node->right);
+        swprintf(edge_params.node2, 
+                 sizeof(edge_params.node2) / sizeof(edge_params.node2[0]), 
+                 L"node%p", node->right);
+        
         DumpEdge(&edge_params, fp, 1);
     }
 }
@@ -645,7 +647,7 @@ static void DumpNodeDataOperator(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
     assert(lang_ctx != NULL);
     assert(params   != NULL);
 
-    swprintf(params->str_data, sizeof(params->str_data),
+    swprintf(params->str_data, sizeof(params->str_data) / sizeof(params->str_data[0]),
              L"type = %s | code = %s | value = %ls",
              TYPE_CASES_TABLE[params->node->data.type].name,
              OP_CASES_TABLE[params->node->data.value.opcode].code_str,
@@ -659,7 +661,7 @@ static void DumpNodeDataIdentifier(NodeDumpParams_t* params, LangCtx_t* lang_ctx
     assert(lang_ctx != NULL);
     assert(params   != NULL);
 
-    swprintf(params->str_data, sizeof(params->str_data),
+    swprintf(params->str_data, sizeof(params->str_data) / sizeof(params->str_data[0]),
              L"type = %s | value = %ls (%zu)",
              TYPE_CASES_TABLE[params->node->data.type].name,
              lang_ctx->names_pool.data[params->node->data.value.id],
@@ -673,7 +675,7 @@ static void DumpNodeDataNumber(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
     assert(lang_ctx != NULL);
     assert(params   != NULL);
 
-    swprintf(params->str_data, sizeof(params->str_data),
+    swprintf(params->str_data, sizeof(params->str_data) / sizeof(params->str_data[0]),
              L"type = %s | value = %lg",
              TYPE_CASES_TABLE[params->node->data.type].name,
              params->node->data.value.number);
@@ -691,23 +693,27 @@ static void DumpDefaultTreeNode(NodeDumpParams_t* params, FILE* fp)
     assert(fp     != NULL);
 
     if (wcscmp(params->name, L"") == 0)
-        swprintf(params->name, sizeof(params->name), L"node%p", params->node);
+    {
+        swprintf(params->name, sizeof(params->name) / sizeof(params->name[0]), 
+                 L"node%p", params->node);
+    }
 
     TreeNode_t* node = params->node;
 
     if (params->dump_type == DUMP_SHORT)
     {
-        swprintf(params->label, sizeof(params->label), L"{ %ls | { <left> LEFT | <right> RIGHT }}", params->str_data);
+        swprintf(params->label, sizeof(params->label) / sizeof(params->label[0]), 
+                 L"{ %ls | { <left> LEFT | <right> RIGHT }}", params->str_data);
     }
     else if (DumpAllowsRecordLabel(params))
     {
-        swprintf(params->label, sizeof(params->label),
+        swprintf(params->label, sizeof(params->label) / sizeof(params->label[0]),
                  L"{ %p | %ls | { <left> left = %p | <right> right = %p }}",
                  node, params->str_data, node->left, node->right);
     }
     else
     {
-        swprintf(params->label, sizeof(params->label),
+        swprintf(params->label, sizeof(params->label) / sizeof(params->label[0]),
                  L"%p \\n %ls \\n left = %p \\n right = %p",
                  node, params->str_data, node->left, node->right);
     }

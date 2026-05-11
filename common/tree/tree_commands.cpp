@@ -8,7 +8,8 @@ TreeErr_t TreeCheck(LangCtx_t*  lang_ctx,
                     const char* func,
                     const char* file,
                     int         line,
-                    const char* fmt, ...)
+                    const char* fmt, 
+                    ...)
 {
     assert(func != NULL);
     assert(file != NULL);
@@ -25,7 +26,7 @@ TreeErr_t TreeCheck(LangCtx_t*  lang_ctx,
         va_list args = {};
         va_start(args, fmt);
 
-        if (vTreeDump(lang_ctx, &dump_info, DUMP_FULL, fmt, args))
+        if (vTreeDump(lang_ctx, &dump_info, DUMP_FULL, NULL, fmt, args))
         {
             return TREE_DUMP_ERROR;
         }
@@ -40,7 +41,40 @@ TreeErr_t TreeCheck(LangCtx_t*  lang_ctx,
 
 //==========================================================================================
 
-TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode, TreeNode_t* left, TreeNode_t* right)
+TreeErr_t TreeShowLogs(Tree_t* tree)
+{
+    assert(tree);
+
+    WDPRINTF(L"Showing logs %ls start\n", tree->debug.log_file_path);
+
+    if (tree->debug.log_file_path[0] == L'\0')
+    {
+        return TREE_SUCCESS;
+    }
+
+    char command      [MAX_COMMAND_LEN]  = {};
+    char log_file_path[MAX_DIR_PATH_LEN] = {};
+
+    wcstombs(log_file_path, tree->debug.log_file_path, 
+             wcslen(tree->debug.log_file_path));
+
+    snprintf(command, sizeof(command), "xdg-open %s", log_file_path);
+
+    if (system(command) < 0)
+    {
+        PRINTERR("System command %s failed", command);
+        return TREE_SYSTEM_ERROR;
+    }
+
+    WDPRINTF(L"Showing logs end");
+
+    return TREE_SUCCESS;
+}
+
+//==========================================================================================
+
+TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode, 
+                                 TreeNode_t* left, TreeNode_t* right)
 {
     assert(lang_ctx != NULL);
 

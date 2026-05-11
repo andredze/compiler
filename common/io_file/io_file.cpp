@@ -6,6 +6,7 @@
 
 int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path, size_t* buf_size)
 {
+    DPRINT_FUNC_ENTER_MSG();
     assert(buffer_ptr != NULL);
     assert(file_path  != NULL);
     assert(fp         != NULL);
@@ -86,6 +87,7 @@ int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path, size_t* buf_
 
     free(buffer);
 
+    DPRINT_FUNC_LEAVE_MSG();
     return 0;
 }
 

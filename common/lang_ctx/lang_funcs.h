@@ -37,8 +37,6 @@ LangErr_t   LangCtxCtor           (LangCtx_t* lang_ctx);
 void        LangCtxDtor           (LangCtx_t* lang_ctx);
 
 LangErr_t   LangShowLogs          (LangCtx_t* lang_ctx);
-
-LangErr_t   LangOpenAsmFile       (LangCtx_t* lang_ctx);
 LangErr_t   LangOpenReverseFile   (LangCtx_t* lang_ctx);
 
 //==========================================================================================

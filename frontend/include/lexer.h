@@ -7,11 +7,12 @@
 #include "tree_commands.h"
 #include "tree_types.h"
 #include "operators.h"
+#include "frontend.h"
 #include "op_cases.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t Tokenize(LangCtx_t* lang_ctx);
+LangErr_t Tokenize(FrontendCtx_t* frontend_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

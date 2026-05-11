@@ -67,77 +67,20 @@ typedef struct
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-// typedef struct LangCtx
-// {
-//     Tree_t      tree;
-
-//     NamesPool_t names_pool;
-
-//     IdTable_t   main_id_table;
-//     IdTable_t   func_id_table;
-
-//     size_t      global_vars_count;
-// }
-// LangCtx_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
 typedef struct LangCtx
 {
-    char          ast_file_name[MAX_FILENAME_LEN];
+    char        src_code_file_name[MAX_FILENAME_LEN];
 
-    LangErrorInfo_t error_info;
+    Tree_t      tree;
 
-//TODO: код ошибки вся инфа об ошибке передавать до main
-    wchar_t*      cur_symbol_ptr; // cur
-    wchar_t*      buffer;
-    size_t        buffer_size;
-    size_t        current_line;
+    NamesPool_t names_pool;
 
-    Stack_t       tokens;
-    Tree_t        tree;
+    IdTable_t   main_id_table;
+    IdTable_t   func_id_table;
 
-    NamesPool_t   names_pool;
-
-    TreeDebugData debug;
-
-    size_t        cur_token_index; // for parser rename
-
-    FILE*         output_file;
-
-    bool          is_in_func;
-    int           in_func_vars_count;
-
-    IdTable_t     main_id_table;
-    IdTable_t     func_id_table;
-
-#ifdef BACKEND
-    size_t        endif_labels_count;
-    size_t        while_labels_count;
-
-    bool          is_in_function;
-
-    int           cur_addr;
-
-    size_t        params_count;
-
-    bool          assembling_args;
-
-    bool          getting_function_params;
-
-    size_t        global_vars_count;
-
-    bool          first_point;
-
-#endif /* BACKEND */
-
-#ifdef REVERSE
-
-    size_t        tabs;
-
-#endif /* REVERSE */
-
-} LangCtx_t;
+    size_t      global_vars_count;
+}
+LangCtx_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

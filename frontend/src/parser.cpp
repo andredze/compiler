@@ -78,7 +78,8 @@ LangErr_t ParseTokens(LangCtx_t* lang_ctx)
 
     lang_ctx->tree.dummy->right = root;
 
-    TREE_CALL_DUMP(lang_ctx, "parser");
+    TREE_CALL_DUMP(lang_ctx, NULL, "parser");
+    // TREE_CALL_DUMP(lang_ctx, frontend_ctx->buffer, "parser");
 
     wfcprintf(stderr, GREEN, L"Parsing success\n");
 

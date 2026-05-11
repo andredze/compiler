@@ -1,6 +1,6 @@
 CXX := g++
 
-CXXFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Wsign-conversion 			 \
+CXXFLAGS = -D _DEBUG -ggdb3 -g -std=c++17 -O0 -Wall -Wextra -Weffc++ -Wsign-conversion 			 \
 		   -Waggressive-loop-optimizations -Wc++14-compat -Wmissing-declarations 		   		 \
 		   -Wcast-align -Wcast-qual -Wchar-subscripts -Wconditionally-supported  		   		 \
 		    -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat-nonliteral 		 			 \
@@ -19,27 +19,33 @@ SANITIZER += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,f
              integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,$\
 			 shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-CXXFLAGS += $(SANITIZER)
+ifdef DEBUG
+	CXXFLAGS += $(SANITIZER)
+ 	CXXFLAGS += -O3
+else
+ 	CXXFLAGS += -O3
+endif
 
-BACKEND_INCLUDES  := -D BACKEND \
+BACKEND_INCLUDES  := -D BACKEND 		\
 					 -I backend/include \
                      -I common/lang_ctx \
-                     -I common/stack \
-                     -I common/colors \
-                     -I common/tree \
-                     -I common/io_file \
-                     -I common/AST_io \
+                     -I common/stack 	\
+                     -I common/colors 	\
+                     -I common/tree 	\
+                     -I common/io_file 	\
+                     -I common/AST_io 	\
                      -I common
 
-BACKEND_SOURCES := backend/src/main.cpp \
-                   backend/src/asm_functions.cpp \
-                   backend/src/backend.cpp \
-                   common/lang_ctx/lang_funcs.cpp \
-                   common/stack/stack.cpp \
-                   common/AST_io/AST_read.cpp \
-                   common/tree/tree_commands.cpp \
-                   common/tree/tree_dump.cpp \
-                   common/colors/colors.cpp \
+BACKEND_SOURCES := backend/src/main.cpp 			\
+                   backend/src/backend.cpp 			\
+                   backend/src/emission.cpp 		\
+                   backend/src/encoding.cpp 		\
+                   common/lang_ctx/lang_funcs.cpp 	\
+                   common/stack/stack.cpp 			\
+                   common/AST_io/AST_read.cpp 		\
+                   common/tree/tree_commands.cpp 	\
+                   common/tree/tree_dump.cpp 		\
+                   common/colors/colors.cpp 		\
                    common/io_file/io_file.cpp
 
 LOGS := log/*

@@ -1,9 +1,8 @@
-#include "tree_commands.h"
-#include "lang_funcs.h"
-#include "lexer.h"
-#include "data_read.h"
 #include <wchar.h>
 #include <locale.h>
+#include "frontend.h"
+#include "data_read.h"
+#include "lexer.h"
 #include "parser.h"
 #include "AST_write.h"
 
@@ -21,36 +20,36 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    LangCtx_t lang_ctx = {};
+    FrontendCtx_t frontend_ctx = {};
 
-    if (LangCtxCtor(&lang_ctx))
+    if (FrontendCtxCtor(&frontend_ctx))
         return EXIT_FAILURE;
 
-    WDPRINTF(L"tree_ptr = %p\n", lang_ctx.tree);
+    WDPRINTF(L"tree_ptr = %p\n", frontend_ctx.lang_ctx.tree);
 
-    do {
-        if (TreeReadInputData(&lang_ctx, argv[1]))
+    do 
+    {
+        if (FrontendReadInputInTree(&frontend_ctx, argv[1]))
             break;
 
-        if (Tokenize(&lang_ctx))
+        if (Tokenize(&frontend_ctx))
             break;
 
-        if (ParseTokens(&lang_ctx))
+        if (ParseTokens(&frontend_ctx))
             break;
 
-        if (ASTWriteData(&lang_ctx))
+        if (ASTWriteData(&frontend_ctx.lang_ctx))
             break;
-
     } while (0);
 
     // if (lang_ctx.error_info.error != LANG_SUCCESS)
     //     LangPrintError(&lang_ctx);
 
 #ifdef TREE_DEBUG
-    LangShowLogs(&lang_ctx);
+    LangShowLogs(&frontend_ctx.lang_ctx);
 #endif /* TREE_DEBUG */
     
-    LangCtxDtor(&lang_ctx);    
+    FrontendCtxDtor(&frontend_ctx);
 
     return EXIT_SUCCESS;
 }

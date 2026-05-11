@@ -25,7 +25,8 @@ static void         EmitArgument            (BackendCtx_t* backend_ctx);
 
 BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
 {
-    assert(lang_ctx);
+    DPRINT_FUNC_ENTER_MSG();
+    assert(backend_ctx);
 
     ASM_PRINT_NO_TAB(
         L"global main\n\n"
@@ -33,7 +34,8 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         L"main:\n"
     );
 
-    size_t global_vars_size = backend_ctx->global_vars_count * TYPE_INT_SIZE_IN_BYTES;
+    size_t global_vars_size = backend_ctx->lang_ctx.global_vars_count *
+                              TYPE_INT_SIZE_IN_BYTES;
 
     ASM_PRINT_(
         L"; stack frame for global variables"
@@ -43,7 +45,7 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
 
     BackendErr_t error = BACKEND_SUCCESS;
 
-    if ((error = EmitNode(backend_ctx, backend_ctx->tree.dummy->right)))
+    if ((error = EmitNode(backend_ctx, backend_ctx->lang_ctx.tree.dummy->right)))
     {    
         return error;
     }
@@ -57,6 +59,7 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         global_vars_size
     );
 
+    DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;
 }
 
@@ -70,7 +73,7 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
     switch (node->data.type)
     {
         case TYPE_NUM:
-            return EmitNumber(backend_ctx, node);
+            // return EmitNumber(backend_ctx, node);
 
         case TYPE_ID:
             return BACKEND_INVALID_AST_INPUT;
@@ -86,16 +89,16 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
             return OP_CASES_TABLE[node->data.value.opcode].emit_function(backend_ctx, node);
 
         case TYPE_VAR:
-            return EmitVariable(backend_ctx, node);
+            // return EmitVariable(backend_ctx, node);
 
         case TYPE_VAR_DECL:
-            return EmitVariableDeclaration(backend_ctx, node);
+            // return EmitVariableDeclaration(backend_ctx, node);
 
         case TYPE_FUNC_DECL:
-            return EmitFunctionDeclaration(backend_ctx, node);
+            // return EmitFunctionDeclaration(backend_ctx, node);
 
         case TYPE_FUNC_CALL:
-            return EmitFunctionCall(backend_ctx, node);
+            // return EmitFunctionCall(backend_ctx, node);
 
         default:
             return BACKEND_UNKNOWN_TOKEN_TYPE;
@@ -131,16 +134,16 @@ BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* 
         return error;
     }
 
-    POP_IN_REG(REG_RBX); // right node
-    POP_IN_REG(REG_RAX); // left node
+    // POP_IN_REG(REG_RBX); // right node
+    // POP_IN_REG(REG_RAX); // left node
     
     if (node->data.type == OP_ADD)
     {
-        ADD_REG_TO_REG(REG_RAX, REG_RBX);
+        // ADD_REG_TO_REG(REG_RAX, REG_RBX);
     }
     else
     {
-        SUB_REG_FROM_REG(REG_RAX, REG_RBX);
+        // SUB_REG_FROM_REG(REG_RAX, REG_RBX);
     }
 
     // ASM_PRINT_(L"pop rbx");
@@ -151,6 +154,53 @@ BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* 
 
     return BACKEND_SUCCESS;
 }
+
+BackendErr_t EmitIf             (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitAssignment     (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitMathOperation  (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitUnaryOperation (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitInput          (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+// BackendErr_t EmitElse           (BackendCtx_t* backend_ctx, TreeNode_t* node);
+BackendErr_t EmitWhile          (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitCmdSeparator   (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitParamsSeparator(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitHlt            (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitReturn         (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+BackendErr_t EmitPoint          (BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    return BACKEND_SUCCESS;
+}
+
 
 //==========================================================================================
 

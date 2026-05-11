@@ -9,20 +9,20 @@
 
 #define SET_LEXER_ERROR_(error, node, expected, ...)                                       \
         BEGIN                                                                              \
-        LANG_SET_ERROR_(lang_ctx, LANG_LEXER_SYNTAX_ERROR, NULL, expected, ##__VA_ARGS__); \
+        FRONTEND_SET_ERROR_(frontend_ctx, FRONTEND_LEXER_SYNTAX_ERROR, NULL, expected, ##__VA_ARGS__); \
         END
 
 #define SET_PARSER_ERROR_(node, expected, ...)                                              \
         BEGIN                                                                               \
-        LANG_SET_ERROR_(lang_ctx, LANG_PARSER_SYNTAX_ERROR, node, expected, ##__VA_ARGS__); \
+        FRONTEND_SET_ERROR_(frontend_ctx, FRONTEND_PARSER_SYNTAX_ERROR, node, expected, ##__VA_ARGS__); \
         END
 
 #ifdef FRONTEND
-#define IDENTIFIER_(id_index) LangIdentifierNodeCtor    (lang_ctx, (name_index))
+#define IDENTIFIER_(id_index) LangIdentifierNodeCtor    (&frontend_ctx->lang_ctx, (name_index))
 #endif /* FRONTEND */
 
-#define OPERATOR_(op_code)    LangOperatorNodeCtor      (lang_ctx, (op_code ), NULL, NULL)
-#define NUMBER_(number)       LangNumberNodeCtor        (lang_ctx, (number  ))
+#define OPERATOR_(op_code)    LangOperatorNodeCtor      (&frontend_ctx->lang_ctx, (op_code ), NULL, NULL)
+#define NUMBER_(number)       LangNumberNodeCtor        (&frontend_ctx->lang_ctx, (number  ))
 
 //==========================================================================================
 
@@ -43,28 +43,28 @@
 #define ISVALUE_(node, number) (node->data.type == TYPE_NUM && \
                                 CompareDoubles(node->data.value.num, (number)) == 0)
 
-#define ADD_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_ADD, (l),  (r))
-#define SUB_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_SUB, (l),  (r))
-#define MUL_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_MUL, (l),  (r))
-#define DIV_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_DIV, (l),  (r))
-#define POW_(l, r)          LangOperatorNodeCtor(lang_ctx, OP_POW, (l),  (r))
-#define UNARY_(oper, r)     LangOperatorNodeCtor(lang_ctx, (oper), NULL, (r))
+#define ADD_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_ADD, (l),  (r))
+#define SUB_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_SUB, (l),  (r))
+#define MUL_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_MUL, (l),  (r))
+#define DIV_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_DIV, (l),  (r))
+#define POW_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_POW, (l),  (r))
+#define UNARY_(oper, r)     LangOperatorNodeCtor(&frontend_ctx->lang_ctx, (oper), NULL, (r))
 
 //==========================================================================================
 
 #define SRC_PRINT_TABS_()                                                \
         BEGIN                                                            \
-        fwprintf(lang_ctx->output_file, L"%*s", 4*lang_ctx->tabs, L" "); \
+        fwprintf(frontend_ctx->output_file, L"%*s", 4*lang_ctx->tabs, L" "); \
         END
 
 #define SRC_PRINT_(...)                                                  \
         BEGIN                                                            \
-        fwprintf(lang_ctx->output_file, ##__VA_ARGS__);                  \
+        fwprintf(frontend_ctx->output_file, ##__VA_ARGS__);                  \
         END
 
 #define SRC_PRINT_ID_(node__)                                                   \
         BEGIN                                                                   \
-        SRC_PRINT_(L"%ls", lang_ctx->names_pool.data[(node__)->data.value.id]); \
+        SRC_PRINT_(L"%ls", frontend_ctx->names_pool.data[(node__)->data.value.id]); \
         END
 
 #define SRC_PRINT_OP_(opcode_)                              \

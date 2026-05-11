@@ -12,8 +12,8 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t TreeReadInputData (LangCtx* lang_ctx, char* input_file_path);
-LangErr_t TreeReadData      (LangCtx* lang_ctx, const char* data_file_path);
+LangErr_t FrontendReadInputInTree(FrontendCtx* frontend_ctx, char* input_file_path);
+LangErr_t TreeReadData           (FrontendCtx* frontend_ctx, const char* data_file_path);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

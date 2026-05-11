@@ -5,6 +5,7 @@
 
 #include "operators.h"
 #include "lang_ctx.h"
+#include "emission.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -22,7 +23,7 @@ typedef struct OperatorCase
     const wchar_t* ast_format;
 
 #ifdef BACKEND
-    LangErr_t (*asm_function) (LangCtx_t*, TreeNode_t*);
+    BackendErr_t (*emit_function) (BackendCtx_t*, TreeNode_t*);
 
     const wchar_t* asm_name;
 
@@ -33,12 +34,6 @@ typedef struct OperatorCase
 #endif /* REVERSE */
 
 } OperatorCase_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-#ifdef BACKEND
-    #include "emission.h"
-#endif /* BACKEND */
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -62,14 +57,14 @@ LangErr_t SrcParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node);
 
 #ifdef BACKEND
 
-#define SET_OP_CASE_(code,          repeat_times,   name,                                     ast_format,                                           asm_function,   asm_name,  src_function) \
-        [(code)] = {(code), #code, (repeat_times), (name), sizeof(name) / sizeof(*name) - 1, (ast_format), (LangErr_t (*)(LangCtx_t*, TreeNode_t*))(asm_function), (asm_name)              }
+#define SET_OP_CASE_(code,          repeat_times,   name,                                     ast_format,                                                 emit_function,   asm_name,  src_function) \
+        [(code)] = {(code), #code, (repeat_times), (name), sizeof(name) / sizeof(*name) - 1, (ast_format), (BackendErr_t (*)(BackendCtx_t*, TreeNode_t*))(emit_function), (asm_name)              }
 
 #endif /* BACKEND */
 
 #ifdef REVERSE
 
-#define SET_OP_CASE_(code,          repeat_times,   name,                                     ast_format,   asm_function,  asm_name,                 src_function) \
+#define SET_OP_CASE_(code,          repeat_times,   name,                                     ast_format,   emit_function,  asm_name,                 src_function) \
         [(code)] = {(code), #code, (repeat_times), (name), sizeof(name) / sizeof(*name) - 1, (ast_format), (LangErr_t (*)(LangCtx_t*, TreeNode_t*))(src_function)}
 
 #endif /* REVERSE */

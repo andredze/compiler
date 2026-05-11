@@ -3,7 +3,11 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static void ASTWriteNode(LangCtx_t* lang_ctx, const TreeNode_t* node, FILE* fp, int rank);
+static void ASTWriteNode(LangCtx_t*         lang_ctx, 
+                         const TreeNode_t*  node, 
+                         FILE*              fp, 
+                         int                rank);
+
 static void ASTWriteIdTable(LangCtx_t* lang_ctx, FILE* fp);
 
 //==========================================================================================
@@ -14,10 +18,10 @@ LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
 
     char data_file_path[MAX_FILE_NAME_LEN] = "";
 
-    WDPRINTF(L"ast filename = %s;", lang_ctx->ast_file_name);
+    WDPRINTF(L"ast filename = %s;", lang_ctx->src_code_file_name);
 
     snprintf(data_file_path, sizeof(data_file_path), "%s/%s.txt", 
-             AST_DIR_NAME, lang_ctx->ast_file_name);
+             AST_DIR_NAME, lang_ctx->src_code_file_name);
 
     FILE* fp = fopen(data_file_path, "w");
 
@@ -31,13 +35,14 @@ LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
 
     fwprintf(fp, L"\n\n");
 
-    fwprintf(fp, L"global variables: %zu\n", LangIdTableCountVars(&lang_ctx->main_id_table));
+    fwprintf(fp, L"global variables: %zu\n", 
+             LangIdTableCountVars(&lang_ctx->main_id_table));
 
     ASTWriteIdTable(lang_ctx, fp);
 
     fclose(fp);
 
-    WDPRINTF(L"База данных записана в файл: %s\n", data_file_path);
+    WDPRINTF(L"AST stored in file: %s\n", data_file_path);
 
     return LANG_SUCCESS;
 }

@@ -9,8 +9,57 @@ static LangErr_t ReadGlobalsCount(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t*
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path)
+TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, 
+                             const char* cur_symbol_ptr,
+                             const char* buffer,
+                             const char* fmt, ...)
 {
+    assert(fmt != NULL);
+
+    int pos = (int) (cur_symbol_ptr - buffer);
+
+    va_list args = {};
+    va_start(args, fmt);
+
+    FILE* fp = lang_ctx->tree.debug.fp;
+
+    fwprintf(fp, L"<pre><h4><font color=green>");
+
+    // vfprintf(fp, fmt, args);
+
+    fwprintf(fp, L"</h4></font>\n"
+                L"<font color=gray>");
+
+    fwprintf(fp, L"\"");
+
+    for (int i = 0; i < pos; i++)
+    {
+        fwprintf(fp, L"%lc", buffer[i]);
+    }
+
+    fwprintf(fp, L"</font><font color=red>%c</font>", buffer[pos]);
+
+    if (*(buffer + pos) != '\0')
+    {
+        fwprintf(fp, L"<font color=blue>%ls</font>\n\n", buffer + pos + 1);
+    }
+
+    fwprintf(fp, L"\"");
+
+    va_end(args);
+
+    fflush(fp);
+
+    return TREE_SUCCESS;
+}
+
+//==========================================================================================
+
+LangErr_t ASTReadData(LangCtx_t* lang_ctx, 
+                      char*      ast_file_path, 
+                      char       src_file_name[MAX_FILENAME_LEN])
+{
+    DPRINT_FUNC_ENTER_MSG();
     assert(lang_ctx);
 
     Tree_t* tree = &lang_ctx->tree;
@@ -23,9 +72,10 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path)
         return LANG_FILE_ERROR;
     }
 
-    wchar_t* buffer = NULL;
+    wchar_t* buffer   = NULL;
+    size_t   buf_size = 0;
 
-    if (ReadFile(fp, &buffer, ast_file_path, &lang_ctx->buffer_size))
+    if (ReadFile(fp, &buffer, ast_file_path, &buf_size))
     {
         WPRINTERR("Error with reading file");
         free(buffer);
@@ -36,7 +86,7 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path)
              L"---------------------------------------------------",
              buffer);
 
-    strcpy(lang_ctx->ast_file_name, GetFileName(ast_file_path));
+    strncpy(src_file_name, GetFileName(ast_file_path), sizeof(src_file_name));
 
     ssize_t i = 0;
 
@@ -55,8 +105,9 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path)
 
     free(buffer);
 
-    TREE_CALL_DUMP(lang_ctx, "DUMP AFTER TREE READ DATA %s", ast_file_path);
+    TREE_CALL_DUMP(lang_ctx, NULL, "DUMP AFTER TREE READ DATA %s", ast_file_path);
 
+    DPRINT_FUNC_LEAVE_MSG();
     return LANG_SUCCESS;
 }
 
@@ -64,6 +115,7 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx, char* ast_file_path)
 
 static LangErr_t ReadGlobalsCount(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
 {
+    DPRINT_FUNC_ENTER_MSG();
     assert(lang_ctx);
     assert(buffer);
     assert(pos);
@@ -79,6 +131,7 @@ static LangErr_t ReadGlobalsCount(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t*
 
     *pos = *pos + symbols_count;
 
+    DPRINT_FUNC_LEAVE_MSG();
     return LANG_SUCCESS;
 }
 
@@ -90,6 +143,7 @@ static bool ReadIdData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos);
 
 static void ReadIdTable(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
 {
+    DPRINT_FUNC_ENTER_MSG();
     assert(lang_ctx);
     assert(buffer);
     assert(pos);
@@ -103,6 +157,8 @@ static void ReadIdTable(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
         got_data = ReadIdData(lang_ctx, buffer, pos);
     }
     while (got_data);
+
+    DPRINT_FUNC_LEAVE_MSG();
 }
 
 //==========================================================================================
@@ -119,18 +175,19 @@ static bool ReadIdData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
     wchar_t id_buff[MAX_IDENTIFIER_LEN] = {};
     int ret_value = 0;
 
-    if ((ret_value = swscanf(&buffer[*pos], L" [%zu, \"%[^\"]\", %zu, %zu]\n%n",
+    if ((ret_value = swscanf(&buffer[*pos], L" [%zu, \"%l[^\"]\", %zu, %zu]\n%n",
                              &id_data.name_index,
                              id_buff,
                              &id_data.memory_needed,
                              &id_data.n_params,
                              &symbols_read)) != 4)
     {
-        wprintf(L"ret_value = %d\n", ret_value);
-        // return false;
+        WDPRINTF(L"ret_value = %d\n", ret_value);
+        WDPRINTF(L"!!! RETURNING FALSE !!!\n", ret_value);
+        return false;
     }
 
-    wprintf(L"id_buff = %ls\n", id_buff);
+    WDPRINTF(L"id_buff = %ls\n", id_buff);
 
     id_data.name = lang_ctx->names_pool.data[id_data.name_index];
 
@@ -170,7 +227,7 @@ LangErr_t ReadNode(LangCtx_t* lang_ctx, TreeNode_t** node, wchar_t* buffer, ssiz
 
         *node = TreeNodeCtor(&lang_ctx->tree, data, NULL, NULL, NULL);
 
-        TREE_CALL_DUMP(lang_ctx, "DUMP AFTER NODE CTOR in READ AST");
+        TREE_CALL_DUMP(lang_ctx, NULL, "DUMP AFTER NODE CTOR in READ AST");
 
         if ((error = ReadNode(lang_ctx, &(*node)->left,  buffer, pos)))
             return error;
@@ -267,6 +324,7 @@ static LangErr_t GetNodeData(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_
             break;
         }
     }
+
     if (!got_type)
     {
         WPRINTERR(L"unknown token type in AST read");

@@ -72,22 +72,26 @@ TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...);
 
 LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* fmt, ...);
 
-TreeErr_t TreeDump(LangCtx_t* lang_ctx,
-                   const TreeDumpInfo_t* dump_info,
-                   NodeDumpType_t dump_type,
-                   const char* fmt, ...);
+TreeErr_t TreeDump(LangCtx_t*              lang_ctx,
+                   const TreeDumpInfo_t*   dump_info,
+                   NodeDumpType_t          dump_type,
+                   const char*             code,
+                   const char*             fmt, 
+                   ...);
 
-TreeErr_t vTreeDump(LangCtx_t* lang_ctx,
-                    const TreeDumpInfo_t* dump_info,
-                    NodeDumpType_t dump_type,
-                    const char* fmt, va_list args);
+TreeErr_t vTreeDump(LangCtx_t*              lang_ctx,
+                    const TreeDumpInfo_t*   dump_info,
+                    NodeDumpType_t          dump_type,
+                    const char*             code,
+                    const char*             fmt, 
+                    va_list                 args);
 
 TreeErr_t TreeOpenLogFile   (LangCtx_t* lang_ctx);
 void      TreeCloseLogFile  (LangCtx_t* lang_ctx);
 
 TreeErr_t TreeGraphDump        (LangCtx_t* lang_ctx, NodeDumpType_t dump_type);
-void      SetGraphFilepaths    (LangCtx_t* lang_ctx);
 TreeErr_t TreeConvertGraphFile (LangCtx_t* lang_ctx);
+void      SetGraphFilepaths    (TreeDebugData* debug_data);
 
 TreeErr_t GraphDump(LangCtx_t*     lang_ctx,  TreeNode_t*    node, const TreeDumpInfo_t* dump_info,
                     NodeDumpType_t dump_type, const wchar_t* fmt, ...);

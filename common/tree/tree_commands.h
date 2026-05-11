@@ -25,10 +25,10 @@
         }                                                               \
         END
 
-#define TREE_CALL_DUMP(tree_ptr, fmt, ...)                                                  \
+#define TREE_CALL_DUMP(tree_ptr, code, fmt, ...)                                                  \
         BEGIN                                                                               \
         TreeDumpInfo_t dump_info = {TREE_SUCCESS, __PRETTY_FUNCTION__, __FILE__, __LINE__}; \
-        if (TreeDump((tree_ptr), &dump_info, DUMP_SHORT, (fmt), ##__VA_ARGS__))              \
+        if (TreeDump((tree_ptr), &dump_info, DUMP_SHORT, code, (fmt), ##__VA_ARGS__))              \
         {                                                                                   \
             return LANG_TREE_ERROR;                                                         \
         }                                                                                   \
@@ -37,11 +37,13 @@
 #else
 
 #define DEBUG_TREE_CHECK(tree_ptr, fmt, ...)  ;
-#define TREE_CALL_DUMP(tree_ptr, fmt, ...)    ;
+#define TREE_CALL_DUMP(tree_ptr, code, fmt, ...)    ;
 
 #endif /* TREE_DEBUG */
 
 //——————————————————————————————————————————————————————————————————————————————————————————
+
+TreeErr_t TreeShowLogs(Tree_t* tree);
 
 TreeNode_t* LangOperatorNodeCtor  (LangCtx_t*  lang_ctx, Operator_t  opcode,
                                    TreeNode_t* left,     TreeNode_t* right);
