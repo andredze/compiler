@@ -43,6 +43,7 @@ LangErr_t TreeReadData(FrontendCtx* frontend_ctx, const char* data_file_path)
     }
 
     frontend_ctx->buffer = frontend_ctx->cur_symbol_ptr;
+    WDPRINTF(L"frontend_ctx->buffer = %p\n", frontend_ctx->buffer);
 
     fclose(fp);
 

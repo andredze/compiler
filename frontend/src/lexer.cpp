@@ -28,7 +28,7 @@ static void PrintSyntaxError(LangCtx_t* lang_ctx, const char* file, const char* 
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static LangErr_t ParseToken(LangCtx_t* lang_ctx);
+static LangErr_t ParseToken(FrontendCtx_t* frontend_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -95,8 +95,6 @@ LangErr_t Tokenize(FrontendCtx_t* frontend_ctx)
 
     wfcprintf(stderr, BLUE, L"Tokenizing...\n");
 
-    // WDPRINTF(L"LEXER: code = %ls\n", lang_ctx->cur_symbol_ptr);
-
     while (*frontend_ctx->cur_symbol_ptr != '\0')
     {
         if ((status = ParseToken(frontend_ctx)))
@@ -151,16 +149,45 @@ static LangErr_t ParseToken(FrontendCtx_t* frontend_ctx)
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define PUSH_TOKEN_(frontend_ctx, _token)                                                                           \
-        TreeDumpInfo_t _dump_info_ = {TREE_SUCCESS, __func__, __FILE__, __LINE__};                                  \
-        GraphDump(&frontend_ctx->lang_ctx, (_token), &_dump_info_, DUMP_SHORT, L"pushing token %p\n", (_token));    \
-                                                                                                                    \
-        WDPRINTF(L"Pushing token %p\n", (_token));                                                                  \
-                                                                                                                    \
-        if (StackPush(&frontend_ctx->tokens, (_token)))                                                             \
-        {                                                                                                           \
-            WPRINTERR("Failed stack push token");                                                                   \
-            return LANG_STACK_ERROR;                                                                                \
+static LangErr_t LexerPushToken(FrontendCtx_t*  frontend_ctx,
+                                TreeNode_t*     token, 
+                                TreeDumpInfo_t* dump_info)
+{
+#ifdef TREE_DEBUG
+
+    GraphDump(&frontend_ctx->lang_ctx, 
+              token, 
+              dump_info, 
+              DUMP_SHORT, 
+              L"pushing token %p\n", 
+              token);
+
+#endif /* TREE_DEBUG */
+
+    WDPRINTF(L"Pushing token %p (%s at %s:%d)\n", 
+            token, 
+            dump_info->func,
+            dump_info->file,
+            dump_info->line);
+
+    if (StackPush(&frontend_ctx->tokens, token))
+    {
+        WPRINTERR("Failed stack push token");  
+        return LANG_STACK_ERROR;
+    }
+
+    return LANG_SUCCESS;
+}
+
+//------------------------------------------------------------------//
+
+#define PUSH_TOKEN_(frontend_ctx, _token)                                           \ 
+        LangErr_t      _error_     = LANG_SUCCESS;                                  \
+        TreeDumpInfo_t _dump_info_ = {TREE_SUCCESS, __func__, __FILE__, __LINE__};  \
+                                                                                    \
+        if ((_error_ = LexerPushToken(frontend_ctx, _token, &_dump_info_)))         \
+        {                                                                           \
+            return _error_;                                                         \
         }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -240,15 +267,51 @@ static LangErr_t ProcessOperatorTokenRepetitions(FrontendCtx* frontend_ctx, size
 
 //==========================================================================================
 
+static bool IsFirstSymbolOfNumber(wchar_t symbol)
+{
+    if (isdigit(symbol))
+    {
+        return true;
+    }
+    if (symbol == L'-')
+    {
+        return true;
+    }
+
+    return false;
+}
+
+//------------------------------------------------------------------//
+
+static bool IsValidIfNegativeNumber(wchar_t* string)
+{
+    // skip non-negative
+    if (*string != L'-')
+    {
+        return true;
+    }
+
+    // check that a digit comes after '-'
+    if (isdigit(*(string + 1)))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+//------------------------------------------------------------------//
+
 static LangErr_t ProcessNumberTokenCase(FrontendCtx_t* frontend_ctx, bool* do_continue)
 {
     assert(do_continue);
     assert(frontend_ctx);
 
-    if ((*frontend_ctx->cur_symbol_ptr != L'-') && !isdigit(*frontend_ctx->cur_symbol_ptr))
+    if (!IsFirstSymbolOfNumber(*frontend_ctx->cur_symbol_ptr))
+    {    
         return LANG_SUCCESS;
-
-    if (*frontend_ctx->cur_symbol_ptr == L'-' && !isdigit(*(frontend_ctx->cur_symbol_ptr + 1)))
+    }
+    if (!IsValidIfNegativeNumber(frontend_ctx->cur_symbol_ptr))
     {
         SET_LEXER_ERROR_(LANG_LEXER_SYNTAX_ERROR, NULL,
                          L"Invalid sequence: minus should be followed with a number");

@@ -5,7 +5,10 @@
 
 #include "operators.h"
 #include "lang_ctx.h"
-#include "emission.h"
+
+#ifdef BACKEND
+    #include "emission.h"
+#endif /* BACKEND */
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

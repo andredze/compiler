@@ -139,7 +139,7 @@ static TreeErr_t TreeDumpSetLogFilePath(LangCtx_t* lang_ctx)
 TreeErr_t TreeDump(LangCtx_t*              lang_ctx,
                    const TreeDumpInfo_t*   dump_info,
                    NodeDumpType_t          dump_type,
-                   const char*             code,
+                   const wchar_t*          code,
                    const char*             fmt, 
                    ...)
 {
@@ -201,7 +201,7 @@ LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* 
 TreeErr_t vTreeDump(LangCtx_t*              lang_ctx,
                     const TreeDumpInfo_t*   dump_info,
                     NodeDumpType_t          dump_type,
-                    const char*             code,
+                    const wchar_t*          code,
                     const char*             fmt, 
                     va_list                 args)
 {

@@ -15,9 +15,9 @@ void FrontendSetError(FrontendCtx_t*   frontend_ctx,
 
     va_start(message_args, message);
 
-    wchar_t buffer[MAX_BUFFER_SIZ] = {};
+    wchar_t buffer[MAX_BUFFER_SIZE] = {};
 
-    vswprintf(buffer, sizeof(buffer), message, message_args);
+    vswprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), message, message_args);
 
     frontend_ctx->error_info = *error_info;
 
@@ -274,15 +274,16 @@ void FrontendCtxDtor(FrontendCtx_t* frontend_ctx)
 
     LangCtxDtor(&frontend_ctx->lang_ctx);
 
-    frontend_ctx->cur_symbol_ptr = NULL;
-    frontend_ctx->buffer         = NULL;
-
     if (frontend_ctx->output_file != NULL)
     {
         fclose(frontend_ctx->output_file);
     }
 
+    WDPRINTF(L"Freeing buffer %p\n", frontend_ctx->buffer);
     free(frontend_ctx->buffer);
+
+    frontend_ctx->cur_symbol_ptr = NULL;
+    frontend_ctx->buffer         = NULL;
 }
 
 //==========================================================================================

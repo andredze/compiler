@@ -5,6 +5,7 @@
 
 #include "tree_commands.h"
 #include "tree_dump.h"
+#include "frontend.h"
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <wchar.h>

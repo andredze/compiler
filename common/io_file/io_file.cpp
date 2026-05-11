@@ -60,6 +60,8 @@ int ReadFile(FILE* fp, wchar_t** buffer_ptr, const char* file_path, size_t* buf_
     *buffer_ptr = (wchar_t*) calloc(wchar_count + 1, sizeof(wchar_t));
     *buf_size   = wchar_count;
 
+    WDPRINTF(L"Allocating buffer %p\n", *buffer_ptr);
+
     if (*buffer_ptr == NULL)
     {
         free(buffer);

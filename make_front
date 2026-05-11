@@ -19,7 +19,7 @@ SANITIZER += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,f
              integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,$\
 			 shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-CXXFLAGS += $(SANITIZER)
+CXXFLAGS += $(SANITIZER) -O3
 
 FRONTEND_INCLUDES := -D FRONTEND	     \
 					 -I frontend/include \
@@ -32,6 +32,7 @@ FRONTEND_INCLUDES := -D FRONTEND	     \
 
 FRONTEND_SOURCES := frontend/src/main.cpp 			\
                     frontend/src/lexer.cpp 			\
+                    frontend/src/frontend.cpp 		\
                     frontend/src/data_read.cpp 		\
                     frontend/src/parser.cpp 		\
                     frontend/src/AST_write.cpp 		\

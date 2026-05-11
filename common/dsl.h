@@ -3,23 +3,28 @@
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #include "tree_types.h"
+#include "frontend.h"
 #include "tree_commands.h"
 
 /* =============== Domain Specific Language for my programming language =============== */
 
-#define SET_LEXER_ERROR_(error, node, expected, ...)                                       \
-        BEGIN                                                                              \
-        FRONTEND_SET_ERROR_(frontend_ctx, FRONTEND_LEXER_SYNTAX_ERROR, NULL, expected, ##__VA_ARGS__); \
+#define FRONTEND_SET_ERROR_(frontend_ctx, error, node, message, ...)              \
+        BEGIN                                                                     \
+            LangErrorInfo_t info_ = {error, node, __func__, __FILE__, __LINE__};  \
+            FrontendSetError(frontend_ctx, &info_, message, ##__VA_ARGS__);       \
         END
 
-#define SET_PARSER_ERROR_(node, expected, ...)                                              \
-        BEGIN                                                                               \
-        FRONTEND_SET_ERROR_(frontend_ctx, FRONTEND_PARSER_SYNTAX_ERROR, node, expected, ##__VA_ARGS__); \
+#define SET_LEXER_ERROR_(error, node, expected, ...)                                               \
+        BEGIN                                                                                      \
+        FRONTEND_SET_ERROR_(frontend_ctx, LANG_LEXER_SYNTAX_ERROR, NULL, expected, ##__VA_ARGS__); \
         END
 
-#ifdef FRONTEND
+#define SET_PARSER_ERROR_(node, expected, ...)                                                      \
+        BEGIN                                                                                       \
+        FRONTEND_SET_ERROR_(frontend_ctx, LANG_PARSER_SYNTAX_ERROR, node, expected, ##__VA_ARGS__); \
+        END
+
 #define IDENTIFIER_(id_index) LangIdentifierNodeCtor    (&frontend_ctx->lang_ctx, (name_index))
-#endif /* FRONTEND */
 
 #define OPERATOR_(op_code)    LangOperatorNodeCtor      (&frontend_ctx->lang_ctx, (op_code ), NULL, NULL)
 #define NUMBER_(number)       LangNumberNodeCtor        (&frontend_ctx->lang_ctx, (number  ))

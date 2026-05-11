@@ -25,8 +25,6 @@ int main(int argc, char* argv[])
     if (FrontendCtxCtor(&frontend_ctx))
         return EXIT_FAILURE;
 
-    WDPRINTF(L"tree_ptr = %p\n", frontend_ctx.lang_ctx.tree);
-
     do 
     {
         if (FrontendReadInputInTree(&frontend_ctx, argv[1]))
@@ -40,15 +38,16 @@ int main(int argc, char* argv[])
 
         if (ASTWriteData(&frontend_ctx.lang_ctx))
             break;
-    } while (0);
+    } 
+    while (0);
 
     // if (lang_ctx.error_info.error != LANG_SUCCESS)
     //     LangPrintError(&lang_ctx);
 
 #ifdef TREE_DEBUG
-    LangShowLogs(&frontend_ctx.lang_ctx);
+    TreeShowLogs(&frontend_ctx.lang_ctx.tree);
 #endif /* TREE_DEBUG */
-    
+
     FrontendCtxDtor(&frontend_ctx);
 
     return EXIT_SUCCESS;

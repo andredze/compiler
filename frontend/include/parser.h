@@ -9,11 +9,12 @@
 #include "tree_types.h"
 #include "tree_commands.h"
 #include "lang_ctx.h"
+#include "frontend.h"
 #include "lang_funcs.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t ParseTokens(LangCtx_t* lang_ctx);
+LangErr_t ParseTokens(FrontendCtx_t* frontend_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
