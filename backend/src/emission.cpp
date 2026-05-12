@@ -29,12 +29,6 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
     DPRINT_FUNC_ENTER_MSG();
     assert(backend_ctx);
 
-    Instruction_t* instr = InstructionCreateRegReg(OPCODE_MOV_REG_REG, REG_RAX, REG_R15);
-    INSTRUCTION_DUMP(instr);
-    GenerateCodeFromInstruction(&backend_ctx->bin_code, instr);
-
-    BIN_CODE_DUMP(&backend_ctx->bin_code);
-
     ASM_PRINT_NO_TAB(
         L"global main\n\n"
         L"section .text\n\n"

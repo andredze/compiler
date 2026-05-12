@@ -10,6 +10,10 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+BackendErr_t TestDSLEncoding(BackendCtx_t* backend_ctx);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 const uint8_t REX_FIRST_4_BITS = 0b0100;
 
 //------------------------------------------------------------------//
@@ -163,10 +167,10 @@ SIB_t;
 
 typedef enum BinValueSize
 {
-    BINVALUE_SIZE_1_BYTE,
-    BINVALUE_SIZE_2_BYTE,
-    BINVALUE_SIZE_4_BYTE,
-    BINVALUE_SIZE_8_BYTE
+    BINVALUE_SIZE_1_BYTE = 1,
+    BINVALUE_SIZE_2_BYTE = 2,
+    BINVALUE_SIZE_4_BYTE = 4,
+    BINVALUE_SIZE_8_BYTE = 8
 }
 BinValueSize_t;
 
@@ -174,10 +178,10 @@ BinValueSize_t;
 
 typedef union BinValueData
 {
-    uint8_t  size_1_byte;
-    uint16_t size_2_byte;
-    uint32_t size_4_byte;
-    uint64_t size_8_byte;
+    int8_t  size_1_byte;
+    int16_t size_2_byte;
+    int32_t size_4_byte;
+    int64_t size_8_byte;
 }
 BinValueData_t;
 
@@ -238,6 +242,11 @@ void BinInstructionDump(BinInstruction_t* bin_instr,
                         const char*       file, 
                         int               line);
 
+void BinInstructionDumpVerbose(BinInstruction_t* bin_instr, 
+                               const char*       func,
+                               const char*       file, 
+                               int               line);
+
 BackendErr_t GenerateCodeFromInstruction(BinCode_t* bin_code, Instruction_t* instr);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -255,12 +264,10 @@ OpcodeCase_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-BackendErr_t EncodeMovRegReg(BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeMovRegMem(BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeMovMemReg(BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeMovRegImm(BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeAddRegReg(BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeSubRegReg(BinInstruction_t* bin_instr, Instruction_t* instr);
+BackendErr_t EncodeRegReg (BinInstruction_t* bin_instr, Instruction_t* instr);
+BackendErr_t EncodeRegMem (BinInstruction_t* bin_instr, Instruction_t* instr);
+BackendErr_t EncodeMemReg (BinInstruction_t* bin_instr, Instruction_t* instr);
+BackendErr_t EncodeRegImm (BinInstruction_t* bin_instr, Instruction_t* instr);
 // BackendErr_t EncodeImulReg  (BinInstruction_t* bin_instr, Instruction_t* instr);
 // BackendErr_t EncodeIdivReg  (BinInstruction_t* bin_instr, Instruction_t* instr);
 // BackendErr_t EncodePushReg  (BinInstruction_t* bin_instr, Instruction_t* instr);
@@ -275,12 +282,12 @@ BackendErr_t EncodeMovRegReg(BinInstruction_t* bin_instr, Instruction_t* instr);
 
 const OpcodeCase_t OPCODE_CASES_TABLE[OPCODE_COUNT] = {
     [OPCODE_UNKNOWN    ] = {{.data = {.none        = 0xFF  }, .size = OPCODE_SIZE_NONE  }, NULL           },
-    [OPCODE_MOV_REG_REG] = {{.data = {.size_1_byte = 0x8B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeMovRegReg}, // REX.W + 8B /r
-    // [OPCODE_MOV_REG_MEM] = {{.data = {.size_1_byte = 0x8B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeMovRegMem}, // REX.W + 8B /r
-    // [OPCODE_MOV_MEM_REG] = {{.data = {.size_1_byte = 0x89  }, .size = OPCODE_SIZE_1_BYTE}, EncodeMovMemReg}, // REX.W + 89 /r
-    // [OPCODE_MOV_REG_IMM] = {{.data = {.size_1_byte = 0xC7  }, .size = OPCODE_SIZE_1_BYTE}, EncodeMovRegImm}, // REX.W + C7 /0 id
-    // [OPCODE_ADD_REG_REG] = {{.data = {.size_1_byte = 0x03  }, .size = OPCODE_SIZE_1_BYTE}, EncodeAddRegReg}, // REX.W + 03 /r
-    // [OPCODE_SUB_REG_REG] = {{.data = {.size_1_byte = 0x2B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeSubRegReg}, // REX.W + 2B /r
+    [OPCODE_MOV_REG_REG] = {{.data = {.size_1_byte = 0x8B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegReg}, // REX.W + 8B /r
+    [OPCODE_MOV_REG_MEM] = {{.data = {.size_1_byte = 0x8B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegMem}, // REX.W + 8B /r
+    [OPCODE_MOV_MEM_REG] = {{.data = {.size_1_byte = 0x89  }, .size = OPCODE_SIZE_1_BYTE}, EncodeMemReg}, // REX.W + 89 /r
+    [OPCODE_MOV_REG_IMM] = {{.data = {.size_1_byte = 0xC7  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegImm}, // REX.W + C7 /0 id
+    [OPCODE_ADD_REG_REG] = {{.data = {.size_1_byte = 0x03  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegReg}, // REX.W + 03 /r
+    [OPCODE_SUB_REG_REG] = {{.data = {.size_1_byte = 0x2B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegReg}, // REX.W + 2B /r
     // [OPCODE_IMUL_REG   ] = {{.data = {.size_1_byte = 0xF7  }, .size = OPCODE_SIZE_1_BYTE}, EncodeImulReg  }, // REX.W + F7 /5
     // [OPCODE_IDIV_REG   ] = {{.data = {.size_1_byte = 0xF7  }, .size = OPCODE_SIZE_1_BYTE}, EncodeIdivReg  }, // REX.W + F7 /7
     // [OPCODE_PUSH_REG   ] = {{.data = {.size_1_byte = 0x50  }, .size = OPCODE_SIZE_1_BYTE}, EncodePushReg  }, // 50+rd

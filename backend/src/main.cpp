@@ -4,6 +4,7 @@
 #include "backend.h"
 #include "elf_build.h"
 #include "emission.h"
+#include "encoding_x86.h"
 #include <locale.h>
 
 //==========================================================================================
@@ -29,6 +30,11 @@ int main(int argc, char* argv[])
 
         if (ASTReadData(&backend_ctx.lang_ctx, argv[1], backend_ctx.ast_file_name))
             break;
+
+        #ifdef TEST_DSL
+            TestDSLEncoding(&backend_ctx);
+            break;
+        #endif
 
         wcprintf(BLUE, L"Скомпилить скомпилить скомпилить\n"
                         "\t%s/%s.txt\n"
@@ -57,7 +63,7 @@ int main(int argc, char* argv[])
              ELF_DIR_NAME, backend_ctx.ast_file_name,
              ELF_DIR_NAME, backend_ctx.ast_file_name);
 
-#ifdef TREE_DEBUG
+#if defined(TREE_DEBUG) && !(defined(TEST_DSL))
     TreeShowLogs(&backend_ctx.lang_ctx.tree);
 #endif /* TREE_DEBUG */
 

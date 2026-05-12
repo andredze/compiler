@@ -22,7 +22,7 @@ SANITIZER += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,f
 ifdef DEBUG
 	CXXFLAGS += $(SANITIZER)
 else
- 	CXXFLAGS += -O3
+ 	CXXFLAGS += -O3 -flto -D NDEBUG
 endif
 
 BACKEND_INCLUDES  := -D BACKEND 		\
@@ -38,6 +38,7 @@ BACKEND_INCLUDES  := -D BACKEND 		\
 BACKEND_SOURCES := backend/src/main.cpp 			\
                    backend/src/backend.cpp 			\
                    backend/src/emission.cpp 		\
+                   backend/src/testing.cpp 			\
                    backend/src/instruction.cpp 		\
                    backend/src/bin_code_buffer.cpp 	\
                    backend/src/elf_build.cpp 		\
@@ -57,7 +58,11 @@ BACKEND_OBJECTS  := $(BACKEND_SOURCES:.cpp=.o)
 BACKEND_TARGET  := back
 
 ifdef DEBUG
-CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG -D DEBUG -D FUNC_BT_DEBUG -D BACKEND_DEBUG
+	CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG -D DEBUG -D FUNC_BT_DEBUG -D BACKEND_DEBUG
+endif
+
+ifdef TEST_DSL
+	CXXFLAGS += -D TEST_DSL
 endif
 
 all: back

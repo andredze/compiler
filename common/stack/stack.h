@@ -9,11 +9,6 @@
 #include <stdint.h>
 #include "tree_types.h"
 
-#ifndef STACK_DEBUG
-    #define NDEBUG
-
-#endif /* STACK_DEBUG */
-
 #include <assert.h>
 
 //==========================================================================================

@@ -67,6 +67,30 @@ static void BinInstrSetSIB(BinInstruction_t* bin_instr,
 
 //==========================================================================================
 
+static void BinInstrSetDisp32(BinInstruction_t* bin_instr,
+                              Disp_t            disp)
+{
+    assert(bin_instr);
+
+    bin_instr->info.contains_disp    = 1;
+    bin_instr->disp.size             = BINVALUE_SIZE_4_BYTE;
+    bin_instr->disp.data.size_4_byte = disp;
+}
+
+//==========================================================================================
+
+static void BinInstrSetImm32(BinInstruction_t* bin_instr,
+                             Imm_t             imm)
+{
+    assert(bin_instr);
+
+    bin_instr->info.contains_imm    = 1;
+    bin_instr->imm.size             = BINVALUE_SIZE_4_BYTE;
+    bin_instr->imm.data.size_4_byte = imm;
+}
+
+//==========================================================================================
+
 static uint8_t GetRegCode(Register_t reg)
 {
     return (uint8_t) reg & 0b111;
@@ -167,21 +191,120 @@ static void BinInstrSetREXPrefixDefault(BinInstruction_t* bin_instr,
 
 //==========================================================================================
 
-BackendErr_t EncodeMovRegReg(BinInstruction_t* bin_instr, Instruction_t* instr)
+BackendErr_t EncodeRegReg(BinInstruction_t* bin_instr, Instruction_t* instr)
 {
     assert(bin_instr);
     assert(instr);
 
-    ENCODE_VERIFY_(instr->opcode_type    == OPCODE_MOV_REG_REG);
+    ENCODE_VERIFY_(instr->opcode_type == OPCODE_MOV_REG_REG ||
+                   instr->opcode_type == OPCODE_ADD_REG_REG ||
+                   instr->opcode_type == OPCODE_SUB_REG_REG);
+
     ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
     ENCODE_VERIFY_(instr->operand_2.type == OPERAND_REG_64);
 
-    // REX.W + 8B /r
+    // REX.W + OPCODE + /r
     BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_REG, MODRM_TYPE_RM);
 
     BinInstrSetModRM(bin_instr, MODRM_MOD_RM_ONLY,
                                 GetRegCode(instr->operand_1.value.reg),
                                 GetRegCode(instr->operand_2.value.reg));
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t EncodeRegMem(BinInstruction_t* bin_instr, Instruction_t* instr)
+{
+    assert(bin_instr);
+    assert(instr);
+
+    ENCODE_VERIFY_(instr->opcode_type    == OPCODE_MOV_REG_MEM);
+    ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
+    ENCODE_VERIFY_(instr->operand_2.type == OPERAND_MEM_64);
+
+    // REX.W + OPCODE + /r
+    BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_REG, MODRM_TYPE_RM);
+
+    ModRMMod_t modrm_mod = (instr->operand_2.value.mem.disp == 0) ?
+                            MODRM_MOD_RM_ONLY :
+                            MODRM_MOD_RM_DISP32; // using only 32 bit in this version
+    
+    BinInstrSetModRM(bin_instr, modrm_mod,
+                                GetRegCode(instr->operand_1.value.reg),
+                                GetRegCode(instr->operand_2.value.reg));
+
+    if (modrm_mod == MODRM_MOD_RM_ONLY)
+    {
+        return BACKEND_SUCCESS;
+    }
+
+    BinInstrSetDisp32(bin_instr, instr->operand_2.value.mem.disp);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t EncodeMemReg(BinInstruction_t* bin_instr, Instruction_t* instr)
+{
+    assert(bin_instr);
+    assert(instr);
+
+    ENCODE_VERIFY_(instr->opcode_type    == OPCODE_MOV_MEM_REG);
+    ENCODE_VERIFY_(instr->operand_1.type == OPERAND_MEM_64);
+    ENCODE_VERIFY_(instr->operand_2.type == OPERAND_REG_64);
+
+    // REX.W + OPCODE + /r
+    BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_REG);
+
+    ModRMMod_t modrm_mod = (instr->operand_1.value.mem.disp == 0) ?
+                            MODRM_MOD_RM_ONLY :
+                            MODRM_MOD_RM_DISP32; // using only 32 bit in this version
+    
+    BinInstrSetModRM(bin_instr, modrm_mod,
+                                GetRegCode(instr->operand_2.value.reg),
+                                GetRegCode(instr->operand_1.value.reg));
+
+    if (modrm_mod == MODRM_MOD_RM_ONLY)
+    {
+        return BACKEND_SUCCESS;
+    }
+
+    BinInstrSetDisp32(bin_instr, instr->operand_1.value.mem.disp);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t EncodeRegImm(BinInstruction_t* bin_instr, Instruction_t* instr)
+{
+    assert(bin_instr);
+    assert(instr);
+
+    ENCODE_VERIFY_(instr->opcode_type    == OPCODE_MOV_REG_IMM);
+    ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
+    ENCODE_VERIFY_(instr->operand_2.type == OPERAND_IMM_32);
+
+    // REX.W + OPCODE /0 id
+    BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_UNKNOWN);
+
+    ModRMMod_t modrm_mod = (instr->operand_1.value.mem.disp == 0) ?
+                            MODRM_MOD_RM_ONLY :
+                            MODRM_MOD_RM_DISP32; // using only 32 bit in this version
+    
+    BinInstrSetModRM(bin_instr, modrm_mod,
+                                0, // reg field used as an opcode extension
+                                GetRegCode(instr->operand_1.value.reg));
+
+    if (modrm_mod == MODRM_MOD_RM_ONLY)
+    {
+        return BACKEND_SUCCESS;
+    }
+
+    BinInstrSetDisp32(bin_instr, instr->operand_1.value.mem.disp);
 
     return BACKEND_SUCCESS;
 }
@@ -330,12 +453,9 @@ BackendErr_t GenerateCodeFromInstruction(BinCode_t* bin_code, Instruction_t* ins
 static void BinInstructionRexDump(REXPrefix_t rex)
 {
     wcprintf(CYAN, 
-LR"(rex prefix:
-    fixed = %04b;
-    w     = %01b;
-    r     = %01b;
-    x     = %01b;
-    b     = %01b;
+LR"(REX prefix
+    | fixed w  r  x  b |
+    | %04b  %01b  %01b  %01b  %01b |
 )", 
     rex.fixed_bit_pattern,
     rex.w,
@@ -391,15 +511,15 @@ LR"(opcode:
 static void BinInstructionModRMDump(ModRM_t modrm)
 {
     wcprintf(CYAN, 
-LR"(modrm byte:
-    mod = %02b (%s);
-    reg = %03b;
-    rm  = %03b;
+LR"(ModRM byte
+    | mod reg rm  |
+    | %02b  %03b %03b |
+    mod = %s;
 )", 
     modrm.mod,
-    BinInstructionGetModRMModString((ModRMMod_t) modrm.mod),
     modrm.reg,
-    modrm.rm);
+    modrm.rm,
+    BinInstructionGetModRMModString((ModRMMod_t) modrm.mod));
 }
 
 //------------------------------------------------------------------//
@@ -407,10 +527,9 @@ LR"(modrm byte:
 static void BinInstructionSIBDump(SIB_t sib)
 {
     wcprintf(CYAN, 
-LR"(sib byte:
-    scale = %02b;
-    index = %03b;
-    base  = %03b;
+LR"(SIB byte
+    | scale  index  base |
+    |   %02b    %03b    %03b |
 )", 
     sib.scale,
     sib.index,
@@ -429,9 +548,23 @@ static void BinInstructionBinValueDump(BinValue_t value)
 
 //==========================================================================================
 
-void BinInstructionDump(BinInstruction_t* bin_instr, 
+static void BinInstructionDumpPrefixPrint(int contains_field)
+{
+    if (contains_field)
+    {
+        wcprintf(CYAN, L"CONTAINS ");
+    }    
+    else
+    {    
+        wcprintf(CYAN, L"NO ");
+    }
+}
+
+//------------------------------------------------------------------//
+
+void BinInstructionDump(BinInstruction_t* bin_instr,
                         const char*       func,
-                        const char*       file, 
+                        const char*       file,
                         int               line)
 {
     assert(bin_instr);
@@ -448,29 +581,92 @@ bin_instr = %p
     line,
     bin_instr);
 
-    wcprintf(CYAN, L"contains_rex = %d\n", bin_instr->info.contains_rex);
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_rex);
+    wcprintf(CYAN, L"REX\n");
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_opcode);
+    wcprintf(CYAN, L"OPCODE\n");
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_modrm);
+    wcprintf(CYAN, L"MODRM\n");
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_sib);
+    wcprintf(CYAN, L"SIB\n");
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_imm);
+    wcprintf(CYAN, L"IMM\n");
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_disp);
+    wcprintf(CYAN, L"DISP\n");
 
-    BinInstructionRexDump(bin_instr->rex);
+    wcprintf(CYAN, 
+LR"(         REX         OPCODE      ModRM             SIB             DISP       IMM
+    | fixed w  r  x  b | opcode | mod reg rm  | scale  index  base |   disp   |   imm    |
+    | %04b  %01b  %01b  %01b  %01b | %-6.02x | %02b  %03b %03b |   %02b    %03b    %03b | %08x | %08x |
+    |        %02x        | %-6.02x |      %02x     |         %02x         | %08x | %08x |
+    mod = %s;
+)", 
+    bin_instr->rex.fixed_bit_pattern,
+    bin_instr->rex.w,
+    bin_instr->rex.r,
+    bin_instr->rex.x,
+    bin_instr->rex.b,
+    bin_instr->opcode.data.size_3_byte,
+    bin_instr->modrm.mod,
+    bin_instr->modrm.reg,
+    bin_instr->modrm.rm,
+    bin_instr->sib.scale,
+    bin_instr->sib.index,
+    bin_instr->sib.base,
+    bin_instr->disp.data.size_4_byte,
+    bin_instr->imm.data.size_4_byte,
+    ReverseREXPrefix(bin_instr->rex),
+    bin_instr->opcode.data.size_3_byte,
+    ReverseModRM(bin_instr->modrm),
+    ReverseSIB(bin_instr->sib),
+    bin_instr->disp.data.size_4_byte,
+    bin_instr->imm.data.size_4_byte,
+    BinInstructionGetModRMModString((ModRMMod_t) bin_instr->modrm.mod)
+    );
 
-    wcprintf(CYAN, L"contains_opcode = %d\n", bin_instr->info.contains_opcode);
+    wcprintf(CYAN, LR"(}
+===========================================
+)");
+}
 
-    BinInstructionOpcodeDump(bin_instr->opcode);
+//==========================================================================================
 
-    wcprintf(CYAN, L"contains_modrm = %d\n", bin_instr->info.contains_modrm);
+void BinInstructionDumpVerbose(BinInstruction_t* bin_instr, 
+                               const char*       func,
+                               const char*       file, 
+                               int               line)
+{
+    assert(bin_instr);
 
-    BinInstructionModRMDump(bin_instr->modrm);
+    wcprintf(CYAN, LR"(
+===========================================
+Dump: BinInstruction_t from %s at %s:%d
+-------------------------------------------
+bin_instr = %p
+{
+)",
+    func,
+    file,
+    line,
+    bin_instr);
 
-    wcprintf(CYAN, L"contains_sib = %d\n", bin_instr->info.contains_sib);
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_rex);
+    BinInstructionRexDump        (bin_instr->rex);
 
-    BinInstructionSIBDump(bin_instr->sib);
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_opcode);
+    BinInstructionOpcodeDump     (bin_instr->opcode);
 
-    wcprintf(CYAN, L"contains_imm = %d\n", bin_instr->info.contains_imm);
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_modrm);
+    BinInstructionModRMDump      (bin_instr->modrm);
 
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_sib);
+    BinInstructionSIBDump        (bin_instr->sib);
+
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_imm);
     wcprintf(CYAN, L"imm:\n");
     BinInstructionBinValueDump(bin_instr->imm);
 
-    wcprintf(CYAN, L"contains_disp = %d\n", bin_instr->info.contains_disp);
-    
+    BinInstructionDumpPrefixPrint(bin_instr->info.contains_disp);
     wcprintf(CYAN, L"disp:\n");
     BinInstructionBinValueDump(bin_instr->disp);
 

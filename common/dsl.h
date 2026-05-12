@@ -107,6 +107,78 @@
 
 //------------------------------------------------------------------//
 
+#define GENERATE_CODE_(instr_create_func, opcode, ...)                            \
+        BEGIN                                                                     \
+        Instruction_t* instr = instr_create_func(opcode, ##__VA_ARGS__);          \
+                                                                                  \
+        if (instr == NULL)                                                        \
+        {                                                                         \
+            return BACKEND_CREATE_INSTRUCTION_ERROR;                              \
+        }                                                                         \
+                                                                                  \
+        INSTRUCTION_DUMP(instr);                                                  \
+                                                                                  \
+        BackendErr_t error = BACKEND_SUCCESS;                                     \
+                                                                                  \
+        if ((error = GenerateCodeFromInstruction(&backend_ctx->bin_code, instr))) \
+        {                                                                         \
+            return error;                                                         \
+        }                                                                         \
+                                                                                  \
+        BIN_CODE_DUMP(&backend_ctx->bin_code);                                    \
+        END
+
+//------------------------------------------------------------------//
+
+#define MOV_REG_REG_(reg1, reg2) \
+        GENERATE_CODE_(InstructionCreateRegReg, OPCODE_MOV_REG_REG, reg1, reg2)
+
+// can not be used with rsp and r12 as memory base register
+#define MOV_REG_MEM_(reg, base) \
+        GENERATE_CODE_(InstructionCreateRegMem, OPCODE_MOV_REG_MEM, reg, base, 0)
+
+#define MOV_REG_MEM_DISP_(reg, base, disp) \
+        GENERATE_CODE_(InstructionCreateRegMem, OPCODE_MOV_REG_MEM, reg, base, disp)
+
+#define MOV_MEM_REG_(base, reg) \
+        GENERATE_CODE_(InstructionCreateMemReg, OPCODE_MOV_MEM_REG, base, 0, reg)
+
+#define MOV_MEM_DISP_REG_(base, disp, reg) \
+        GENERATE_CODE_(InstructionCreateMemReg, OPCODE_MOV_MEM_REG, base, disp, reg)
+
+#define MOV_REG_IMM_(reg, imm) \
+        GENERATE_CODE_(InstructionCreateRegImm, OPCODE_MOV_REG_IMM, reg, imm)
+
+#define ADD_REG_REG_(reg1, reg2) \
+        GENERATE_CODE_(InstructionCreateRegReg, OPCODE_ADD_REG_REG, reg1, reg2)
+
+#define SUB_REG_REG_(reg1, reg2) \
+        GENERATE_CODE_(InstructionCreateRegReg, OPCODE_SUB_REG_REG, reg1, reg2)
+
+#define IMUL_REG_(reg) \
+        GENERATE_CODE_(InstructionCreateRegNone, OPCODE_IMUL_REG, reg)
+
+#define IDIV_REG_(reg) \
+        GENERATE_CODE_(InstructionCreateRegNone, OPCODE_IDIV_REG, reg)
+
+#define PUSH_REG_(reg) \
+        GENERATE_CODE_(InstructionCreateRegNone, OPCODE_PUSH_REG, reg)
+
+#define POP_REG_(reg) \
+        GENERATE_CODE_(InstructionCreateRegNone, OPCODE_POP_REG, reg)
+
+// TODO: how to encode jumps and calls
+// #define CALL_REL_(rel)
+        // GENERATE_CODE_(InstructionCreateMemNone, OPCODE_POP_REG, reg)
+
+#define RET_() \
+        GENERATE_CODE_(InstructionCreateNoneNone, OPCODE_RET)
+
+#define SYSCALL_() \
+        GENERATE_CODE_(InstructionCreateNoneNone, OPCODE_SYSCALL)
+
+//------------------------------------------------------------------//
+
 #define ASM_VERIFY_(cond)                                 \
         BEGIN                                             \
         if (!(cond))                                      \
@@ -158,6 +230,25 @@
 #undef ASM_VERIFY_
 
 #undef ENCODE_VERIFY_
+
+//------------------------------------------------------------------//
+
+#undef GENERATE_CODE_
+
+#undef MOV_REG_REG_
+#undef MOV_REG_MEM_
+#undef MOV_REG_MEM_DISP_
+#undef MOV_MEM_DISP_REG_
+#undef MOV_MEM_REG_
+#undef MOV_REG_IMM_
+#undef ADD_REG_REG_
+#undef SUB_REG_REG_
+#undef IMUL_REG_
+#undef IDIV_REG_
+#undef PUSH_REG_
+#undef POP_REG_
+#undef RET_
+#undef SYSCALL_
 
 //==========================================================================================
 
