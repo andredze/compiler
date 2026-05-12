@@ -93,10 +93,19 @@
         fwprintf(backend_ctx->asm_file, L"\t" __VA_ARGS__); \
         END
 
-#define ELF_BYTE_SET_(byte)                                       \
-        BEGIN                                                     \
-        backend_ctx->code_buffer[backend_ctx->code_pos++] = byte; \
+//------------------------------------------------------------------//
+/*                            Encoding                              */
+
+#define ENCODE_VERIFY_(cond)                                    \
+        BEGIN                                                   \
+        if (!(cond))                                            \
+        {                                                       \
+            WPRINTERR(L"ENCODE_VERIFY_(%s) dropped", #cond);    \
+            return BACKEND_INVALID_INSTRUCTION;                 \
+        }                                                       \
         END
+
+//------------------------------------------------------------------//
 
 #define ASM_VERIFY_(cond)                                 \
         BEGIN                                             \
@@ -147,6 +156,8 @@
 
 #undef ASM_PRINT_
 #undef ASM_VERIFY_
+
+#undef ENCODE_VERIFY_
 
 //==========================================================================================
 

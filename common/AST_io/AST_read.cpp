@@ -87,7 +87,7 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx,
              L"---------------------------------------------------",
              buffer);
 
-    strncpy(src_file_name, GetFileName(ast_file_path), sizeof(src_file_name));
+    strncpy(src_file_name, GetFileName(ast_file_path), MAX_FILENAME_LEN);
 
     ssize_t i = 0;
 

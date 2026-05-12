@@ -21,7 +21,6 @@ SANITIZER += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,f
 
 ifdef DEBUG
 	CXXFLAGS += $(SANITIZER)
- 	CXXFLAGS += -O3
 else
  	CXXFLAGS += -O3
 endif
@@ -39,8 +38,10 @@ BACKEND_INCLUDES  := -D BACKEND 		\
 BACKEND_SOURCES := backend/src/main.cpp 			\
                    backend/src/backend.cpp 			\
                    backend/src/emission.cpp 		\
+                   backend/src/instruction.cpp 		\
+                   backend/src/bin_code_buffer.cpp 	\
                    backend/src/elf_build.cpp 		\
-                   backend/src/encoding.cpp 		\
+                   backend/src/encoding_x86.cpp 	\
                    common/lang_ctx/lang_funcs.cpp 	\
                    common/stack/stack.cpp 			\
                    common/AST_io/AST_read.cpp 		\

@@ -1,62 +1,54 @@
-#ifndef BACKEND_H
-#define BACKEND_H
+#ifndef BIN_CODE_BUFFER
+#define BIN_CODE_BUFFER
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#include <stdlib.h>
+#include <stdint.h>
 #include "common.h"
-#include "common.h"
-#include "tree_types.h"
-#include "lang_ctx.h"
-#include "id_types.h"
-#include "bin_code_buffer.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const size_t TYPE_INT_SIZE_IN_BYTES = 4;
+const size_t BIN_CODE_INIT_CAPACITY = 4096;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-typedef struct BackendCtx
+typedef struct BinCode
 {
-    char        ast_file_name[MAX_FILENAME_LEN];
+    uint8_t* buffer;
 
-    FILE*       asm_file;
-    FILE*       elf_file;
-
-    LangCtx_t   lang_ctx;
-
-    size_t      endif_labels_count;
-    size_t      while_labels_count;
-
-    BinCode_t   bin_code;
+    size_t   size;
+    size_t   capacity;
 }
-BackendCtx_t;
+BinCode_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-typedef enum BackendErr
+typedef enum BinCodeErr
 {
-    BACKEND_SUCCESS,
-    BACKEND_INVALID_AST_INPUT,
-    BACKEND_CANT_EMIT_OPERATOR,
-    BACKEND_UNKNOWN_TOKEN_TYPE,
-    BACKEND_FILE_ERROR,
-    BACKEND_LANG_ERROR,
-
-    BACKEND_INVALID_OPCODE,
-    BACKEND_INVALID_OPERAND_TYPE,
-
-    BACKEND_INVALID_INSTRUCTION,
-    BACKEND_BINCODE_BUFFER_ERROR
+    BIN_CODE_SUCCESS,
+    BIN_CODE_MEMALLOC_ERROR
 }
-BackendErr_t;
+BinCodeErr_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-BackendErr_t BackendCtxCtor    (BackendCtx_t* backend_ctx);
-BackendErr_t BackendCtxDtor    (BackendCtx_t* backend_ctx);
-BackendErr_t BackendOpenAsmFile(BackendCtx_t* backend_ctx);
+#ifdef BACKEND_DEBUG
+    #define BIN_CODE_DUMP(bin_code_)                                    \
+            BEGIN                                                       \
+            BinCodeDump((bin_code_), __func__, __FILE__, __LINE__);     \
+            END
+#else
+    #define BIN_CODE_DUMP(bin_code_) ;
+#endif /* BACKEND_DEBUG */
+
+//------------------------------------------------------------------//
+
+BinCodeErr_t BinCodeCtor (BinCode_t* bin_code, size_t init_capacity);
+BinCodeErr_t BinCodeWrite(BinCode_t* bin_code, const void* src, size_t size);
+void         BinCodeDtor (BinCode_t* bin_code);
+void         BinCodeDump (BinCode_t* bin_code, const char* func, const char* file, int line);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#endif /* BACKEND_H */
+#endif /* BIN_CODE_BUFFER */
