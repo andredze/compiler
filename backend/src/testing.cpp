@@ -60,6 +60,11 @@ BackendErr_t TestDSLEncoding(BackendCtx_t* backend_ctx)
     POP_REG_(REG_RAX);
 
     //------------------------------------------------------------------//
+    
+    RET_();
+    SYSCALL_();
+
+    //------------------------------------------------------------------//
 
     return BACKEND_SUCCESS;
 }

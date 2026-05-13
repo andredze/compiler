@@ -135,6 +135,10 @@ Instruction_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+const char* InstructionGetOpcodeTypeString(OpcodeType_t opcode_type);
+
+//------------------------------------------------------------------//
+
 /* Note: returned instr has to be freed */
 Instruction_t* InstructionCreateRelNone (OpcodeType_t opcode, RelativeAddress_t rel);
 Instruction_t* InstructionCreateNoneNone(OpcodeType_t opcode);

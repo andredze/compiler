@@ -384,6 +384,22 @@ BackendErr_t EncodeRegNoneShort(BinInstruction_t* bin_instr, Instruction_t* inst
 
 //==========================================================================================
 
+BackendErr_t EncodeNone(BinInstruction_t* bin_instr, Instruction_t* instr)
+{
+    assert(bin_instr);
+    assert(instr);
+
+    ENCODE_VERIFY_(instr->opcode_type    == OPCODE_RET ||
+                   instr->opcode_type    == OPCODE_SYSCALL);
+    ENCODE_VERIFY_(instr->operand_1.type == OPERAND_NONE);
+    ENCODE_VERIFY_(instr->operand_2.type == OPERAND_NONE);
+
+    // OPCODE
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
 static BackendErr_t EncodeInstruction(BinInstruction_t* bin_instr, Instruction_t* instr)
 {
     assert(bin_instr);
@@ -393,6 +409,14 @@ static BackendErr_t EncodeInstruction(BinInstruction_t* bin_instr, Instruction_t
     
     EncodeFunction_t encode_function = OPCODE_CASES_TABLE[instr->opcode_type].encode_function;
     
+    if (encode_function == NULL)
+    {
+        WPRINTERR(L"Can't encode instruction %s", 
+                  InstructionGetOpcodeTypeString(instr->opcode_type));
+        
+        return BACKEND_INSTRUCTION_CAN_NOT_BE_ENCODED;
+    }
+
     return encode_function(bin_instr, instr);
 }
 
@@ -433,6 +457,24 @@ static uint8_t ReverseSIB(SIB_t sib)
 
 //==========================================================================================
 
+static void ReverseOpcodeByteOrder(Opcode_t* opcode)
+{
+    assert(opcode);
+
+    uint32_t right_order    = opcode->data.size_3_byte;
+    uint32_t reversed_order = 0;
+
+    for (int i = 0; i < opcode->size; i++)
+    {
+        reversed_order = (reversed_order << 8) | (right_order & 0xFF);
+        right_order >>= 8;
+    }
+
+    opcode->data.size_3_byte = reversed_order & 0xFFFFFF;
+}
+
+//==========================================================================================
+
 static BackendErr_t GenerateCodeFromBinInstruction(BinCode_t*        bin_code, 
                                                    BinInstruction_t* bin_instr)
 {
@@ -451,6 +493,7 @@ static BackendErr_t GenerateCodeFromBinInstruction(BinCode_t*        bin_code,
     }
     if (encode_info->contains_opcode)
     {
+        ReverseOpcodeByteOrder(&bin_instr->opcode);
         // argument src = &bin_instr->opcode.data.size_1_byte,
         // however the actual size written in bin_code is specified
         // by bin_instr->opcode.size field and union field doesn't change anything

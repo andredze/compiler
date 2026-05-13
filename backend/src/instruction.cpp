@@ -264,7 +264,7 @@ Instruction_t* InstructionCreate(OpcodeType_t   opcode,
 
 //------------------------------------------------------------------//
 
-static const char* InstructionGetOpcodeTypeString(OpcodeType_t opcode_type)
+const char* InstructionGetOpcodeTypeString(OpcodeType_t opcode_type)
 {
     switch (opcode_type)
     {
