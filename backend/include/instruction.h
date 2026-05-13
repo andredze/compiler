@@ -50,7 +50,7 @@ MemoryOperand_t;
 
 typedef enum OperandType
 {
-    OPERAND_TYPE_UNKNOWN,
+    OPERAND_UNKNOWN,
     
     OPERAND_NONE,
 
@@ -121,7 +121,7 @@ typedef enum OpcodeType
     OPCODE_CMP_REG_IMM,
 
     OPCODE_COUNT
-}      
+}
 OpcodeType_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -142,8 +142,8 @@ const char* InstructionGetOpcodeTypeString(OpcodeType_t opcode_type);
 //------------------------------------------------------------------//
 
 /* Note: returned instr has to be freed */
-Instruction_t* InstructionCreateRelNone (OpcodeType_t opcode, RelativeAddress_t rel);
 Instruction_t* InstructionCreateNoneNone(OpcodeType_t opcode);
+Instruction_t* InstructionCreateRelNone (OpcodeType_t opcode, RelativeAddress_t rel);
 Instruction_t* InstructionCreateMemNone (OpcodeType_t opcode, Register_t base, Disp_t disp);
 Instruction_t* InstructionCreateRegImm  (OpcodeType_t opcode, Register_t reg1, Imm_t imm);
 Instruction_t* InstructionCreateMemReg  (OpcodeType_t opcode, Register_t base, Disp_t disp, Register_t reg2);

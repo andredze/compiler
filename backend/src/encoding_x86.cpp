@@ -1,5 +1,6 @@
 #include "encoding_x86.h"
 #include "bin_code_buffer.h"
+#include "opcode_cases.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -148,7 +149,7 @@ static uint8_t GetModRMExtensionBitForOperand(Operand_t operand)
         case OPERAND_IMM_32:
         case OPERAND_REL_32:
         case OPERAND_NONE:
-        case OPERAND_TYPE_UNKNOWN:
+        case OPERAND_UNKNOWN:
         case OPERAND_TYPE_COUNT:
         default:
             return 0;

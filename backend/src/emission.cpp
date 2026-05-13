@@ -202,7 +202,6 @@ BackendErr_t EmitPoint          (BackendCtx_t* backend_ctx, TreeNode_t* node)
     return BACKEND_SUCCESS;
 }
 
-
 //==========================================================================================
 
 #define _DSL_UNDEF_

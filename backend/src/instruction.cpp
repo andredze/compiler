@@ -1,4 +1,5 @@
 #include "instruction.h"
+#include "opcode_cases.h"
 
 //==========================================================================================
 
@@ -23,7 +24,7 @@ static BackendErr_t SetOperandType(OperandType_t* op_type_dest, OperandType_t op
 {
     assert(op_type_dest);
 
-    if (!(OPERAND_TYPE_UNKNOWN < op_type_src && op_type_src < OPERAND_TYPE_COUNT))
+    if (!(OPERAND_UNKNOWN < op_type_src && op_type_src < OPERAND_TYPE_COUNT))
     {
         WPRINTERR(L"Invalid operand type");
         return BACKEND_INVALID_OPERAND_TYPE;
@@ -146,20 +147,6 @@ Instruction_t* InstructionCreateRegReg(OpcodeType_t   opcode,
 
 //==========================================================================================
 
-#define SET_OPERANDS_TYPE(op1_type, op2_type)                         \
-        BEGIN                                                         \
-        if ((error = InstructionSetOperand1_Type(instr, op1_type)))   \
-        {                                                             \
-            return error;                                             \
-        }                                                             \
-        if ((error = InstructionSetOperand2_Type(instr, op2_type)))   \
-        {                                                             \
-            return error;                                             \
-        }                                                             \
-        END
-
-//------------------------------------------------------------------//
-
 static BackendErr_t InstructionSetOpcodeWithOperandTypes(Instruction_t* instr, 
                                                          OpcodeType_t   opcode)
 {
@@ -171,45 +158,17 @@ static BackendErr_t InstructionSetOpcodeWithOperandTypes(Instruction_t* instr,
     {
         return error;
     }
-
-    switch (opcode)
+    if ((error = InstructionSetOperand1_Type(instr, OPCODE_CASES_TABLE[opcode].op1_type)))
     {
-        case OPCODE_MOV_REG_REG: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_REG_64); break;
-        case OPCODE_MOV_REG_MEM: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_MEM_64); break;
-        case OPCODE_MOV_MEM_REG: SET_OPERANDS_TYPE(OPERAND_MEM_64, OPERAND_REG_64); break;
-        case OPCODE_MOV_REG_IMM: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_IMM_32); break;
-        case OPCODE_ADD_REG_REG: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_REG_64); break;
-        case OPCODE_SUB_REG_REG: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_REG_64); break;
-        case OPCODE_IMUL_REG:    SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_NONE  ); break;
-        case OPCODE_IDIV_REG:    SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_NONE  ); break;
-        case OPCODE_PUSH_REG:    SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_NONE  ); break;
-        case OPCODE_POP_REG:     SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_NONE  ); break;
-        case OPCODE_CALL_REL:    SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
-        case OPCODE_RET:         SET_OPERANDS_TYPE(OPERAND_NONE  , OPERAND_NONE  ); break;
-        case OPCODE_JMP_REL:     SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
-        case OPCODE_JE_REL:      SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
-        case OPCODE_JNE_REL:     SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
-        case OPCODE_JA_REL:      SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
-        case OPCODE_JAE_REL:     SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
-        case OPCODE_JB_REL:      SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
-        case OPCODE_JBE_REL:     SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
-        case OPCODE_SYSCALL:     SET_OPERANDS_TYPE(OPERAND_NONE  , OPERAND_NONE  ); break;
-        case OPCODE_CMP_REG_REG: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_REG_64); break;
-        case OPCODE_CMP_REG_IMM: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_IMM_32); break;
-        
-        case OPCODE_COUNT:
-        case OPCODE_UNKNOWN:
-        default:
-            WPRINTERR(L"Invalid opcode %d", opcode);
-            return BACKEND_INVALID_OPCODE;
+        return error;
+    }
+    if ((error = InstructionSetOperand2_Type(instr, OPCODE_CASES_TABLE[opcode].op2_type)))
+    {
+        return error;
     }
 
     return BACKEND_SUCCESS;
 }
-
-//------------------------------------------------------------------//
-
-#undef SET_OPERANDS_TYPE
 
 //==========================================================================================
 
@@ -259,47 +218,22 @@ Instruction_t* InstructionCreate(OpcodeType_t   opcode,
 
 //==========================================================================================
 
+const char* InstructionGetOpcodeTypeString(OpcodeType_t opcode_type)
+{
+    if (!(OPCODE_UNKNOWN <= opcode_type && opcode_type < OPCODE_COUNT))
+    {
+        return "OPCODE_LIMIT_EXCEEDED";
+    }
+
+    return OPCODE_CASES_TABLE[opcode_type].opcode_name;
+}
+
+//------------------------------------------------------------------//
+
 #define SET_GET_STRING_CASE(enum_value)         \
         BEGIN                                   \
         case enum_value: return #enum_value;    \
         END
-
-//------------------------------------------------------------------//
-
-const char* InstructionGetOpcodeTypeString(OpcodeType_t opcode_type)
-{
-    switch (opcode_type)
-    {
-        SET_GET_STRING_CASE(OPCODE_MOV_REG_REG);
-        SET_GET_STRING_CASE(OPCODE_MOV_REG_MEM);
-        SET_GET_STRING_CASE(OPCODE_MOV_MEM_REG);
-        SET_GET_STRING_CASE(OPCODE_MOV_REG_IMM);
-        SET_GET_STRING_CASE(OPCODE_ADD_REG_REG);
-        SET_GET_STRING_CASE(OPCODE_SUB_REG_REG);
-        SET_GET_STRING_CASE(OPCODE_IMUL_REG);
-        SET_GET_STRING_CASE(OPCODE_IDIV_REG);
-        SET_GET_STRING_CASE(OPCODE_PUSH_REG);
-        SET_GET_STRING_CASE(OPCODE_POP_REG);
-        SET_GET_STRING_CASE(OPCODE_CALL_REL);
-        SET_GET_STRING_CASE(OPCODE_RET);
-        SET_GET_STRING_CASE(OPCODE_JMP_REL);
-        SET_GET_STRING_CASE(OPCODE_JE_REL);
-        SET_GET_STRING_CASE(OPCODE_JNE_REL);
-        SET_GET_STRING_CASE(OPCODE_JA_REL);
-        SET_GET_STRING_CASE(OPCODE_JAE_REL);
-        SET_GET_STRING_CASE(OPCODE_JB_REL);
-        SET_GET_STRING_CASE(OPCODE_JBE_REL);
-        SET_GET_STRING_CASE(OPCODE_SYSCALL);
-        SET_GET_STRING_CASE(OPCODE_CMP_REG_REG);
-        SET_GET_STRING_CASE(OPCODE_CMP_REG_IMM);
-        SET_GET_STRING_CASE(OPCODE_UNKNOWN);
-        case OPCODE_COUNT:
-        default: 
-            break;
-    }
-
-    return "OPCODE_LIMIT_EXCEEDED";
-}
 
 //------------------------------------------------------------------//
 
@@ -341,7 +275,7 @@ static const char* InstructionGetOperandTypeString(OperandType_t operand_type)
         SET_GET_STRING_CASE(OPERAND_IMM_32);
         SET_GET_STRING_CASE(OPERAND_REL_32);
         SET_GET_STRING_CASE(OPERAND_NONE);
-        SET_GET_STRING_CASE(OPERAND_TYPE_UNKNOWN);
+        SET_GET_STRING_CASE(OPERAND_UNKNOWN);
         case OPERAND_TYPE_COUNT:
         default:
             break;
@@ -385,7 +319,7 @@ static void InstructionOperandValueDump(Operand_t operand)
             wcprintf(MAGENTA, L"none");
             break;
 
-        case OPERAND_TYPE_UNKNOWN:
+        case OPERAND_UNKNOWN:
         case OPERAND_TYPE_COUNT:
         default:
             wcprintf(MAGENTA, L"error");
