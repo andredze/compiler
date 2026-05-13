@@ -117,6 +117,8 @@ typedef enum OpcodeType
     OPCODE_JB_REL, 
     OPCODE_JBE_REL,
     OPCODE_SYSCALL,
+    OPCODE_CMP_REG_REG,
+    OPCODE_CMP_REG_IMM,
 
     OPCODE_COUNT
 }      

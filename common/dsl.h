@@ -167,15 +167,41 @@
 #define POP_REG_(reg) \
         GENERATE_CODE_(InstructionCreateRegNone, OPCODE_POP_REG, reg)
 
-// TODO: how to encode jumps and calls
-// #define CALL_REL_(rel)
-        // GENERATE_CODE_(InstructionCreateMemNone, OPCODE_POP_REG, reg)
+#define CALL_REL_(rel) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_CALL_REL, rel)
+
+#define JMP_REL_(rel) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JMP_REL, rel)
+
+#define JE_REL_(rel) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JE_REL, rel)
+
+#define JNE_REL_(rel) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JNE_REL, rel)
+
+#define JA_REL_(rel) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JA_REL, rel)
+
+#define JAE_REL_(rel) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JAE_REL, rel)
+
+#define JB_REL_(rel) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JB_REL, rel)
+
+#define JBE_REL_(rel) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JBE_REL, rel)
 
 #define RET_() \
         GENERATE_CODE_(InstructionCreateNoneNone, OPCODE_RET)
 
 #define SYSCALL_() \
         GENERATE_CODE_(InstructionCreateNoneNone, OPCODE_SYSCALL)
+
+#define CMP_REG_REG_(reg1, reg2) \
+        GENERATE_CODE_(InstructionCreateRegReg, OPCODE_CMP_REG_REG, reg1, reg2)
+
+#define CMP_REG_IMM_(reg, imm) \
+        GENERATE_CODE_(InstructionCreateRegImm, OPCODE_CMP_REG_IMM, reg, imm)
 
 //------------------------------------------------------------------//
 

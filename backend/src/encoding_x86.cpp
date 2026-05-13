@@ -228,7 +228,8 @@ BackendErr_t EncodeRegReg(BinInstruction_t* bin_instr, Instruction_t* instr)
 
     ENCODE_VERIFY_(instr->opcode_type == OPCODE_MOV_REG_REG ||
                    instr->opcode_type == OPCODE_ADD_REG_REG ||
-                   instr->opcode_type == OPCODE_SUB_REG_REG);
+                   instr->opcode_type == OPCODE_SUB_REG_REG ||
+                   instr->opcode_type == OPCODE_CMP_REG_REG);
 
     ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
     ENCODE_VERIFY_(instr->operand_2.type == OPERAND_REG_64);
@@ -314,7 +315,9 @@ BackendErr_t EncodeRegImm(BinInstruction_t* bin_instr, Instruction_t* instr)
     assert(bin_instr);
     assert(instr);
 
-    ENCODE_VERIFY_(instr->opcode_type    == OPCODE_MOV_REG_IMM);
+    ENCODE_VERIFY_(instr->opcode_type == OPCODE_MOV_REG_IMM ||
+                   instr->opcode_type == OPCODE_CMP_REG_IMM);
+
     ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
     ENCODE_VERIFY_(instr->operand_2.type == OPERAND_IMM_32);
 
@@ -322,7 +325,7 @@ BackendErr_t EncodeRegImm(BinInstruction_t* bin_instr, Instruction_t* instr)
     BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_UNKNOWN);
 
     BinInstrSetModRM(bin_instr, MODRM_MOD_RM_ONLY,
-                                GetModRMRegExtension(instr->opcode_type) & 0b1,
+                                GetModRMRegExtension(instr->opcode_type) & 0b111,
                                 GetRegCode(instr->operand_1.value.reg));
 
     BinInstrSetImm32(bin_instr, instr->operand_2.value.imm);
@@ -367,7 +370,6 @@ BackendErr_t EncodeRegNoneShort(BinInstruction_t* bin_instr, Instruction_t* inst
     // OPCODE + rd
     // non-64-bit: register is encoded in lower 3 bits of opcode
     // 64-bit:     register is encoded in REX.b + lower 3 bits of opcode
-
     BinInstrSetOpcodeLower3Bits(bin_instr, GetRegCode(instr->operand_1.value.reg));
 
     // if 32-bit mode
@@ -384,7 +386,7 @@ BackendErr_t EncodeRegNoneShort(BinInstruction_t* bin_instr, Instruction_t* inst
 
 //==========================================================================================
 
-BackendErr_t EncodeNone(BinInstruction_t* bin_instr, Instruction_t* instr)
+BackendErr_t EncodeNoneNone(BinInstruction_t* bin_instr, Instruction_t* instr)
 {
     assert(bin_instr);
     assert(instr);
@@ -400,14 +402,41 @@ BackendErr_t EncodeNone(BinInstruction_t* bin_instr, Instruction_t* instr)
 
 //==========================================================================================
 
+BackendErr_t EncodeRelNone(BinInstruction_t* bin_instr, Instruction_t* instr)
+{
+    assert(bin_instr);
+    assert(instr);
+
+    ENCODE_VERIFY_(instr->opcode_type == OPCODE_CALL_REL ||
+                   instr->opcode_type == OPCODE_JMP_REL  ||
+                   instr->opcode_type == OPCODE_JE_REL   ||
+                   instr->opcode_type == OPCODE_JNE_REL  ||
+                   instr->opcode_type == OPCODE_JA_REL   ||
+                   instr->opcode_type == OPCODE_JAE_REL  ||
+                   instr->opcode_type == OPCODE_JB_REL   ||
+                   instr->opcode_type == OPCODE_JBE_REL);
+
+    ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REL_32);
+    ENCODE_VERIFY_(instr->operand_2.type == OPERAND_NONE);
+
+    // OPCODE + cd
+    BinInstrSetDisp32(bin_instr, instr->operand_1.value.rel);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
 static BackendErr_t EncodeInstruction(BinInstruction_t* bin_instr, Instruction_t* instr)
 {
     assert(bin_instr);
     assert(instr);
 
-    BinInstrSetOpcode(bin_instr, OPCODE_CASES_TABLE[instr->opcode_type].opcode);
+    OpcodeCase_t opcode_case = OPCODE_CASES_TABLE[instr->opcode_type];
+
+    BinInstrSetOpcode(bin_instr, opcode_case.opcode);
     
-    EncodeFunction_t encode_function = OPCODE_CASES_TABLE[instr->opcode_type].encode_function;
+    EncodeFunction_t encode_function = opcode_case.encode_function;
     
     if (encode_function == NULL)
     {

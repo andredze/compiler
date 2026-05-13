@@ -60,9 +60,37 @@ BackendErr_t TestDSLEncoding(BackendCtx_t* backend_ctx)
     POP_REG_(REG_RAX);
 
     //------------------------------------------------------------------//
+
+    CALL_REL_(50);
+    CALL_REL_(-100);
+
+    //------------------------------------------------------------------//
+
+    JMP_REL_(3);
+    JMP_REL_(-100);
+    
+    JA_REL_(-1);
+
+    JE_REL_ (0xded);
+    JNE_REL_(0xded);
+    JA_REL_ (0xded);
+    JAE_REL_(0xded);
+    JB_REL_ (0xded);
+    JBE_REL_(0xded);
+
+    //------------------------------------------------------------------//
     
     RET_();
     SYSCALL_();
+
+    //------------------------------------------------------------------//
+
+    CMP_REG_REG_(REG_RAX, REG_R15);
+    CMP_REG_IMM_(REG_RBP, -1);
+    CMP_REG_IMM_(REG_RDI, 0);
+
+    MOV_REG_IMM_(REG_RDX, 0xDED);
+    CMP_REG_IMM_(REG_RAX, 1);
 
     //------------------------------------------------------------------//
 

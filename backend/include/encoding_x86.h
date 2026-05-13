@@ -271,18 +271,13 @@ BackendErr_t EncodeMemReg      (BinInstruction_t* bin_instr, Instruction_t* inst
 BackendErr_t EncodeRegImm      (BinInstruction_t* bin_instr, Instruction_t* instr);
 BackendErr_t EncodeRegNone     (BinInstruction_t* bin_instr, Instruction_t* instr);
 BackendErr_t EncodeRegNoneShort(BinInstruction_t* bin_instr, Instruction_t* instr);
-BackendErr_t EncodeNone        (BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeIdivReg  (BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodePushReg  (BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodePopReg   (BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeCallRel  (BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeJmp      (BinInstruction_t* bin_instr, Instruction_t* instr);
-// BackendErr_t EncodeJcc      (BinInstruction_t* bin_instr, Instruction_t* instr);
+BackendErr_t EncodeNoneNone    (BinInstruction_t* bin_instr, Instruction_t* instr);
+BackendErr_t EncodeRelNone     (BinInstruction_t* bin_instr, Instruction_t* instr);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 const OpcodeCase_t OPCODE_CASES_TABLE[OPCODE_COUNT] = {
-    [OPCODE_UNKNOWN    ] = {{.data = {.none        = 0xFF  }, .size = OPCODE_SIZE_NONE  }, NULL              ,  -1},
+    [OPCODE_UNKNOWN    ] = {{.data = {.none        = 0xFF  }, .size = OPCODE_SIZE_NONE  }, NULL              ,  -1}, // Opcode from intel manual:
     [OPCODE_MOV_REG_REG] = {{.data = {.size_1_byte = 0x8B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegReg      ,  -1}, // REX.W + 8B /r
     [OPCODE_MOV_REG_MEM] = {{.data = {.size_1_byte = 0x8B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegMem      ,  -1}, // REX.W + 8B /r
     [OPCODE_MOV_MEM_REG] = {{.data = {.size_1_byte = 0x89  }, .size = OPCODE_SIZE_1_BYTE}, EncodeMemReg      ,  -1}, // REX.W + 89 /r
@@ -293,16 +288,18 @@ const OpcodeCase_t OPCODE_CASES_TABLE[OPCODE_COUNT] = {
     [OPCODE_IDIV_REG   ] = {{.data = {.size_1_byte = 0xF7  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegNone     , 0x7}, // REX.W + F7 /7
     [OPCODE_PUSH_REG   ] = {{.data = {.size_1_byte = 0x50  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegNoneShort,  -1}, // 50+rd
     [OPCODE_POP_REG    ] = {{.data = {.size_1_byte = 0x58  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegNoneShort,  -1}, // 58+rd
-    [OPCODE_CALL_REL   ] = {{.data = {.size_1_byte = 0xE8  }, .size = OPCODE_SIZE_1_BYTE}, NULL, -1}, // EncodeCallRel  }, // E8 cd 
-    [OPCODE_RET        ] = {{.data = {.size_1_byte = 0xC3  }, .size = OPCODE_SIZE_1_BYTE}, EncodeNone        ,  -1}, // C3
-    [OPCODE_JMP_REL    ] = {{.data = {.size_1_byte = 0xE9  }, .size = OPCODE_SIZE_1_BYTE}, NULL, -1}, // EncodeJmp      }, // E9 cd 
-    [OPCODE_JE_REL     ] = {{.data = {.size_2_byte = 0x0F84}, .size = OPCODE_SIZE_2_BYTE}, NULL, -1}, // EncodeJcc      }, // 0F 84 cd  
-    [OPCODE_JNE_REL    ] = {{.data = {.size_2_byte = 0x0F85}, .size = OPCODE_SIZE_2_BYTE}, NULL, -1}, // EncodeJcc      }, // 0F 85 cd 
-    [OPCODE_JA_REL     ] = {{.data = {.size_2_byte = 0x0F87}, .size = OPCODE_SIZE_2_BYTE}, NULL, -1}, // EncodeJcc      }, // 0F 87 cd
-    [OPCODE_JAE_REL    ] = {{.data = {.size_2_byte = 0x0F83}, .size = OPCODE_SIZE_2_BYTE}, NULL, -1}, // EncodeJcc      }, // 0F 83 cd
-    [OPCODE_JB_REL     ] = {{.data = {.size_2_byte = 0x0F82}, .size = OPCODE_SIZE_2_BYTE}, NULL, -1}, // EncodeJcc      }, // 0F 82 cd 
-    [OPCODE_JBE_REL    ] = {{.data = {.size_2_byte = 0x0F86}, .size = OPCODE_SIZE_2_BYTE}, NULL, -1}, // EncodeJcc      }, // 0F 86 cd 
-    [OPCODE_SYSCALL    ] = {{.data = {.size_2_byte = 0x0F05}, .size = OPCODE_SIZE_2_BYTE}, EncodeNone        ,  -1}, // 0F 05
+    [OPCODE_CALL_REL   ] = {{.data = {.size_1_byte = 0xE8  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRelNone     ,  -1}, // E8 cd 
+    [OPCODE_RET        ] = {{.data = {.size_1_byte = 0xC3  }, .size = OPCODE_SIZE_1_BYTE}, EncodeNoneNone    ,  -1}, // C3
+    [OPCODE_JMP_REL    ] = {{.data = {.size_1_byte = 0xE9  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRelNone     ,  -1}, // E9 cd 
+    [OPCODE_JE_REL     ] = {{.data = {.size_2_byte = 0x0F84}, .size = OPCODE_SIZE_2_BYTE}, EncodeRelNone     ,  -1}, // 0F 84 cd  
+    [OPCODE_JNE_REL    ] = {{.data = {.size_2_byte = 0x0F85}, .size = OPCODE_SIZE_2_BYTE}, EncodeRelNone     ,  -1}, // 0F 85 cd 
+    [OPCODE_JA_REL     ] = {{.data = {.size_2_byte = 0x0F87}, .size = OPCODE_SIZE_2_BYTE}, EncodeRelNone     ,  -1}, // 0F 87 cd
+    [OPCODE_JAE_REL    ] = {{.data = {.size_2_byte = 0x0F83}, .size = OPCODE_SIZE_2_BYTE}, EncodeRelNone     ,  -1}, // 0F 83 cd
+    [OPCODE_JB_REL     ] = {{.data = {.size_2_byte = 0x0F82}, .size = OPCODE_SIZE_2_BYTE}, EncodeRelNone     ,  -1}, // 0F 82 cd 
+    [OPCODE_JBE_REL    ] = {{.data = {.size_2_byte = 0x0F86}, .size = OPCODE_SIZE_2_BYTE}, EncodeRelNone     ,  -1}, // 0F 86 cd 
+    [OPCODE_SYSCALL    ] = {{.data = {.size_2_byte = 0x0F05}, .size = OPCODE_SIZE_2_BYTE}, EncodeNoneNone    ,  -1}, // 0F 05
+    [OPCODE_CMP_REG_REG] = {{.data = {.size_1_byte = 0x3B  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegReg      ,  -1}, // REX.W + 3B /r
+    [OPCODE_CMP_REG_IMM] = {{.data = {.size_1_byte = 0x81  }, .size = OPCODE_SIZE_1_BYTE}, EncodeRegImm      , 0x7}, // REX.W + 81 /7 id
 };
 
 //——————————————————————————————————————————————————————————————————————————————————————————

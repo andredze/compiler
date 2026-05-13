@@ -194,11 +194,13 @@ static BackendErr_t InstructionSetOpcodeWithOperandTypes(Instruction_t* instr,
         case OPCODE_JB_REL:      SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
         case OPCODE_JBE_REL:     SET_OPERANDS_TYPE(OPERAND_REL_32, OPERAND_NONE  ); break;
         case OPCODE_SYSCALL:     SET_OPERANDS_TYPE(OPERAND_NONE  , OPERAND_NONE  ); break;
+        case OPCODE_CMP_REG_REG: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_REG_64); break;
+        case OPCODE_CMP_REG_IMM: SET_OPERANDS_TYPE(OPERAND_REG_64, OPERAND_IMM_32); break;
         
         case OPCODE_COUNT:
         case OPCODE_UNKNOWN:
         default:
-            WPRINTERR(L"Invalid opcode");
+            WPRINTERR(L"Invalid opcode %d", opcode);
             return BACKEND_INVALID_OPCODE;
     }
 
@@ -288,6 +290,8 @@ const char* InstructionGetOpcodeTypeString(OpcodeType_t opcode_type)
         SET_GET_STRING_CASE(OPCODE_JB_REL);
         SET_GET_STRING_CASE(OPCODE_JBE_REL);
         SET_GET_STRING_CASE(OPCODE_SYSCALL);
+        SET_GET_STRING_CASE(OPCODE_CMP_REG_REG);
+        SET_GET_STRING_CASE(OPCODE_CMP_REG_IMM);
         SET_GET_STRING_CASE(OPCODE_UNKNOWN);
         case OPCODE_COUNT:
         default: 
