@@ -91,6 +91,36 @@ static void BinInstrSetImm32(BinInstruction_t* bin_instr,
 
 //==========================================================================================
 
+static void BinInstrSetOpcodeLower3Bits(BinInstruction_t* bin_instr, uint8_t bits)
+{
+    assert(bin_instr);
+
+    uint32_t opcode = bin_instr->opcode.data.size_3_byte;
+
+    // wfcprintf(stderr, RED, L"opcode = %x\n", opcode);
+
+    opcode = (opcode >> 3) << 3;
+    opcode |= (bits & 0b111);
+
+    bin_instr->opcode.data.size_3_byte = opcode & 0xFFFFFF;
+}
+
+//==========================================================================================
+
+static int GetModRMRegExtension(OpcodeType_t opcode)
+{
+    int extension = OPCODE_CASES_TABLE[opcode].modrm_reg_extension;
+
+    if (extension == -1)
+    {
+        return 0;
+    }
+
+    return extension;
+}
+
+//==========================================================================================
+
 static uint8_t GetRegCode(Register_t reg)
 {
     return (uint8_t) reg & 0b111;
@@ -288,23 +318,66 @@ BackendErr_t EncodeRegImm(BinInstruction_t* bin_instr, Instruction_t* instr)
     ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
     ENCODE_VERIFY_(instr->operand_2.type == OPERAND_IMM_32);
 
-    // REX.W + OPCODE /0 id
+    // REX.W + OPCODE /[reg_extension] id
     BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_UNKNOWN);
 
-    ModRMMod_t modrm_mod = (instr->operand_1.value.mem.disp == 0) ?
-                            MODRM_MOD_RM_ONLY :
-                            MODRM_MOD_RM_DISP32; // using only 32 bit in this version
-    
-    BinInstrSetModRM(bin_instr, modrm_mod,
-                                0, // reg field used as an opcode extension
+    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_ONLY,
+                                GetModRMRegExtension(instr->opcode_type) & 0b1,
                                 GetRegCode(instr->operand_1.value.reg));
 
-    if (modrm_mod == MODRM_MOD_RM_ONLY)
+    BinInstrSetImm32(bin_instr, instr->operand_2.value.imm);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t EncodeRegNone(BinInstruction_t* bin_instr, Instruction_t* instr)
+{
+    assert(bin_instr);
+    assert(instr);
+
+    ENCODE_VERIFY_(instr->opcode_type    == OPCODE_IMUL_REG ||
+                   instr->opcode_type    == OPCODE_IDIV_REG);
+    ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
+    ENCODE_VERIFY_(instr->operand_2.type == OPERAND_NONE);
+
+    // REX.W + OPCODE /[reg_extension]
+    BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_UNKNOWN);
+
+    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_ONLY,
+                                GetModRMRegExtension(instr->opcode_type) & 0b111,
+                                GetRegCode(instr->operand_1.value.reg));
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t EncodeRegNoneShort(BinInstruction_t* bin_instr, Instruction_t* instr)
+{
+    assert(bin_instr);
+    assert(instr);
+
+    ENCODE_VERIFY_(instr->opcode_type    == OPCODE_PUSH_REG ||
+                   instr->opcode_type    == OPCODE_POP_REG);
+    ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
+    ENCODE_VERIFY_(instr->operand_2.type == OPERAND_NONE);
+
+    // OPCODE + rd
+    // non-64-bit: register is encoded in lower 3 bits of opcode
+    // 64-bit:     register is encoded in REX.b + lower 3 bits of opcode
+
+    BinInstrSetOpcodeLower3Bits(bin_instr, GetRegCode(instr->operand_1.value.reg));
+
+    // if 32-bit mode
+    if (GetModRMExtensionBitForOperand(instr->operand_1) == 0)
     {
         return BACKEND_SUCCESS;
     }
 
-    BinInstrSetDisp32(bin_instr, instr->operand_1.value.mem.disp);
+    // else - set rex prefix with REX.b bit
+    BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_UNKNOWN);
 
     return BACKEND_SUCCESS;
 }
@@ -327,10 +400,10 @@ static BackendErr_t EncodeInstruction(BinInstruction_t* bin_instr, Instruction_t
 
 static uint8_t ReverseREXPrefix(REXPrefix_t rex)
 {
-    int byte = (rex.fixed_bit_pattern << 4) ^
-               (rex.w << 3) ^
-               (rex.r << 2) ^
-               (rex.x << 1) ^
+    int byte = (rex.fixed_bit_pattern << 4) |
+               (rex.w << 3) |
+               (rex.r << 2) |
+               (rex.x << 1) |
                 rex.b;
     
     return (uint8_t) byte;
@@ -340,8 +413,8 @@ static uint8_t ReverseREXPrefix(REXPrefix_t rex)
 
 static uint8_t ReverseModRM(ModRM_t modrm)
 {
-    int byte = (modrm.mod << 6) ^
-               (modrm.reg << 3) ^
+    int byte = (modrm.mod << 6) |
+               (modrm.reg << 3) |
                 modrm.rm;
 
     return (uint8_t) byte;
@@ -351,8 +424,8 @@ static uint8_t ReverseModRM(ModRM_t modrm)
 
 static uint8_t ReverseSIB(SIB_t sib)
 {
-    int byte = (sib.scale << 5) ^ 
-               (sib.index << 2) ^
+    int byte = (sib.scale << 5) | 
+               (sib.index << 2) |
                 sib.base;
     
     return (uint8_t) byte;
@@ -446,6 +519,22 @@ BackendErr_t GenerateCodeFromInstruction(BinCode_t* bin_code, Instruction_t* ins
     free(instr);
 
     return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static uint32_t GetReversedOpcode(Opcode_t opcode)
+{
+    uint32_t bytes    = opcode.data.size_3_byte;
+    uint32_t reversed = 0;
+
+    for (int i = 0; i < opcode.size * 8; i++)
+    {
+        reversed = (reversed << 1) | (bytes & 1);
+        bytes >>= 1;
+    }
+
+    return reversed;
 }
 
 //==========================================================================================
@@ -552,11 +641,11 @@ static void BinInstructionDumpPrefixPrint(int contains_field)
 {
     if (contains_field)
     {
-        wcprintf(CYAN, L"CONTAINS ");
+        wcprintf(CYAN, L"\tCONTAINS ");
     }    
     else
     {    
-        wcprintf(CYAN, L"NO ");
+        wcprintf(CYAN, L"\tNO ");
     }
 }
 
@@ -592,13 +681,15 @@ bin_instr = %p
     BinInstructionDumpPrefixPrint(bin_instr->info.contains_imm);
     wcprintf(CYAN, L"IMM\n");
     BinInstructionDumpPrefixPrint(bin_instr->info.contains_disp);
-    wcprintf(CYAN, L"DISP\n");
+    wcprintf(CYAN, L"DISP");
 
     wcprintf(CYAN, 
-LR"(         REX         OPCODE      ModRM             SIB             DISP       IMM
-    | fixed w  r  x  b | opcode | mod reg rm  | scale  index  base |   disp   |   imm    |
-    | %04b  %01b  %01b  %01b  %01b | %-6.02x | %02b  %03b %03b |   %02b    %03b    %03b | %08x | %08x |
-    |        %02x        | %-6.02x |      %02x     |         %02x         | %08x | %08x |
+LR"(
+             REX              OPCODE           ModRM             SIB             DISP       IMM
+    | fixed w  r  x  b |      opcode      | mod reg rm  | scale  index  base |   disp   |   imm    |
+    | %04b  %01b  %01b  %01b  %01b | %-16.08b | %02b  %03b %03b |   %02b    %03b    %03b | %08x | %08x |
+    |        %02x        | %-16.02x |      %02x     |         %02x         | %08x | %08x |
+
     mod = %s;
 )", 
     bin_instr->rex.fixed_bit_pattern,
@@ -606,7 +697,7 @@ LR"(         REX         OPCODE      ModRM             SIB             DISP     
     bin_instr->rex.r,
     bin_instr->rex.x,
     bin_instr->rex.b,
-    bin_instr->opcode.data.size_3_byte,
+    GetReversedOpcode(bin_instr->opcode),
     bin_instr->modrm.mod,
     bin_instr->modrm.reg,
     bin_instr->modrm.rm,
