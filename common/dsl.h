@@ -74,7 +74,7 @@
         SRC_PRINT_(L"%ls", frontend_ctx->names_pool.data[(node__)->data.value.id]); \
         END
 
-#define SRC_PRINT_OP_(opcode_)                                   \
+#define SRC_PRINT_KEYWORD_(opcode_)                                   \
         BEGIN                                                    \
         SRC_PRINT_(L"%ls", KEYWORD_CASES_TABLE[(opcode_)].name); \
         END
@@ -239,7 +239,7 @@
 #undef NUMBER_
 
 #undef IS_TYPE_
-#undef IS_OPERATOR_
+#undef IS_KEYWORD_
 #undef IS_IDENTIFIER_
 #undef IS_NUMBER_
 #undef HAS_KEYWORD_
@@ -256,7 +256,7 @@
 
 #undef SRC_PRINT_
 #undef SRC_PRINT_ID_
-#undef SRC_PRINT_OP_
+#undef SRC_PRINT_KEYWORD_
 
 #undef ASM_PRINT_
 #undef ASM_VERIFY_

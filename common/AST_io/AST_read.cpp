@@ -381,7 +381,8 @@ static LangErr_t GetNodeDataKeyword(TokenData_t* node_data, wchar_t* string_data
         }
     }
 
-    WPRINTERR("Unknown operator in AST");
+    WPRINTERR("Unknown keyword in AST");
+
     return LANG_INVALID_AST_INPUT;
 }
 

@@ -83,10 +83,10 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
         case TYPE_KEYWORD:
             if (KEYWORD_CASES_TABLE[node->data.value.keyword].emit_function == NULL)
             {
-                WPRINTERR("Error: operator %ls doesn't support assembling",
+                WPRINTERR("Error: keyword %ls doesn't support assembling",
                           KEYWORD_CASES_TABLE[node->data.value.keyword].name);
 
-                return BACKEND_CANT_EMIT_OPERATOR;
+                return BACKEND_CANT_EMIT_KEYWORD;
             }
             return KEYWORD_CASES_TABLE[node->data.value.keyword].emit_function(backend_ctx, node);
 

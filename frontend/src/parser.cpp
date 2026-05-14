@@ -472,7 +472,7 @@ static TreeNode_t* ParseReturn(FrontendCtx_t* frontend_ctx)
     if (cur_token == NULL || !IS_KEYWORD_(cur_token, KW_RETURN))
         return NULL;
 
-    PARSER_DUMP_(cur_token, L"return operator");
+    PARSER_DUMP_(cur_token, L"return keyword");
 
     frontend_ctx->cur_token_index++;
 
@@ -715,7 +715,7 @@ static TreeNode_t* ParseVariableDeclaration(FrontendCtx_t* frontend_ctx)
 
     frontend_ctx->cur_token_index++;
 
-    PARSER_DUMP_(var_decl, L"var declaration operator");
+    PARSER_DUMP_(var_decl, L"var declaration keyword");
 
     TreeNode_t* cur_token = FrontendGetCurrentToken(frontend_ctx);
 
