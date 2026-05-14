@@ -83,14 +83,14 @@
 
 //------------------------------------------------------------------------------------------
 
-#define ASM_PRINT_NO_TAB(...)                           \
-        BEGIN                                           \
-        fwprintf(backend_ctx->asm_file, ##__VA_ARGS__); \
+#define ASM_PRINT_(fmt, ...)                                 \
+        BEGIN                                                \
+        PrintAsm(backend_ctx->asm_file, fmt, ##__VA_ARGS__); \
         END
 
-#define ASM_PRINT_(...)                                     \
-        BEGIN                                               \
-        fwprintf(backend_ctx->asm_file, L"\t" __VA_ARGS__); \
+#define ASM_COMMENT_(fmt, ...)                                           \
+        BEGIN                                                            \
+        PrintAsm(backend_ctx->asm_file, L"; " fmt L"\n", ##__VA_ARGS__); \
         END
 
 //------------------------------------------------------------------//
@@ -107,25 +107,33 @@
 
 //------------------------------------------------------------------//
 
-#define GENERATE_CODE_(instr_create_func, opcode, ...)                            \
-        BEGIN                                                                     \
-        Instruction_t* instr = instr_create_func(opcode, ##__VA_ARGS__);          \
-                                                                                  \
-        if (instr == NULL)                                                        \
-        {                                                                         \
-            return BACKEND_CREATE_INSTRUCTION_ERROR;                              \
-        }                                                                         \
-                                                                                  \
-        INSTRUCTION_DUMP(instr);                                                  \
-                                                                                  \
-        BackendErr_t error = BACKEND_SUCCESS;                                     \
-                                                                                  \
-        if ((error = GenerateCodeFromInstruction(&backend_ctx->bin_code, instr))) \
-        {                                                                         \
-            return error;                                                         \
-        }                                                                         \
-                                                                                  \
-        BIN_CODE_DUMP(&backend_ctx->bin_code);                                    \
+#define GENERATE_CODE_(instr_create_func, opcode, ...)                             \
+        BEGIN                                                                      \
+        Instruction_t* instr = instr_create_func(opcode, ##__VA_ARGS__);           \
+                                                                                   \
+        if (instr == NULL)                                                         \
+        {                                                                          \
+            return BACKEND_CREATE_INSTRUCTION_ERROR;                               \
+        }                                                                          \
+                                                                                   \
+        INSTRUCTION_DUMP(instr);                                                   \
+                                                                                   \
+        BackendErr_t error_ = BACKEND_SUCCESS;                                     \
+                                                                                   \
+        if ((error_ = GenerateCodeFromInstruction(&backend_ctx->bin_code, instr))) \
+        {                                                                          \
+            free(instr);                                                           \
+            return error_;                                                         \
+        }                                                                          \
+        if ((error_ = AssembleInstruction(backend_ctx, instr)))                    \
+        {                                                                          \
+            free(instr);                                                           \
+            return error_;                                                         \
+        }                                                                          \
+                                                                                   \
+        free(instr);                                                               \
+                                                                                   \
+        BIN_CODE_DUMP(&backend_ctx->bin_code);                                     \
         END
 
 //------------------------------------------------------------------//

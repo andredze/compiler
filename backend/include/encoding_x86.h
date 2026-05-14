@@ -120,7 +120,7 @@ typedef enum ModRMMod
     MODRM_MOD_RM_MIXED  = 0b00,
     MODRM_MOD_RM_DISP8  = 0b01,
     MODRM_MOD_RM_DISP32 = 0b10,
-    MODRM_MOD_RM_ONLY   = 0b11
+    MODRM_MOD_RM_REG    = 0b11
 }
 ModRMMod_t;
 

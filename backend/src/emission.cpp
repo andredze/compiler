@@ -3,6 +3,7 @@
 #include "backend.h"
 #include "emission.h"
 #include "encoding_x86.h"
+#include "assembly_nasm.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -29,20 +30,21 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
     DPRINT_FUNC_ENTER_MSG();
     assert(backend_ctx);
 
-    ASM_PRINT_NO_TAB(
-        L"global main\n\n"
+    ASM_PRINT_(
+        L"global _start\n\n"
+        L"default rel\n\n"
         L"section .text\n\n"
-        L"main:\n"
+        L"_start:\n"
     );
 
-    size_t global_vars_size = backend_ctx->lang_ctx.global_vars_count *
-                              TYPE_INT_SIZE_IN_BYTES;
+    size_t main_vars_size = backend_ctx->lang_ctx.global_vars_count *
+                            TYPE_INT_SIZE_IN_BYTES;
 
-    ASM_PRINT_(
-        L"; stack frame for global variables"
-        L"\tsub rsp, %zu\n"
-        L"\tmov rbp, rsp\n", 
-        global_vars_size);
+    ASM_COMMENT_(L"stack frame for main variables");
+
+    MOV_REG_IMM_(REG_RDI, (int) main_vars_size);
+    SUB_REG_REG_(REG_RSP, REG_RDI);
+    MOV_REG_REG_(REG_RBP, REG_RSP);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
@@ -51,14 +53,13 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         return error;
     }
 
-    ASM_PRINT_(
-        L"; end program\n\n"
-        L"add rsp, %zu\n"
-        L"mov rax, 0x3c\n"
-        L"xor edi, edi\n"
-        L"syscall\n",
-        global_vars_size
-    );
+    ASM_COMMENT_(L"end program");
+
+    MOV_REG_IMM_(REG_RDI, (int) main_vars_size);
+    ADD_REG_REG_(REG_RSP, REG_RDI);
+    MOV_REG_IMM_(REG_RAX, SYSCALL_CODE_EXIT);
+    MOV_REG_IMM_(REG_RDI, EXIT_SUCCESS);
+    SYSCALL_();
 
     DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;

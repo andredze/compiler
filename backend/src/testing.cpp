@@ -1,4 +1,5 @@
 #include "encoding_x86.h"
+#include "assembly_nasm.h"
 
 //==========================================================================================
 
@@ -19,7 +20,7 @@ BackendErr_t TestDSLEncoding(BackendCtx_t* backend_ctx)
 
     //------------------------------------------------------------------//
 
-    MOV_REG_MEM_(REG_RAX, REG_RSP);
+    MOV_REG_MEM_(REG_RAX, REG_R13);
     MOV_REG_MEM_(REG_R11, REG_RBP);
 
     MOV_REG_MEM_DISP_(REG_RAX, REG_RDX, 0xDED);

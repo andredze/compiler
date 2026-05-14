@@ -19,7 +19,7 @@ SANITIZER += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,f
              integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,$\
 			 shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-CXXFLAGS += $(SANITIZER) -O3
+CXXFLAGS += $(SANITIZER)
 
 FRONTEND_INCLUDES := -D FRONTEND	     \
 					 -I frontend/include \
@@ -50,7 +50,9 @@ FRONTEND_OBJECTS := $(FRONTEND_SOURCES:.cpp=.o)
 FRONTEND_TARGET := front
 
 ifdef DEBUG
-CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG -D DEBUG -D FUNC_BT_DEBUG
+	CXXFLAGS += -D TREE_DEBUG -D STACK_DEBUG -D DEBUG -D FUNC_BT_DEBUG
+else
+	CXXFLAGS += -O3 -flto -D NDEBUG -march=native
 endif
 
 all: front

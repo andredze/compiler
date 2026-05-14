@@ -238,7 +238,7 @@ BackendErr_t EncodeRegReg(BinInstruction_t* bin_instr, Instruction_t* instr)
     // REX.W + OPCODE + /r
     BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_REG, MODRM_TYPE_RM);
 
-    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_ONLY,
+    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_REG,
                                 GetRegCode(instr->operand_1.value.reg),
                                 GetRegCode(instr->operand_2.value.reg));
 
@@ -259,18 +259,10 @@ BackendErr_t EncodeRegMem(BinInstruction_t* bin_instr, Instruction_t* instr)
     // REX.W + OPCODE + /r
     BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_REG, MODRM_TYPE_RM);
 
-    ModRMMod_t modrm_mod = (instr->operand_2.value.mem.disp == 0) ?
-                            MODRM_MOD_RM_ONLY :
-                            MODRM_MOD_RM_DISP32; // using only 32 bit in this version
-    
-    BinInstrSetModRM(bin_instr, modrm_mod,
+    // using only 32-bit displacement in this version
+    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_DISP32,
                                 GetRegCode(instr->operand_1.value.reg),
                                 GetRegCode(instr->operand_2.value.reg));
-
-    if (modrm_mod == MODRM_MOD_RM_ONLY)
-    {
-        return BACKEND_SUCCESS;
-    }
 
     BinInstrSetDisp32(bin_instr, instr->operand_2.value.mem.disp);
 
@@ -291,18 +283,10 @@ BackendErr_t EncodeMemReg(BinInstruction_t* bin_instr, Instruction_t* instr)
     // REX.W + OPCODE + /r
     BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_REG);
 
-    ModRMMod_t modrm_mod = (instr->operand_1.value.mem.disp == 0) ?
-                            MODRM_MOD_RM_ONLY :
-                            MODRM_MOD_RM_DISP32; // using only 32 bit in this version
-    
-    BinInstrSetModRM(bin_instr, modrm_mod,
+    // using only 32-bit displacement in this version
+    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_DISP32,
                                 GetRegCode(instr->operand_2.value.reg),
                                 GetRegCode(instr->operand_1.value.reg));
-
-    if (modrm_mod == MODRM_MOD_RM_ONLY)
-    {
-        return BACKEND_SUCCESS;
-    }
 
     BinInstrSetDisp32(bin_instr, instr->operand_1.value.mem.disp);
 
@@ -325,7 +309,7 @@ BackendErr_t EncodeRegImm(BinInstruction_t* bin_instr, Instruction_t* instr)
     // REX.W + OPCODE /[reg_extension] id
     BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_UNKNOWN);
 
-    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_ONLY,
+    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_REG,
                                 GetModRMRegExtension(instr->opcode_type) & 0b111,
                                 GetRegCode(instr->operand_1.value.reg));
 
@@ -349,7 +333,7 @@ BackendErr_t EncodeRegNone(BinInstruction_t* bin_instr, Instruction_t* instr)
     // REX.W + OPCODE /[reg_extension]
     BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_RM, MODRM_TYPE_UNKNOWN);
 
-    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_ONLY,
+    BinInstrSetModRM(bin_instr, MODRM_MOD_RM_REG,
                                 GetModRMRegExtension(instr->opcode_type) & 0b111,
                                 GetRegCode(instr->operand_1.value.reg));
 
@@ -577,7 +561,6 @@ BackendErr_t GenerateCodeFromInstruction(BinCode_t* bin_code, Instruction_t* ins
 
     if ((error = EncodeInstruction(&bin_instr, instr)))
     {
-        free(instr);
         return error;
     }
 
@@ -585,11 +568,8 @@ BackendErr_t GenerateCodeFromInstruction(BinCode_t* bin_code, Instruction_t* ins
 
     if ((error = GenerateCodeFromBinInstruction(bin_code, &bin_instr)))
     {
-        free(instr);
         return error;
     }
-
-    free(instr);
 
     return BACKEND_SUCCESS;
 }
@@ -639,7 +619,7 @@ static const char* BinInstructionGetModRMModString(ModRMMod_t mod)
 {
     switch (mod)
     {
-        SET_GET_STRING_CASE(MODRM_MOD_RM_ONLY);
+        SET_GET_STRING_CASE(MODRM_MOD_RM_REG);
         SET_GET_STRING_CASE(MODRM_MOD_RM_DISP8);
         SET_GET_STRING_CASE(MODRM_MOD_RM_DISP32);
         SET_GET_STRING_CASE(MODRM_MOD_RM_MIXED);

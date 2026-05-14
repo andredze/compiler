@@ -257,6 +257,7 @@ static const char* InstructionGetRegisterString(Register_t reg)
         SET_GET_STRING_CASE(REG_R13);
         SET_GET_STRING_CASE(REG_R14);
         SET_GET_STRING_CASE(REG_R15);
+        case REG_UNKNOWN:
         default:
             break;
     }

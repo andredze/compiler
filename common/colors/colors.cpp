@@ -102,7 +102,7 @@ int wvfcprintf(FILE* stream, const char * const color, const wchar_t* fmt, va_li
 
     wchar_t print_buffer[FMT_BUFFER_SIZE] = {};
 
-    vswprintf(print_buffer, FMT_BUFFER_SIZE, fmt, args);
+    vswprintf(print_buffer, sizeof(print_buffer) / sizeof(print_buffer[0]), fmt, args);
 
     return fwprintf(stream, L"%s%ls%s", color, print_buffer, RESET_COLOR);
 }

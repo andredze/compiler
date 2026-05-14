@@ -22,7 +22,7 @@ SANITIZER += -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,f
 ifdef DEBUG
 	CXXFLAGS += $(SANITIZER)
 else
- 	CXXFLAGS += -O3 -flto -D NDEBUG
+ 	CXXFLAGS += -O3 -flto -D NDEBUG -march=native
 endif
 
 BACKEND_INCLUDES  := -D BACKEND 		\
@@ -43,6 +43,7 @@ BACKEND_SOURCES := backend/src/main.cpp 			\
                    backend/src/bin_code_buffer.cpp 	\
                    backend/src/elf_build.cpp 		\
                    backend/src/encoding_x86.cpp 	\
+                   backend/src/assembly_nasm.cpp 	\
                    common/lang_ctx/lang_funcs.cpp 	\
                    common/stack/stack.cpp 			\
                    common/AST_io/AST_read.cpp 		\

@@ -31,6 +31,9 @@ int main(int argc, char* argv[])
         if (ASTReadData(&backend_ctx.lang_ctx, argv[1], backend_ctx.ast_file_name))
             break;
 
+        if (BackendOpenAsmFile(&backend_ctx))
+            break;
+
         #ifdef TEST_DSL
             TestDSLEncoding(&backend_ctx);
             break;
@@ -43,9 +46,6 @@ int main(int argc, char* argv[])
                  AST_DIR_NAME, backend_ctx.ast_file_name,
                  AST_DIR_NAME, backend_ctx.ast_file_name,
                  AST_DIR_NAME, backend_ctx.ast_file_name);
-
-        if (BackendOpenAsmFile(&backend_ctx))
-            break;
 
         if (EmitProgram(&backend_ctx))
             break;
