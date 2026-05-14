@@ -4,7 +4,7 @@
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #include "common.h"
-#include "operators.h"
+#include "keywords.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -31,7 +31,7 @@ typedef size_t Identifier_t;
 
 typedef union TokenValue
 {
-    Operator_t   opcode;
+    Keyword_t    keyword;
     double       number;
     Identifier_t id;
 
@@ -185,7 +185,7 @@ typedef struct TypeCase
 const TypeCase_t TYPE_CASES_TABLE[] =
 {
 //                      code        dump_name   dump_shape  boundaries_color fill_color      font_color    ast_format
-    SET_TYPE_CASE_(TYPE_OP       , "OP"       , L"Mrecord", L"#000064"  , L"#C0C0FF"  , L"#000064"  , L"OPER"     ),
+    SET_TYPE_CASE_(TYPE_KEYWORD  , "KEYWORD"  , L"Mrecord", L"#000064"  , L"#C0C0FF"  , L"#000064"  , L"OPER"     ),
     SET_TYPE_CASE_(TYPE_ID       , "ID"       , L"Mrecord", L"#006400"  , L"#C0FFC0"  , L"#006400"  , L""         ),
     SET_TYPE_CASE_(TYPE_NUM      , "NUM"      , L"Mrecord", L"#990000"  , L"#FFC0C0"  , L"#990000"  , L"NUM"      ),
     SET_TYPE_CASE_(TYPE_VAR      , "VAR"      , L"Mrecord", L"#153e61ff", L"#aadce2ff", L"#153e61ff", L"VAR"      ),

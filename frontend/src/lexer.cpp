@@ -104,7 +104,7 @@ LangErr_t Tokenize(FrontendCtx_t* frontend_ctx)
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static LangErr_t ProcessOperatorTokenCase  (FrontendCtx_t* frontend_ctx, bool* do_continue);
+static LangErr_t ProcessKeywordTokenCase  (FrontendCtx_t* frontend_ctx, bool* do_continue);
 static LangErr_t ProcessNumberTokenCase    (FrontendCtx_t* frontend_ctx, bool* do_continue);
 static LangErr_t ProcessIdentifierTokenCase(FrontendCtx_t* frontend_ctx, bool* do_continue);
 static void      ProcessSpacesCase         (FrontendCtx_t* frontend_ctx, bool* do_continue);
@@ -123,7 +123,7 @@ static LangErr_t ParseToken(FrontendCtx_t* frontend_ctx)
     if (do_continue)
         return status;
 
-    status = ProcessOperatorTokenCase(frontend_ctx, &do_continue);
+    status = ProcessKeywordTokenCase(frontend_ctx, &do_continue);
 
     if (status != LANG_SUCCESS || do_continue)
         return status;
@@ -177,7 +177,7 @@ static LangErr_t LexerPushToken(FrontendCtx_t*  frontend_ctx,
 
 //------------------------------------------------------------------//
 
-#define PUSH_TOKEN_(frontend_ctx, _token)                                           \ 
+#define PUSH_TOKEN_(frontend_ctx, _token)                                           \
         LangErr_t      _error_     = LANG_SUCCESS;                                  \
         TreeDumpInfo_t _dump_info_ = {TREE_SUCCESS, __func__, __FILE__, __LINE__};  \
                                                                                     \
@@ -188,44 +188,44 @@ static LangErr_t LexerPushToken(FrontendCtx_t*  frontend_ctx,
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static LangErr_t ProcessOperatorTokenRepetitions(FrontendCtx_t* frontend_ctx, size_t op_code);
+static LangErr_t ProcessKeywordTokenRepetitions(FrontendCtx_t* frontend_ctx, size_t keyword);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static LangErr_t ProcessOperatorTokenCase(FrontendCtx_t* frontend_ctx, bool* do_continue)
+static LangErr_t ProcessKeywordTokenCase(FrontendCtx_t* frontend_ctx, bool* do_continue)
 {
     assert(do_continue);
     assert(frontend_ctx);
 
     LangErr_t status = LANG_SUCCESS;
 
-    for (size_t op_code = 1; op_code < OPERATORS_COUNT; op_code++)
+    for (size_t keyword = 1; keyword < KEYWORDS_COUNT; keyword++)
     {
-        const wchar_t* opname     = OP_CASES_TABLE[op_code].name;
-        size_t         opname_len = OP_CASES_TABLE[op_code].name_len;
+        const wchar_t* keyword_name     = KEYWORD_CASES_TABLE[keyword].name;
+        size_t         keyword_name_len = KEYWORD_CASES_TABLE[keyword].name_len;
 
         // WDPRINTF(L"code = \"%ls\"\n"
         //          L"op_name = %ls;\n"
         //          L"op_len = %zu;\n"
         //          L"------------------------------\n",
         //          lang_ctx->cur_symbol_ptr,
-        //          opname,
-        //          opname_len);
+        //          keyword_name,
+        //          keyword_name_len);
 
-        if (wcsncmp(frontend_ctx->cur_symbol_ptr, opname, opname_len) == 0 &&
-            !(op_code != OP_BRACKET_OPEN  &&
-              op_code != OP_BRACKET_CLOSE &&
-              IsAcceptableSymbol(frontend_ctx->cur_symbol_ptr[opname_len])))
+        if (wcsncmp(frontend_ctx->cur_symbol_ptr, keyword_name, keyword_name_len) == 0 &&
+            !(keyword != KW_BRACKET_OPEN  &&
+              keyword != KW_BRACKET_CLOSE &&
+              IsAcceptableSymbol(frontend_ctx->cur_symbol_ptr[keyword_name_len])))
         {
 
-            frontend_ctx->cur_symbol_ptr += opname_len;
+            frontend_ctx->cur_symbol_ptr += keyword_name_len;
 
-            if ((status = ProcessOperatorTokenRepetitions(frontend_ctx, op_code)))
+            if ((status = ProcessKeywordTokenRepetitions(frontend_ctx, keyword)))
                 return status;
 
             *do_continue = true;
 
-            PUSH_TOKEN_(frontend_ctx, OPERATOR_((Operator_t) op_code));
+            PUSH_TOKEN_(frontend_ctx, KEYWORD_((Keyword_t) keyword));
 
             return LANG_SUCCESS;
         }
@@ -236,26 +236,28 @@ static LangErr_t ProcessOperatorTokenCase(FrontendCtx_t* frontend_ctx, bool* do_
 
 //==========================================================================================
 
-static LangErr_t ProcessOperatorTokenRepetitions(FrontendCtx* frontend_ctx, size_t op_code)
+static LangErr_t ProcessKeywordTokenRepetitions(FrontendCtx* frontend_ctx, size_t keyword)
 {
     assert(frontend_ctx);
 
-    const wchar_t* opname          = OP_CASES_TABLE[op_code].name;
-    size_t         opname_len      = OP_CASES_TABLE[op_code].name_len;
-    int            op_repeat_times = OP_CASES_TABLE[op_code].repeat_times;
+    const wchar_t* keyword_name         = KEYWORD_CASES_TABLE[keyword].name;
+    size_t         keyword_name_len     = KEYWORD_CASES_TABLE[keyword].name_len;
+    int            keyword_repeat_times = KEYWORD_CASES_TABLE[keyword].repeat_times;
 
-    for (int i = 1; i < op_repeat_times; i++)
+    for (int i = 1; i < keyword_repeat_times; i++)
     {
         ProcessSpacesCase(frontend_ctx, NULL);
 
-        if (!(wcsncmp(frontend_ctx->cur_symbol_ptr, opname, opname_len) == 0 &&
-              !IsAcceptableSymbol(frontend_ctx->cur_symbol_ptr[opname_len])))
+        if (!(wcsncmp(frontend_ctx->cur_symbol_ptr, keyword_name, keyword_name_len) == 0 &&
+              !IsAcceptableSymbol(frontend_ctx->cur_symbol_ptr[keyword_name_len])))
         {
-            SET_LEXER_ERROR_(LANG_LEXER_SYNTAX_ERROR, NULL, L"operator should repeat %d times", op_repeat_times);
-            // SYNTAX_ERROR(lang_ctx, "operator should repeat %d times", op_repeat_times);
+            SET_LEXER_ERROR_(LANG_LEXER_SYNTAX_ERROR, NULL, 
+                             L"keyword should repeat %d times", 
+                             keyword_repeat_times);
+            // SYNTAX_ERROR(lang_ctx, "operator should repeat %d times", keyword_repeat_times);
         }
 
-        frontend_ctx->cur_symbol_ptr += opname_len;
+        frontend_ctx->cur_symbol_ptr += keyword_name_len;
     }
 
     return LANG_SUCCESS;
@@ -341,7 +343,7 @@ static LangErr_t ProcessIdentifierTokenCase(FrontendCtx_t* frontend_ctx, bool* d
 
     *do_continue = true;
 
-    wchar_t buf[MAX_OPERATOR_NAME_LEN] = L"";
+    wchar_t buf[MAX_KEYWORD_NAME_LEN] = L"";
 
     size_t i = 0;
 

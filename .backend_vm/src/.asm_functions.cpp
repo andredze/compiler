@@ -1,4 +1,4 @@
-#include "op_cases.h"
+#include "keyword_cases.h"
 #include "lang_funcs.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -34,15 +34,15 @@ LangErr_t AssembleNode(LangCtx_t* lang_ctx, TreeNode_t* node)
         case TYPE_ID:
             return LANG_INVALID_AST_INPUT;
 
-        case TYPE_OP:
-            if (OP_CASES_TABLE[node->data.value.opcode].asm_function == NULL)
+        case TYPE_KEYWORD:
+            if (KEYWORD_CASES_TABLE[node->data.value.keyword].asm_function == NULL)
             {
                 WPRINTERR("Error: operator %ls doesn't support assembling",
-                          OP_CASES_TABLE[node->data.value.opcode].name);
+                          KEYWORD_CASES_TABLE[node->data.value.keyword].name);
 
                 return LANG_UNASSEMBLE_OPERATOR;
             }
-            return OP_CASES_TABLE[node->data.value.opcode].asm_function (lang_ctx, node);
+            return KEYWORD_CASES_TABLE[node->data.value.keyword].asm_function (lang_ctx, node);
 
         case TYPE_VAR:
             return AssembleVariable(lang_ctx, node);
@@ -434,7 +434,7 @@ LangErr_t AssembleFunctionArguments(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleNode(lang_ctx, node->left)))
         return error;
 
-    if (!IS_OPERATOR_(node->left, OP_PARAMS_SEPARATOR))
+    if (!IS_KEYWORD_(node->left, KW_PARAMS_SEPARATOR))
     {
         AssembleArgument(lang_ctx);
     }
@@ -456,7 +456,7 @@ LangErr_t AssembleReturn(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_RETURN));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_RETURN));
     ASM_VERIFY_(node->right);
 
     ASM_PRINT_(L"; return\n\n");
@@ -498,7 +498,7 @@ LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_PARAMS_SEPARATOR));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_PARAMS_SEPARATOR));
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -517,7 +517,7 @@ LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
         if ((error = AssembleNode(lang_ctx, node->left)))
             return error;
 
-        if (lang_ctx->assembling_args && !IS_OPERATOR_(node->left, OP_PARAMS_SEPARATOR))
+        if (lang_ctx->assembling_args && !IS_KEYWORD_(node->left, KW_PARAMS_SEPARATOR))
         {
             AssembleArgument(lang_ctx);
         }
@@ -548,7 +548,7 @@ LangErr_t AssembleCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_CMD_SEPARATOR));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_CMD_SEPARATOR));
     ASM_VERIFY_(node->left);
 
     LangErr_t error = LANG_SUCCESS;
@@ -580,7 +580,7 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_IF_LHS));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_IF_LHS));
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 
@@ -618,7 +618,7 @@ LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_WHILE));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_WHILE));
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 
@@ -659,7 +659,7 @@ static LangErr_t AssembleCondition(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_TYPE_(node, TYPE_OP));
+    ASM_VERIFY_(IS_TYPE_(node, TYPE_KEYWORD));
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 
@@ -671,7 +671,7 @@ static LangErr_t AssembleCondition(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
 
-    ASM_PRINT_(L"%ls", OP_CASES_TABLE[node->data.value.opcode].asm_name);
+    ASM_PRINT_(L"%ls", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
 
     return LANG_SUCCESS;
 }
@@ -683,7 +683,7 @@ LangErr_t AssembleAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_ASSIGNMENT));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_ASSIGNMENT));
     ASM_VERIFY_(node->left && IS_VARIABLE_(node->left));
     ASM_VERIFY_(node->right);
 
@@ -710,16 +710,16 @@ LangErr_t AssembleMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_ADD) ||
-                IS_OPERATOR_(node, OP_SUB) ||
-                IS_OPERATOR_(node, OP_MUL) ||
-                IS_OPERATOR_(node, OP_DIV) ||
-                IS_OPERATOR_(node, OP_POW));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_ADD) ||
+                IS_KEYWORD_(node, KW_SUB) ||
+                IS_KEYWORD_(node, KW_MUL) ||
+                IS_KEYWORD_(node, KW_DIV) ||
+                IS_KEYWORD_(node, KW_POW));
 
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 
-    ASM_PRINT_(L"; math operation: %ls\n\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
+    ASM_PRINT_(L"; math operation: %ls\n\n", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -729,7 +729,7 @@ LangErr_t AssembleMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
 
-    ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
+    ASM_PRINT_(L"%ls\n", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
 
     ASM_PRINT_(L"\n");
 
@@ -774,10 +774,10 @@ LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_INPUT ) ||
-                IS_OPERATOR_(node, OP_OUTPUT) ||
-                IS_OPERATOR_(node, OP_DRAW  ) ||
-                IS_OPERATOR_(node, OP_SQRT  ));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_INPUT ) ||
+                IS_KEYWORD_(node, KW_OUTPUT) ||
+                IS_KEYWORD_(node, KW_DRAW  ) ||
+                IS_KEYWORD_(node, KW_SQRT  ));
 
     ASM_VERIFY_(node->left == NULL);
     ASM_VERIFY_(node->right);
@@ -789,7 +789,7 @@ LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     if ((error = AssembleNode(lang_ctx, node->right)))
         return error;
 
-    ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
+    ASM_PRINT_(L"%ls\n", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
 
     ASM_PRINT_(L"\n");
 
@@ -803,13 +803,13 @@ LangErr_t AssembleInput(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_INPUT));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_INPUT));
 
     ASM_VERIFY_(node->left == NULL);
     ASM_VERIFY_(node->right && IS_VARIABLE_(node->right));
 
     ASM_PRINT_(L"; input\n\n", lang_ctx->names_pool.data[node->right->data.value.id]);
-    ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
+    ASM_PRINT_(L"%ls\n", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -829,13 +829,13 @@ LangErr_t AssembleHlt(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_ABORT));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_ABORT));
     ASM_VERIFY_(node->left  == NULL);
     ASM_VERIFY_(node->right == NULL);
 
     ASM_PRINT_(L"; halt\n\n");
 
-    ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
+    ASM_PRINT_(L"%ls\n", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
     ASM_PRINT_(L"\n");
 
     return LANG_SUCCESS;

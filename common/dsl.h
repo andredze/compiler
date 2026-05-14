@@ -28,57 +28,55 @@
         FRONTEND_SET_ERROR_(frontend_ctx, LANG_PARSER_SYNTAX_ERROR, node, expected, ##__VA_ARGS__); \
         END
 
-#define IDENTIFIER_(id_index) LangIdentifierNodeCtor    (&frontend_ctx->lang_ctx, (name_index))
-
-#define OPERATOR_(op_code)    LangOperatorNodeCtor      (&frontend_ctx->lang_ctx, (op_code ), NULL, NULL)
-#define NUMBER_(number)       LangNumberNodeCtor        (&frontend_ctx->lang_ctx, (number  ))
-
-//==========================================================================================
-
-#define IS_TYPE_(node, _type)       ((node)->data.type == (_type))
-#define IS_OPERATOR_(node, op_code) ((node)->data.type == TYPE_OP && (node)->data.value.opcode == (op_code))
-#define IS_VARIABLE_(node)          ((node)->data.type == TYPE_VAR       )
-#define IS_VAR_DECL_(node)          ((node)->data.type == TYPE_VAR_DECL  )
-#define IS_FUNC_DECL_(node)         ((node)->data.type == TYPE_FUNC_DECL )
-#define IS_FUNC_CALL_(node)         ((node)->data.type == TYPE_FUNC_CALL )
-#define IS_IDENTIFIER_(node)        ((node)->data.type == TYPE_ID )
-#define IS_NUMBER_(node)            ((node)->data.type == TYPE_NUM)
-#define HAS_OPCODE_(node, op_code)  ((node)->data.value.opcode == (op_code))
+#define IDENTIFIER_(id_index) LangIdentifierNodeCtor(&frontend_ctx->lang_ctx, (name_index))
+#define KEYWORD_(keyword)     LangKeywordNodeCtor   (&frontend_ctx->lang_ctx, (keyword), NULL, NULL)
+#define NUMBER_(number)       LangNumberNodeCtor    (&frontend_ctx->lang_ctx, (number ))
 
 //==========================================================================================
+ 
+#define IS_TYPE_(node, _type)        ((node)->data.type == (_type))
+#define IS_KEYWORD_(node, key_word)  ((node)->data.type == TYPE_KEYWORD && (node)->data.value.keyword == (key_word))
+#define IS_VARIABLE_(node)           ((node)->data.type == TYPE_VAR       )
+#define IS_VAR_DECL_(node)           ((node)->data.type == TYPE_VAR_DECL  )
+#define IS_FUNC_DECL_(node)          ((node)->data.type == TYPE_FUNC_DECL )
+#define IS_FUNC_CALL_(node)          ((node)->data.type == TYPE_FUNC_CALL )
+#define IS_IDENTIFIER_(node)         ((node)->data.type == TYPE_ID )
+#define IS_NUMBER_(node)             ((node)->data.type == TYPE_NUM)
+#define HAS_KEYWORD_(node, key_word) ((node)->data.value.keyword == (key_word))
 
+//==========================================================================================
 /* if operation has 1 argument, it should be placed in right node */
 
 #define ISVALUE_(node, number) (node->data.type == TYPE_NUM && \
                                 CompareDoubles(node->data.value.num, (number)) == 0)
 
-#define ADD_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_ADD, (l),  (r))
-#define SUB_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_SUB, (l),  (r))
-#define MUL_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_MUL, (l),  (r))
-#define DIV_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_DIV, (l),  (r))
-#define POW_(l, r)          LangOperatorNodeCtor(&frontend_ctx->lang_ctx, OP_POW, (l),  (r))
-#define UNARY_(oper, r)     LangOperatorNodeCtor(&frontend_ctx->lang_ctx, (oper), NULL, (r))
+#define ADD_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_ADD,     (l), (r))
+#define SUB_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_SUB,     (l), (r))
+#define MUL_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_MUL,     (l), (r))
+#define DIV_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_DIV,     (l), (r))
+#define POW_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_POW,     (l), (r))
+#define UNARY_(keyword, r) LangKeywordNodeCtor(&frontend_ctx->lang_ctx, (keyword), NULL, (r))
 
 //==========================================================================================
 
-#define SRC_PRINT_TABS_()                                                \
-        BEGIN                                                            \
+#define SRC_PRINT_TABS_()                                                    \
+        BEGIN                                                                \
         fwprintf(frontend_ctx->output_file, L"%*s", 4*lang_ctx->tabs, L" "); \
         END
 
 #define SRC_PRINT_(...)                                                  \
         BEGIN                                                            \
-        fwprintf(frontend_ctx->output_file, ##__VA_ARGS__);                  \
+        fwprintf(frontend_ctx->output_file, ##__VA_ARGS__);              \
         END
 
-#define SRC_PRINT_ID_(node__)                                                   \
-        BEGIN                                                                   \
+#define SRC_PRINT_ID_(node__)                                                       \
+        BEGIN                                                                       \
         SRC_PRINT_(L"%ls", frontend_ctx->names_pool.data[(node__)->data.value.id]); \
         END
 
-#define SRC_PRINT_OP_(opcode_)                              \
-        BEGIN                                               \
-        SRC_PRINT_(L"%ls", OP_CASES_TABLE[(opcode_)].name); \
+#define SRC_PRINT_OP_(opcode_)                                   \
+        BEGIN                                                    \
+        SRC_PRINT_(L"%ls", KEYWORD_CASES_TABLE[(opcode_)].name); \
         END
 
 //------------------------------------------------------------------------------------------
@@ -236,7 +234,7 @@
 #undef SET_PARSER_ERROR_
 #undef SET_LEXER_ERROR_
 
-#undef OPERATOR_
+#undef KEYWORD_
 #undef IDENTIFIER_
 #undef NUMBER_
 
@@ -244,7 +242,7 @@
 #undef IS_OPERATOR_
 #undef IS_IDENTIFIER_
 #undef IS_NUMBER_
-#undef HAS_OPCODE_
+#undef HAS_KEYWORD_
 
 #undef ISVALUE_
 

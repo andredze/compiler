@@ -1,6 +1,5 @@
 #include "tree_dump.h"
 #include <wchar.h>
-// #include "frontend.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -605,7 +604,7 @@ static void ASTDumpNodeWithEdges(TreeNode_t* node,     FILE*          fp,
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static void DumpNodeDataOperator    (NodeDumpParams_t* params, LangCtx_t* lang_ctx);
+static void DumpNodeDataKeyword     (NodeDumpParams_t* params, LangCtx_t* lang_ctx);
 static void DumpNodeDataIdentifier  (NodeDumpParams_t* params, LangCtx_t* lang_ctx);
 static void DumpNodeDataNumber      (NodeDumpParams_t* params, LangCtx_t* lang_ctx);
 
@@ -613,7 +612,7 @@ static void DumpNodeDataNumber      (NodeDumpParams_t* params, LangCtx_t* lang_c
 
 void (* const DUMP_NODE_DATA_TABLE[]) (NodeDumpParams_t* params, LangCtx_t* lang_ctx) =
 {
-    [TYPE_OP       ] = DumpNodeDataOperator,
+    [TYPE_KEYWORD  ] = DumpNodeDataKeyword,
     [TYPE_ID       ] = DumpNodeDataIdentifier,
     [TYPE_NUM      ] = DumpNodeDataNumber,
     [TYPE_VAR      ] = DumpNodeDataIdentifier,
@@ -642,7 +641,7 @@ static void ASTDumpSingleNode(NodeDumpParams_t* params, FILE* fp, LangCtx_t* lan
 
 //==========================================================================================
 
-static void DumpNodeDataOperator(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
+static void DumpNodeDataKeyword(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
 {
     assert(lang_ctx != NULL);
     assert(params   != NULL);
@@ -650,8 +649,8 @@ static void DumpNodeDataOperator(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
     swprintf(params->str_data, sizeof(params->str_data) / sizeof(params->str_data[0]),
              L"type = %s | code = %s | value = %ls",
              TYPE_CASES_TABLE[params->node->data.type].name,
-             OP_CASES_TABLE[params->node->data.value.opcode].code_str,
-             OP_CASES_TABLE[params->node->data.value.opcode].name);
+             KEYWORD_CASES_TABLE[params->node->data.value.keyword].code_str,
+             KEYWORD_CASES_TABLE[params->node->data.value.keyword].name);
 }
 
 //==========================================================================================

@@ -297,7 +297,7 @@ LangErr_t ReadNodeData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos, Token
 
 //==========================================================================================
 
-static LangErr_t GetNodeDataOp (TokenData_t* node_data, wchar_t* string_data);
+static LangErr_t GetNodeDataKeyword (TokenData_t* node_data, wchar_t* string_data);
 static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data);
 static LangErr_t GetNodeDataId (LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_t* string_data);
 
@@ -338,8 +338,8 @@ static LangErr_t GetNodeData(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_
 
     switch (node_data->type)
     {
-        case TYPE_OP:
-            return GetNodeDataOp(node_data, string_data);
+        case TYPE_KEYWORD:
+            return GetNodeDataKeyword(node_data, string_data);
 
         case TYPE_NUM:
             return GetNodeDataNum(node_data, string_data);
@@ -363,19 +363,19 @@ static LangErr_t GetNodeData(LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_
 
 //==========================================================================================
 
-static LangErr_t GetNodeDataOp(TokenData_t* node_data, wchar_t* string_data)
+static LangErr_t GetNodeDataKeyword(TokenData_t* node_data, wchar_t* string_data)
 {
     assert(string_data != NULL);
     assert(node_data   != NULL);
 
-    for (size_t opcode = 0; opcode < OPERATORS_COUNT; opcode++)
+    for (size_t keyword = 0; keyword < KEYWORDS_COUNT; keyword++)
     {
-        const wchar_t* opname = OP_CASES_TABLE[opcode].ast_format;
+        const wchar_t* opname = KEYWORD_CASES_TABLE[keyword].ast_format;
 
         if (wcscmp(string_data, opname) == 0)
         {
-            node_data->type         = TYPE_OP;
-            node_data->value.opcode = (Operator_t) opcode;
+            node_data->type          = TYPE_KEYWORD;
+            node_data->value.keyword = (Keyword_t) keyword;
 
             return LANG_SUCCESS;
         }

@@ -10,7 +10,7 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const wchar_t* GetOpName(Operator_t opcode);
+const wchar_t* GetKeywordName(Keyword_t keyword);
 
 //------------------------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ LangErr_t   LangIdTablePush       (IdTable_t* id_table, IdData_t* id_data);
 void        LangIdTableDump       (IdTable_t* id_table);
 
 LangErr_t   LangGetIdData                 (IdTable_t* id_table, size_t index, IdData_t* id_data);
-LangErr_t   LangIsFuncCallArgsCorrect       (LangCtx_t* lang_ctx, size_t func_id_index, int args_count);
+LangErr_t   LangIsFuncCallArgsCorrect     (LangCtx_t* lang_ctx, size_t func_id_index, int args_count);
 LangErr_t   LangSafePushIdTable           (LangCtx_t* lang_ctx, IdTable_t* id_table, IdData_t* id_data);
 size_t      LangIdTableCountVars          (IdTable_t* id_table);
 

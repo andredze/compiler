@@ -73,15 +73,15 @@ TreeErr_t TreeShowLogs(Tree_t* tree)
 
 //==========================================================================================
 
-TreeNode_t* LangOperatorNodeCtor(LangCtx_t* lang_ctx, Operator_t opcode, 
-                                 TreeNode_t* left, TreeNode_t* right)
+TreeNode_t* LangKeywordNodeCtor(LangCtx_t* lang_ctx, Keyword_t keyword, 
+                                TreeNode_t* left, TreeNode_t* right)
 {
     assert(lang_ctx != NULL);
 
     TokenData_t token_data = {};
 
-    token_data.type         = TYPE_OP;
-    token_data.value.opcode = opcode;
+    token_data.type          = TYPE_KEYWORD;
+    token_data.value.keyword = keyword;
 
     return TreeNodeCtor(&lang_ctx->tree, token_data, left, right, NULL);
 }

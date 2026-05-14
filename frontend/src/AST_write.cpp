@@ -143,8 +143,8 @@ static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE*
 
     switch (data->type)
     {
-        case TYPE_OP:
-            fwprintf(fp, L"%ls", OP_CASES_TABLE[data->value.opcode].ast_format);
+        case TYPE_KEYWORD:
+            fwprintf(fp, L"%ls", KEYWORD_CASES_TABLE[data->value.keyword].ast_format);
             break;
 
         case TYPE_ID:

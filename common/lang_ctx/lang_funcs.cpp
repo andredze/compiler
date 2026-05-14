@@ -1,14 +1,14 @@
 #include "lang_funcs.h"
-#include "op_cases.h"
+#include "keyword_cases.h"
 
 //==========================================================================================
 
-const wchar_t* GetOpName(Operator_t opcode)
+const wchar_t* GetKeywordName(Keyword_t keyword)
 {
-    if (!(0 <= opcode && opcode < OPERATORS_COUNT))
+    if (!(0 <= keyword && keyword < KEYWORDS_COUNT))
         return NULL;
 
-    return OP_CASES_TABLE[opcode].name;
+    return KEYWORD_CASES_TABLE[keyword].name;
 }
 
 //==========================================================================================
@@ -115,9 +115,9 @@ static LangErr_t LangNamesPoolRealloc(NamesPool_t* names_pool);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-LangErr_t LangNamesPoolPush(NamesPool_t*    names_pool, 
-                            const wchar_t*  name_buf, 
-                            size_t*         name_index)
+LangErr_t LangNamesPoolPush(NamesPool_t*   names_pool, 
+                            const wchar_t* name_buf, 
+                            size_t*        name_index)
 {
     assert(name_index != NULL);
     assert(names_pool != NULL);

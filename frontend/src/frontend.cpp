@@ -201,8 +201,8 @@ LR"(    node [%p]:
             wprintf(LANG_NUM_SPEC, node->data.value.number);
             break;
 
-        case TYPE_OP:
-            wprintf(L"%ls", OP_CASES_TABLE[node->data.value.opcode].name);
+        case TYPE_KEYWORD:
+            wprintf(L"%ls", KEYWORD_CASES_TABLE[node->data.value.keyword].name);
             break;
 
         case TYPE_ID:

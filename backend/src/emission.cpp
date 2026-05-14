@@ -1,4 +1,4 @@
-#include "op_cases.h"
+#include "keyword_cases.h"
 #include "lang_funcs.h"
 #include "backend.h"
 #include "emission.h"
@@ -80,15 +80,15 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
         case TYPE_ID:
             return BACKEND_INVALID_AST_INPUT;
 
-        case TYPE_OP:
-            if (OP_CASES_TABLE[node->data.value.opcode].emit_function == NULL)
+        case TYPE_KEYWORD:
+            if (KEYWORD_CASES_TABLE[node->data.value.keyword].emit_function == NULL)
             {
                 WPRINTERR("Error: operator %ls doesn't support assembling",
-                          OP_CASES_TABLE[node->data.value.opcode].name);
+                          KEYWORD_CASES_TABLE[node->data.value.keyword].name);
 
                 return BACKEND_CANT_EMIT_OPERATOR;
             }
-            return OP_CASES_TABLE[node->data.value.opcode].emit_function(backend_ctx, node);
+            return KEYWORD_CASES_TABLE[node->data.value.keyword].emit_function(backend_ctx, node);
 
         case TYPE_VAR:
             // return EmitVariable(backend_ctx, node);
@@ -116,14 +116,14 @@ BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* 
     assert(backend_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_OPERATOR_(node, OP_ADD) ||
-                IS_OPERATOR_(node, OP_SUB));
+    ASM_VERIFY_(IS_KEYWORD_(node, KW_ADD) ||
+                IS_KEYWORD_(node, KW_SUB));
 
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 
     // ASM_PRINT_(L"; math operation: %ls\n\n", 
-    //            OP_CASES_TABLE[node->data.value.opcode].asm_name);
+    //            KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
@@ -139,7 +139,7 @@ BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* 
     // POP_IN_REG(REG_RBX); // right node
     // POP_IN_REG(REG_RAX); // left node
     
-    if (node->data.type == OP_ADD)
+    if (node->data.type == KW_ADD)
     {
         // ADD_REG_TO_REG(REG_RAX, REG_RBX);
     }
@@ -151,7 +151,7 @@ BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* 
     // ASM_PRINT_(L"pop rbx");
     // ASM_PRINT_(L"pop rcx");
     // ASM_PRINT_(L"add rcx, rbx");
-    // ASM_PRINT_(L"%ls\n", OP_CASES_TABLE[node->data.value.opcode].asm_name);
+    // ASM_PRINT_(L"%ls\n", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
     // ASM_PRINT_(L"\n");
 
     return BACKEND_SUCCESS;

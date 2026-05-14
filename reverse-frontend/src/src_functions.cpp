@@ -1,6 +1,6 @@
-#include "operators.h"
+#include "keywords.h"
 #include "lang_ctx.h"
-#include "op_cases.h"
+#include "keyword_cases.h"
 
 //==========================================================================================
 
@@ -10,8 +10,8 @@
 //==========================================================================================
 
 static LangErr_t SrcNumber              (LangCtx_t* lang_ctx, TreeNode_t* node);
-static LangErr_t SrcRepetitionPrint     (LangCtx_t* lang_ctx, Operator_t opcode);
-static LangErr_t SrcEnterRepetitionPrint(LangCtx_t* lang_ctx, Operator_t opcode);
+static LangErr_t SrcRepetitionPrint     (LangCtx_t* lang_ctx, Keyword_t keyword);
+static LangErr_t SrcEnterRepetitionPrint(LangCtx_t* lang_ctx, Keyword_t keyword);
 static LangErr_t SrcVariable            (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t SrcVariableDeclaration (LangCtx_t* lang_ctx, TreeNode_t* node);
 static LangErr_t SrcFunctionDeclaration (LangCtx_t* lang_ctx, TreeNode_t* node);
@@ -83,15 +83,15 @@ LangErr_t SrcNode(LangCtx_t* lang_ctx, TreeNode_t* node)
         case TYPE_ID:
             return LANG_INVALID_AST_INPUT;
 
-        case TYPE_OP:
-            if (OP_CASES_TABLE[node->data.value.opcode].src_function == NULL)
+        case TYPE_KEYWORD:
+            if (KEYWORD_CASES_TABLE[node->data.value.keyword].src_function == NULL)
             {
                 WPRINTERR("Error: operator %ls doesn't support reversing",
-                          OP_CASES_TABLE[node->data.value.opcode].name);
+                          KEYWORD_CASES_TABLE[node->data.value.keyword].name);
 
                 return LANG_REVERSEBLE_OPERATOR;
             }
-            return OP_CASES_TABLE[node->data.value.opcode].src_function (lang_ctx, node);
+            return KEYWORD_CASES_TABLE[node->data.value.keyword].src_function (lang_ctx, node);
 
         case TYPE_VAR:
             return SrcVariable(lang_ctx, node);
@@ -119,7 +119,7 @@ LangErr_t SrcAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    SRC_PRINT_OP_(OP_ASSIGNMENT);
+    SRC_PRINT_OP_(KW_ASSIGNMENT);
 
     SRC_PRINT_(L" ");
 
@@ -133,7 +133,7 @@ LangErr_t SrcAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     SRC_PRINT_(L" ");
 
-    SRC_PRINT_OP_(OP_CMD_SEPARATOR);
+    SRC_PRINT_OP_(KW_CMD_SEPARATOR);
     SRC_PRINT_(L"\n");
 
     return LANG_SUCCESS;
@@ -151,7 +151,7 @@ LangErr_t SrcCompareOperator(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     SRC_PRINT_(L" ");
 
-    SRC_PRINT_OP_(node->data.value.opcode);
+    SRC_PRINT_OP_(node->data.value.keyword);
 
     SRC_PRINT_(L" ");
 
@@ -170,7 +170,7 @@ LangErr_t SrcUnaryOperator(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    SRC_PRINT_OP_(node->data.value.opcode);
+    SRC_PRINT_OP_(node->data.value.keyword);
 
     SRC_PRINT_(L" ");
 
@@ -179,7 +179,7 @@ LangErr_t SrcUnaryOperator(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     SRC_PRINT_(L" ");
 
-    SRC_PRINT_OP_(OP_CMD_SEPARATOR);
+    SRC_PRINT_OP_(KW_CMD_SEPARATOR);
     SRC_PRINT_(L"\n");
 
     return LANG_SUCCESS;
@@ -197,7 +197,7 @@ LangErr_t SrcMathOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     SRC_PRINT_(L" ");
 
-    SRC_PRINT_OP_(node->data.value.opcode);
+    SRC_PRINT_OP_(node->data.value.keyword);
     SRC_PRINT_(L" ");
 
     if (node->right)
@@ -215,7 +215,7 @@ LangErr_t SrcAbort(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    SRC_PRINT_OP_(OP_ABORT);
+    SRC_PRINT_OP_(KW_ABORT);
     SRC_PRINT_(L"\n");
 
     return LANG_SUCCESS;
@@ -233,7 +233,7 @@ LangErr_t SrcParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     if (node->right)
     {
-        SRC_PRINT_OP_(OP_PARAMS_SEPARATOR);
+        SRC_PRINT_OP_(KW_PARAMS_SEPARATOR);
         SRC_PRINT_(L" ");
         SrcNode(lang_ctx, node->right);
     }
@@ -248,7 +248,7 @@ LangErr_t SrcWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    SrcEnterRepetitionPrint(lang_ctx, OP_WHILE);
+    SrcEnterRepetitionPrint(lang_ctx, KW_WHILE);
     SRC_PRINT_(L"\n\n");
 
     if (node->left)
@@ -257,7 +257,7 @@ LangErr_t SrcWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     SRC_PRINT_(L"\n");
 
     SRC_PRINT_TABS_();
-    SrcRepetitionPrint(lang_ctx, OP_BLOCK_BEGIN);
+    SrcRepetitionPrint(lang_ctx, KW_BLOCK_BEGIN);
     SRC_PRINT_(L"\n\n");
 
     lang_ctx->tabs++;
@@ -270,11 +270,11 @@ LangErr_t SrcWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     lang_ctx->tabs--;
 
     SRC_PRINT_TABS_();
-    SrcRepetitionPrint(lang_ctx, OP_BLOCK_END);
+    SrcRepetitionPrint(lang_ctx, KW_BLOCK_END);
     SRC_PRINT_(L"\n\n");
 
     SRC_PRINT_TABS_();
-    SRC_PRINT_OP_(OP_CMD_SEPARATOR);
+    SRC_PRINT_OP_(KW_CMD_SEPARATOR);
     SRC_PRINT_(L"\n");
 
     return LANG_SUCCESS;
@@ -287,18 +287,18 @@ LangErr_t SrcIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    SRC_PRINT_OP_(OP_IF_LHS);
+    SRC_PRINT_OP_(KW_IF_LHS);
     SRC_PRINT_(L"\n\n");
 
     if (node->left)
         SrcNode(lang_ctx, node->left);
     SRC_PRINT_(L"\n\n");
 
-    SRC_PRINT_OP_(OP_IF_RHS);
+    SRC_PRINT_OP_(KW_IF_RHS);
     SRC_PRINT_(L"\n\n");
 
     SRC_PRINT_TABS_();
-    SrcRepetitionPrint(lang_ctx, OP_BLOCK_BEGIN);
+    SrcRepetitionPrint(lang_ctx, KW_BLOCK_BEGIN);
     SRC_PRINT_(L"\n");
 
     lang_ctx->tabs++;
@@ -311,11 +311,11 @@ LangErr_t SrcIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     lang_ctx->tabs--;
 
     SRC_PRINT_TABS_();
-    SrcRepetitionPrint(lang_ctx, OP_BLOCK_END);
+    SrcRepetitionPrint(lang_ctx, KW_BLOCK_END);
     SRC_PRINT_(L"\n\n");
 
     SRC_PRINT_TABS_();
-    SRC_PRINT_OP_(OP_CMD_SEPARATOR);
+    SRC_PRINT_OP_(KW_CMD_SEPARATOR);
     SRC_PRINT_(L"\n");
 
     return LANG_SUCCESS;
@@ -339,16 +339,16 @@ LangErr_t SrcCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
 
 //==========================================================================================
 
-static LangErr_t SrcRepetitionPrint(LangCtx_t* lang_ctx, Operator_t opcode)
+static LangErr_t SrcRepetitionPrint(LangCtx_t* lang_ctx, Keyword_t keyword)
 {
     assert(lang_ctx);
 
-    SRC_PRINT_OP_(opcode);
+    SRC_PRINT_OP_(keyword);
 
-    for (int i = 1; i < OP_CASES_TABLE[opcode].repeat_times; i++)
+    for (int i = 1; i < KEYWORD_CASES_TABLE[keyword].repeat_times; i++)
     {
         SRC_PRINT_(L" ");
-        SRC_PRINT_OP_(opcode);
+        SRC_PRINT_OP_(keyword);
     }
 
     return LANG_SUCCESS;
@@ -356,17 +356,17 @@ static LangErr_t SrcRepetitionPrint(LangCtx_t* lang_ctx, Operator_t opcode)
 
 //==========================================================================================
 
-static LangErr_t SrcEnterRepetitionPrint(LangCtx_t* lang_ctx, Operator_t opcode)
+static LangErr_t SrcEnterRepetitionPrint(LangCtx_t* lang_ctx, Keyword_t keyword)
 {
     assert(lang_ctx);
 
-    SRC_PRINT_OP_(opcode);
+    SRC_PRINT_OP_(keyword);
 
-    for (int i = 1; i < OP_CASES_TABLE[opcode].repeat_times; i++)
+    for (int i = 1; i < KEYWORD_CASES_TABLE[keyword].repeat_times; i++)
     {
         SRC_PRINT_TABS_();
         SRC_PRINT_(L"\n");
-        SRC_PRINT_OP_(opcode);
+        SRC_PRINT_OP_(keyword);
     }
 
     return LANG_SUCCESS;
@@ -403,13 +403,13 @@ static LangErr_t SrcVariableDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    SRC_PRINT_OP_(OP_VARIABLE_DECL);
+    SRC_PRINT_OP_(KW_VARIABLE_DECL);
     SRC_PRINT_(L" ");
 
     SRC_PRINT_ID_(node);
     SRC_PRINT_(L" ");
 
-    SRC_PRINT_OP_(OP_CMD_SEPARATOR);
+    SRC_PRINT_OP_(KW_CMD_SEPARATOR);
     SRC_PRINT_(L"\n");
 
     return LANG_SUCCESS;
@@ -422,13 +422,13 @@ static LangErr_t SrcFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    SRC_PRINT_OP_(OP_FUNCTION_DECL_LHS);
+    SRC_PRINT_OP_(KW_FUNCTION_DECL_LHS);
     SRC_PRINT_(L" ");
 
     SRC_PRINT_ID_(node);
     SRC_PRINT_(L" ");
 
-    SRC_PRINT_OP_(OP_FUNCTION_DECL_RHS);
+    SRC_PRINT_OP_(KW_FUNCTION_DECL_RHS);
     SRC_PRINT_(L" ");
 
     SrcNode(lang_ctx, node->left);
@@ -437,18 +437,18 @@ static LangErr_t SrcFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* node)
     lang_ctx->tabs++;
 
     SRC_PRINT_TABS_();
-    SrcRepetitionPrint(lang_ctx, OP_FUNCTION_BLOCK_BEGIN);
+    SrcRepetitionPrint(lang_ctx, KW_FUNCTION_BLOCK_BEGIN);
     SRC_PRINT_(L"\n\n");
 
     SrcNode(lang_ctx, node->right);
     SRC_PRINT_(L"\n\n");
 
     SRC_PRINT_TABS_();
-    SrcRepetitionPrint(lang_ctx, OP_FUNCTION_BLOCK_END);
+    SrcRepetitionPrint(lang_ctx, KW_FUNCTION_BLOCK_END);
     SRC_PRINT_(L"\n\n");
 
     SRC_PRINT_TABS_();
-    SRC_PRINT_OP_(OP_CMD_SEPARATOR);
+    SRC_PRINT_OP_(KW_CMD_SEPARATOR);
     SRC_PRINT_(L"\n");
 
     lang_ctx->tabs--;
@@ -463,13 +463,13 @@ static LangErr_t SrcFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    SRC_PRINT_OP_(OP_FUNCTION_CALL_LHS);
+    SRC_PRINT_OP_(KW_FUNCTION_CALL_LHS);
     SRC_PRINT_(L" ");
 
     SRC_PRINT_ID_(node);
     SRC_PRINT_(L" ");
 
-    SRC_PRINT_OP_(OP_FUNCTION_CALL_RHS);
+    SRC_PRINT_OP_(KW_FUNCTION_CALL_RHS);
     SRC_PRINT_(L" ");
 
     if (node->left)

@@ -6,9 +6,9 @@
 #include "lang_ctx.h"
 #include "tree_commands.h"
 #include "tree_types.h"
-#include "operators.h"
+#include "keywords.h"
 #include "frontend.h"
-#include "op_cases.h"
+#include "keyword_cases.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

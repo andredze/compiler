@@ -127,7 +127,7 @@ static TreeNode_t* ParseBody(FrontendCtx_t* frontend_ctx)
 
         if (separator == NULL)
         {
-            SET_PARSER_ERROR_(statement, L"Missing \"%ls\"", GetOpName(OP_CMD_SEPARATOR));
+            SET_PARSER_ERROR_(statement, L"Missing \"%ls\"", GetKeywordName(KW_CMD_SEPARATOR));
             // WPRINTERR("There should be a cmd separator after statement, cur_tok_ind = %zu",
             //             frontend_ctx->cur_token_index);
             // PARSER_DUMP_(lang_ctx->tokens.data[frontend_ctx->cur_token_index - 1],
@@ -158,11 +158,10 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* func_decl_lhs = FrontendGetCurrentToken(frontend_ctx);
 
-    if (func_decl_lhs == NULL || !IS_OPERATOR_(func_decl_lhs, OP_FUNCTION_DECL_LHS))
+    if (func_decl_lhs == NULL || !IS_KEYWORD_(func_decl_lhs, KW_FUNCTION_DECL_LHS))
         return NULL;
 
     frontend_ctx->cur_token_index++;
-
     frontend_ctx->is_in_func = 1;
 
     PARSER_DUMP_(func_decl_lhs, L"function declaration lhs");
@@ -172,7 +171,7 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
     if (function_name == NULL || !IS_IDENTIFIER_(function_name))
     {
         SET_PARSER_ERROR_(func_decl_lhs, L"Missing function name after \"%ls\"",
-                                         GetOpName(OP_FUNCTION_DECL_LHS));
+                                         GetKeywordName(KW_FUNCTION_DECL_LHS));
 
         WPRINTERR(L"Expected function name after function declaration lhs");
 
@@ -188,7 +187,7 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* func_decl_rhs = FrontendGetCurrentToken(frontend_ctx);
 
-    if (func_decl_rhs == NULL || !IS_OPERATOR_(func_decl_rhs, OP_FUNCTION_DECL_RHS))
+    if (func_decl_rhs == NULL || !IS_KEYWORD_(func_decl_rhs, KW_FUNCTION_DECL_RHS))
         return NULL;
 
     frontend_ctx->cur_token_index++;
@@ -293,7 +292,7 @@ static TreeNode_t* ParseFunctionParameters(FrontendCtx_t* frontend_ctx,
 
     TreeNode_t* next_param = NULL;
 
-    while (IS_OPERATOR_(params_separator, OP_PARAMS_SEPARATOR))
+    while (IS_KEYWORD_(params_separator, KW_PARAMS_SEPARATOR))
     {
         (*params_count_p)++;
 
@@ -346,7 +345,7 @@ static TreeNode_t* ParseFunctionBlock(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* block_begin = FrontendGetCurrentToken(frontend_ctx);
 
-    if (block_begin == NULL || !IS_OPERATOR_(block_begin, OP_FUNCTION_BLOCK_BEGIN))
+    if (block_begin == NULL || !IS_KEYWORD_(block_begin, KW_FUNCTION_BLOCK_BEGIN))
         return NULL;
 
     frontend_ctx->cur_token_index++;
@@ -388,7 +387,7 @@ static TreeNode_t* ParseFunctionBlock(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* block_end = FrontendGetCurrentToken(frontend_ctx);
 
-    if (block_end == NULL || !IS_OPERATOR_(block_end, OP_FUNCTION_BLOCK_END))
+    if (block_end == NULL || !IS_KEYWORD_(block_end, KW_FUNCTION_BLOCK_END))
     {
         WPRINTERR(L"Expected function block end");
         return NULL;
@@ -470,7 +469,7 @@ static TreeNode_t* ParseReturn(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* cur_token = FrontendGetCurrentToken(frontend_ctx);
 
-    if (cur_token == NULL || !IS_OPERATOR_(cur_token, OP_RETURN))
+    if (cur_token == NULL || !IS_KEYWORD_(cur_token, KW_RETURN))
         return NULL;
 
     PARSER_DUMP_(cur_token, L"return operator");
@@ -502,7 +501,7 @@ static TreeNode_t* ParseIfStatement(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* if_lhs = FrontendGetCurrentToken(frontend_ctx);
 
-    if (if_lhs == NULL || !IS_OPERATOR_(if_lhs, OP_IF_LHS))
+    if (if_lhs == NULL || !IS_KEYWORD_(if_lhs, KW_IF_LHS))
         return NULL;
 
     frontend_ctx->cur_token_index++;
@@ -521,7 +520,7 @@ static TreeNode_t* ParseIfStatement(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* if_rhs = FrontendGetCurrentToken(frontend_ctx);
 
-    if (if_rhs == NULL && !IS_OPERATOR_(if_rhs, OP_IF_RHS))
+    if (if_rhs == NULL && !IS_KEYWORD_(if_rhs, KW_IF_RHS))
     {
         WPRINTERR("There should be an if right side");
         return NULL;
@@ -557,7 +556,7 @@ static TreeNode_t* ParseWhileStatement(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* while_token = FrontendGetCurrentToken(frontend_ctx);
 
-    if (while_token == NULL || !IS_OPERATOR_(while_token, OP_WHILE))
+    if (while_token == NULL || !IS_KEYWORD_(while_token, KW_WHILE))
         return NULL;
 
     frontend_ctx->cur_token_index++;
@@ -607,12 +606,12 @@ static TreeNode_t* ParseCondition(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* comp = FrontendGetCurrentToken(frontend_ctx);
 
-    if (comp == NULL || !IS_TYPE_(comp, TYPE_OP) ||
-        !(HAS_OPCODE_(comp, OP_EQUAL        ) ||
-          HAS_OPCODE_(comp, OP_BIGGER_EQUAL ) ||
-          HAS_OPCODE_(comp, OP_BIGGER       ) ||
-          HAS_OPCODE_(comp, OP_SMALLER_EQUAL) ||
-          HAS_OPCODE_(comp, OP_SMALLER      )))
+    if (comp == NULL || !IS_TYPE_(comp, TYPE_KEYWORD) ||
+        !(HAS_KEYWORD_(comp, KW_EQUAL        ) ||
+          HAS_KEYWORD_(comp, KW_BIGGER_EQUAL ) ||
+          HAS_KEYWORD_(comp, KW_BIGGER       ) ||
+          HAS_KEYWORD_(comp, KW_SMALLER_EQUAL) ||
+          HAS_KEYWORD_(comp, KW_SMALLER      )))
     {
         WPRINTERR("Expected comparison sign in condition");
         return NULL;
@@ -648,7 +647,7 @@ static TreeNode_t* ParseBlockStatement(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* block_open = FrontendGetCurrentToken(frontend_ctx);
 
-    if (block_open == NULL || !IS_OPERATOR_(block_open, OP_BLOCK_BEGIN))
+    if (block_open == NULL || !IS_KEYWORD_(block_open, KW_BLOCK_BEGIN))
     {
         if (block_open)
             WDPRINTF(L"Got type %ls\n", TYPE_CASES_TABLE[block_open->data.type].name);
@@ -669,7 +668,7 @@ static TreeNode_t* ParseBlockStatement(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* block_close = FrontendGetCurrentToken(frontend_ctx);
 
-    if (block_close == NULL || !IS_OPERATOR_(block_close, OP_BLOCK_END))
+    if (block_close == NULL || !IS_KEYWORD_(block_close, KW_BLOCK_END))
     {
         WPRINTERR("There should be a block end");
         return NULL;
@@ -693,7 +692,7 @@ static TreeNode_t* ParseCmdSeparator(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* op_separator = FrontendGetCurrentToken(frontend_ctx);
 
-    if (op_separator == NULL || !IS_OPERATOR_(op_separator, OP_CMD_SEPARATOR))
+    if (op_separator == NULL || !IS_KEYWORD_(op_separator, KW_CMD_SEPARATOR))
     {
         return NULL;
     }
@@ -711,7 +710,7 @@ static TreeNode_t* ParseVariableDeclaration(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* var_decl = FrontendGetCurrentToken(frontend_ctx);
 
-    if (var_decl == NULL || !IS_OPERATOR_(var_decl, OP_VARIABLE_DECL))
+    if (var_decl == NULL || !IS_KEYWORD_(var_decl, KW_VARIABLE_DECL))
         return NULL;
 
     frontend_ctx->cur_token_index++;
@@ -776,7 +775,7 @@ static TreeNode_t* ParseAssignment(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* assignment_token = FrontendGetCurrentToken(frontend_ctx);
 
-    if (assignment_token == NULL || !IS_OPERATOR_(assignment_token, OP_ASSIGNMENT))
+    if (assignment_token == NULL || !IS_KEYWORD_(assignment_token, KW_ASSIGNMENT))
         return NULL;
 
     frontend_ctx->cur_token_index++;
@@ -830,8 +829,8 @@ static TreeNode_t* ParseExpression(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* next_token = NULL;
 
-    while (IS_OPERATOR_(expr_token, OP_ADD) ||
-           IS_OPERATOR_(expr_token, OP_SUB))
+    while (IS_KEYWORD_(expr_token, KW_ADD) ||
+           IS_KEYWORD_(expr_token, KW_SUB))
     {
         frontend_ctx->cur_token_index++;
 
@@ -882,8 +881,8 @@ static TreeNode_t* ParseTerm(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* next_token = NULL;
 
-    while (IS_OPERATOR_(term_token, OP_MUL) ||
-           IS_OPERATOR_(term_token, OP_DIV))
+    while (IS_KEYWORD_(term_token, KW_MUL) ||
+           IS_KEYWORD_(term_token, KW_DIV))
     {
         frontend_ctx->cur_token_index++;
 
@@ -935,7 +934,7 @@ static TreeNode_t* ParsePower(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* next_token = NULL;
 
-    while (IS_OPERATOR_(power_token, OP_POW))
+    while (IS_KEYWORD_(power_token, KW_POW))
     {
         frontend_ctx->cur_token_index++;
 
@@ -1059,7 +1058,7 @@ static TreeNode_t* ParseBracketsExpression(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* open_bracket = FrontendGetCurrentToken(frontend_ctx);
 
-    if (open_bracket == NULL || !IS_OPERATOR_(open_bracket, OP_BRACKET_OPEN))
+    if (open_bracket == NULL || !IS_KEYWORD_(open_bracket, KW_BRACKET_OPEN))
         return NULL;
 
     frontend_ctx->cur_token_index++;
@@ -1079,7 +1078,7 @@ static TreeNode_t* ParseBracketsExpression(FrontendCtx_t* frontend_ctx)
 
     PARSER_DUMP_(close_bracket, L"closing bracket");
 
-    if (close_bracket == NULL || !IS_OPERATOR_(close_bracket, OP_BRACKET_CLOSE))
+    if (close_bracket == NULL || !IS_KEYWORD_(close_bracket, KW_BRACKET_CLOSE))
     {
         //TODO - seterror
         WPRINTERR("No closing bracket after opening bracket");
@@ -1104,7 +1103,7 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
     if (function_call_lhs == NULL)
         return NULL;
 
-    if (!IS_OPERATOR_(function_call_lhs, OP_FUNCTION_CALL_LHS))
+    if (!IS_KEYWORD_(function_call_lhs, KW_FUNCTION_CALL_LHS))
         return NULL;
 
     frontend_ctx->cur_token_index++;
@@ -1135,7 +1134,7 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* function_call_rhs = FrontendGetCurrentToken(frontend_ctx);
 
-    if (function_call_rhs == NULL || !IS_OPERATOR_(function_call_rhs, OP_FUNCTION_CALL_RHS))
+    if (function_call_rhs == NULL || !IS_KEYWORD_(function_call_rhs, KW_FUNCTION_CALL_RHS))
     {
         WPRINTERR("There should be a function call ending");
         //TODO - set error
@@ -1193,7 +1192,7 @@ static TreeNode_t* ParseFunctionArguments(FrontendCtx_t* frontend_ctx, int* args
 
     TreeNode_t* next_param = NULL;
 
-    while (IS_OPERATOR_(params_separator, OP_PARAMS_SEPARATOR))
+    while (IS_KEYWORD_(params_separator, KW_PARAMS_SEPARATOR))
     {
         (*args_count_p)++;
 
@@ -1258,14 +1257,14 @@ static TreeNode_t* ParseUnaryOperator(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* cur_token = FrontendGetCurrentToken(frontend_ctx);
 
-    if (cur_token == NULL || cur_token->data.type != TYPE_OP)
+    if (cur_token == NULL || cur_token->data.type != TYPE_KEYWORD)
         return NULL;
 
-    if ((cur_token->data.value.opcode == OP_OUTPUT) |
-        (cur_token->data.value.opcode == OP_INPUT ) |
-        (cur_token->data.value.opcode == OP_SQRT  ) |
-        (cur_token->data.value.opcode == OP_DRAW  ) |
-        (cur_token->data.value.opcode == OP_RETURN))
+    if ((cur_token->data.value.keyword == KW_OUTPUT) |
+        (cur_token->data.value.keyword == KW_INPUT ) |
+        (cur_token->data.value.keyword == KW_SQRT  ) |
+        (cur_token->data.value.keyword == KW_DRAW  ) |
+        (cur_token->data.value.keyword == KW_RETURN))
     {
         PARSER_DUMP_(cur_token, L"unary operator");
         frontend_ctx->cur_token_index++;
