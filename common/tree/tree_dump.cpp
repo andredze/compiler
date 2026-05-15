@@ -405,16 +405,22 @@ TreeErr_t GraphDump(LangCtx_t*            lang_ctx,  TreeNode_t*    node,
     if ((error = TreeConvertGraphFile(lang_ctx)))
         return error;
 
-    int image_width = 50;
+    int image_width = 100;
 
+    if (tree->size <= 8)
+    {    
+        image_width = 50;
+    }
     if ((tree->size <= 5) || 
-        ((node->left == NULL) && 
-         (node->right == NULL)))
+        ((node->left == NULL) && (node->right == NULL)))
     {
         image_width = 25;
     }
 
+#ifdef FRONTEND
     LangIdTableDump(lang_ctx, &lang_ctx->main_id_table, L"main id table");
+#endif /* FRONTEND */
+
     LangIdTableDump(lang_ctx, &lang_ctx->func_id_table, L"func id table");
 
     fwprintf(debug_data->fp, 

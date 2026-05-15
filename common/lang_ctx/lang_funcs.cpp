@@ -542,8 +542,8 @@ static LangErr_t LangIdTableCountAddresses(IdTable_t* id_table)
                 break;
 
             case ID_TYPE_VARIABLE:
-                id_table->data[i].addr = (int) (cur_func_locals_count * 
-                                         STACK_ELEMENT_SIZE);
+                id_table->data[i].addr = (-1) * (int) (cur_func_locals_count * 
+                                                       STACK_ELEMENT_SIZE);
                 cur_func_locals_count++;
                 break;
 
@@ -595,14 +595,14 @@ LangErr_t LangCountAddresses(LangCtx_t* lang_ctx)
 
     LangErr_t error = LANG_SUCCESS;
 
-    if ((error = LangIdTableCountAddresses(&lang_ctx->main_id_table)))
-    {
-        return error;
-    }
     if ((error = LangIdTableCountAddresses(&lang_ctx->func_id_table)))
     {
         return error;
     }
+
+#ifdef TREE_DEBUG
+    LangIdTableDump(lang_ctx, &lang_ctx->func_id_table, L"Dump after counting offsets");
+#endif /* TREE_DEBUG */
 
     return LANG_SUCCESS;
 }

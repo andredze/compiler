@@ -106,7 +106,8 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx,
         LangIdTableDump(lang_ctx, &lang_ctx->func_id_table, L"read id_table dump");
     #endif /* TREE_DEBUG */
 
-    TREE_CALL_DUMP(lang_ctx, NULL, "DUMP AFTER TREE READ DATA %s", ast_file_path);
+    GRAPH_DUMP_(lang_ctx, lang_ctx->tree.dummy->right, DUMP_SHORT, 
+                L"DUMP AFTER TREE READ DATA %s", ast_file_path);
 
     DPRINT_FUNC_LEAVE_MSG();
     return LANG_SUCCESS;
