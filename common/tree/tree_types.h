@@ -8,31 +8,25 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-// #ifdef BACKEND
-//
-// typedef struct Identifier
-// {
-//     size_t name_index;
-//     size_t id_index;
-//
-//     // bool   is_global;
-//
-// } Identifier_t;
-//
-// #endif /* BACKEND */
-//
-// #ifdef FRONTEND
+typedef struct Identifier
+{
+    size_t name_index;
+    size_t id_index;
 
-typedef size_t Identifier_t;
+} Identifier_t;
 
-// #endif /* FRONTEND */
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+#define LANG_NUM_SPEC L"%d"
+
+typedef int Number_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 typedef union TokenValue
 {
     Keyword_t    keyword;
-    double       number;
+    Number_t     number;
     Identifier_t id;
 
 } TokenValue_t;

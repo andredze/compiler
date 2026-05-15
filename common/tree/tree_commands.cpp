@@ -88,21 +88,21 @@ TreeNode_t* LangKeywordNodeCtor(LangCtx_t* lang_ctx, Keyword_t keyword,
 
 //==========================================================================================
 
-TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, Identifier_t id)
+TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t name_index)
 {
     assert(lang_ctx != NULL);
 
     TokenData_t token_data = {};
 
-    token_data.type     = TYPE_ID;
-    token_data.value.id = id;
+    token_data.type                = TYPE_ID;
+    token_data.value.id.name_index = name_index;
 
     return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
 }
 
 //==========================================================================================
 
-TreeNode_t* LangNumberNodeCtor(LangCtx_t* lang_ctx, double number)
+TreeNode_t* LangNumberNodeCtor(LangCtx_t* lang_ctx, Number_t number)
 {
     assert(lang_ctx != NULL);
 
@@ -124,7 +124,7 @@ TreeErr_t TreeCtor(Tree_t* tree)
         return TREE_NULL;
     }
 
-    tree->dummy = TreeNodeCtor(tree, {TYPE_NUM, { .number = 0.0 }}, NULL, NULL, NULL);
+    tree->dummy = TreeNodeCtor(tree, {TYPE_NUM, { .number = 0 }}, NULL, NULL, NULL);
 
     if (tree->dummy == NULL)
     {

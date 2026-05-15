@@ -47,6 +47,8 @@ void        FrontendPrintError      (FrontendCtx_t* frontend_ctx);
 void        FrontendPrintNode       (FrontendCtx_t* frontend_ctx, TreeNode_t* node);
 TreeNode_t* FrontendGetCurrentToken (FrontendCtx_t* frontend_ctx);
 
+LangErr_t FrontendRecountIdentifiersIndexes(LangCtx_t* lang_ctx);
+
 //——————————————————————————————————————————————————————————————————————————————————————————
     
 #endif /* FRONTEND_H */

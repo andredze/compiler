@@ -135,23 +135,23 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
     {
         WPRINTERR(L"Syntax error: variable %ls was not declared\n"
                   L"lang_ctx->is_in_function = %d\n",
-                    lang_ctx->names_pool.data[node->data.value.id],
+                    lang_ctx->names_pool.data[node->data.value.id.name_index],
                     lang_ctx->is_in_function ? 1 : 0);
         return LANG_VAR_NOT_DECLARED;
     }
 
     ASM_PRINT_(L"; variable %ls (addr = %zu)\n\n",
-                lang_ctx->names_pool.data[node->data.value.id],
+                lang_ctx->names_pool.data[node->data.value.id.name_index],
                 addr);
 
     WDPRINTF(L"; variable %ls (addr = %zu)\n\n",
-                lang_ctx->names_pool.data[node->data.value.id],
+                lang_ctx->names_pool.data[node->data.value.id.name_index],
                 addr);
 
     if (lang_ctx->is_in_function)
     {
         WDPRINTF(L"assemble var %ls func table dump:\n",
-                lang_ctx->names_pool.data[node->data.value.id]);
+                lang_ctx->names_pool.data[node->data.value.id.name_index]);
         LangIdTableConsoleDump(&lang_ctx->func_id_table);
         ASM_PRINT_(L"; rbp + %zu (local address)\n", addr);
         ASM_PRINT_(L"PUSHR RGX ; rbp\n");
@@ -161,7 +161,7 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
     else
     {
         WDPRINTF(L"assemble var %ls main table dump:\n",
-                lang_ctx->names_pool.data[node->data.value.id]);
+                lang_ctx->names_pool.data[node->data.value.id.name_index]);
         LangIdTableConsoleDump(&lang_ctx->main_id_table);
         ASM_PRINT_(L"PUSH %zu ; global addr\n", addr);
     }
@@ -198,7 +198,7 @@ static LangErr_t AssembleNewVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(node);
 
     ASM_PRINT_(L"; variable declaration: %ls\n\n",
-               lang_ctx->names_pool.data[node->data.value.id]);
+               lang_ctx->names_pool.data[node->data.value.id.name_index]);
 
     IdTable_t* id_table = NULL;
 
@@ -219,7 +219,7 @@ static LangErr_t AssembleNewVariable(LangCtx_t* lang_ctx, TreeNode_t* node)
     LangErr_t error = LANG_SUCCESS;
 
     WDPRINTF(L"setting addr for var %ls = %zu\n",
-            lang_ctx->names_pool.data[node->data.value.id],
+            lang_ctx->names_pool.data[node->data.value.id.name_index],
             lang_ctx->cur_addr);
 
     IdData_t var_id_data = {.name_index = node->data.value.id,

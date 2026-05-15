@@ -183,7 +183,7 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
     frontend_ctx->cur_token_index++;
 
     PARSER_DUMP_(function_name, L"function declaration: name %ls",
-                 lang_ctx->names_pool.data[function_name->data.value.id]);
+                 &frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id.name_index]);
 
     TreeNode_t* func_decl_rhs = FrontendGetCurrentToken(frontend_ctx);
 
@@ -193,6 +193,17 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
     frontend_ctx->cur_token_index++;
 
     PARSER_DUMP_(func_decl_rhs, L"function declaration rhs");
+
+    int table_index = 0;
+
+    if (LangIdTablePushFunctionIfUnique(&frontend_ctx->lang_ctx,
+                                        function_name->data.value.id.name_index,
+                                        &table_index))
+    {
+        return NULL;
+    }
+
+    function_name->data.value.id.id_index = (size_t) table_index;
 
     int params_count = 0;
 
@@ -208,7 +219,7 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
     {
         SET_PARSER_ERROR_(func_decl_rhs, L"Missing function \"%ls\" body",
                           LangGetIdName(&frontend_ctx->lang_ctx.names_pool, 
-                                        function_name->data.value.id));
+                                        function_name->data.value.id.name_index));
 
         WPRINTERR(L"Expected function block after function declaration");
         return NULL;
@@ -222,17 +233,17 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
     PARSER_DUMP_(function_name, L"function declaration la finale");
 
     WDPRINTF(L"params_count for func:  %ls = %d\n", 
-             frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id], 
+             frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id.name_index], 
              params_count);
 
     WDPRINTF(L"in_func_vars_count for func: %ls = %d\n", 
-             frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id], 
+             frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id.name_index], 
              frontend_ctx->in_func_vars_count);
 
-    if (LangIdTablePushFunctionIfUnique(&frontend_ctx->lang_ctx,
-                                        function_name->data.value.id,
-                                        (size_t) frontend_ctx->in_func_vars_count,
-                                        (size_t) params_count))
+    if (LangIdTableFunctionSetParamsLocals(&frontend_ctx->lang_ctx.func_id_table,
+                                           function_name->data.value.id.id_index,
+                                           frontend_ctx->in_func_vars_count,
+                                           params_count))
     {
         return NULL;
     }
@@ -265,13 +276,18 @@ static TreeNode_t* ParseFunctionParameters(FrontendCtx_t* frontend_ctx,
 
     PARSER_DUMP_(cur_token, L"function first parameter");
 
+    int table_index = 0;
+
     if (LangIdTablePushVariableIfUnique(&frontend_ctx->lang_ctx,
                                         &frontend_ctx->lang_ctx.func_id_table, 
-                                        cur_token->data.value.id,
-                                        ID_TYPE_PARAMETER))
+                                        cur_token->data.value.id.name_index,
+                                        ID_TYPE_PARAMETER,
+                                        &table_index))
     {
         return NULL;
     }
+
+    cur_token->data.value.id.id_index = (size_t) table_index;
 
     TreeNode_t* params_separator = FrontendGetCurrentToken(frontend_ctx);
 
@@ -304,11 +320,14 @@ static TreeNode_t* ParseFunctionParameters(FrontendCtx_t* frontend_ctx,
 
         if (LangIdTablePushVariableIfUnique(&frontend_ctx->lang_ctx,
                                             &frontend_ctx->lang_ctx.func_id_table, 
-                                            next_param->data.value.id,
-                                            ID_TYPE_PARAMETER))
+                                            next_param->data.value.id.name_index,
+                                            ID_TYPE_PARAMETER,
+                                            &table_index))
         {
             return NULL;
         }
+
+        next_param->data.value.id.id_index = (size_t) table_index;
 
         cur_token->right = next_param;
 
@@ -389,15 +408,15 @@ static TreeNode_t* ParseFunctionBlock(FrontendCtx_t* frontend_ctx)
 
 //==========================================================================================
 
-#define TRY_PARSING_(ParseFunc_, message)                               \
-        BEGIN                                                           \
-            cur_token = ParseFunc_(frontend_ctx);                       \
-                                                                        \
-            if (cur_token != NULL)                                      \
-            {                                                           \
-                PARSER_DUMP_(cur_token, L"statement: got %ls" message); \
-                return cur_token;                                       \
-            }                                                           \
+#define TRY_PARSING_(ParseFunc_, message)                                    \
+        BEGIN                                                                \
+            cur_token = ParseFunc_(frontend_ctx);                            \
+                                                                             \
+            if (cur_token != NULL)                                           \
+            {                                                                \
+                PARSER_DUMP_((cur_token), L"statement: got %ls", (message)); \
+                return cur_token;                                            \
+            }                                                                \
         END
 
 //------------------------------------------------------------------//
@@ -408,12 +427,13 @@ static TreeNode_t* ParseStatement(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* cur_token = NULL;
 
-    TRY_PARSING_(ParseIfStatement,          L"statement");
-    TRY_PARSING_(ParseWhileStatement,       L"statement");
-    TRY_PARSING_(ParseVariableDeclaration,  L"declaration");
-    TRY_PARSING_(ParseFunctionDeclaration,  L"declaration");
-    TRY_PARSING_(ParseAssignment,           L"assignment");
-    TRY_PARSING_(ParseExpression,           L"expression");
+    //FIXME: set error and check after call; drops when syntax error
+    TRY_PARSING_(ParseIfStatement        , L"statement");
+    TRY_PARSING_(ParseWhileStatement     , L"statement");
+    TRY_PARSING_(ParseVariableDeclaration, L"declaration");
+    TRY_PARSING_(ParseFunctionDeclaration, L"declaration");
+    TRY_PARSING_(ParseAssignment         , L"assignment");
+    TRY_PARSING_(ParseExpression         , L"expression");
 
     return NULL;
 }
@@ -731,13 +751,18 @@ static TreeNode_t* ParseVariableDeclaration(FrontendCtx_t* frontend_ctx)
         id_table = &frontend_ctx->lang_ctx.main_id_table;
     }
 
+    int table_index = 0;
+
     if (LangIdTablePushVariableIfUnique(&frontend_ctx->lang_ctx, 
                                         id_table, 
-                                        cur_token->data.value.id,
-                                        ID_TYPE_VARIABLE))
+                                        cur_token->data.value.id.name_index,
+                                        ID_TYPE_VARIABLE, 
+                                        &table_index))
     {
         return NULL;
     }
+
+    cur_token->data.value.id.id_index = (size_t) table_index;
 
     return cur_token;
 }
@@ -1013,12 +1038,16 @@ static TreeNode_t* ParseVariable(FrontendCtx_t* frontend_ctx)
         id_table = &frontend_ctx->lang_ctx.main_id_table;
     }
 
-    if (!LangIdTableVarIsDeclaredInCurrentScope(id_table, cur_token->data.value.id))
+    int table_index = LangIdTableVarGetTableIndex(id_table, cur_token->data.value.id.name_index);
+
+    if (table_index == -1)
     {
         WPRINTERR(L"Variable %ls was not declared\n",
-                  frontend_ctx->lang_ctx.names_pool.data[cur_token->data.value.id]);
+                  frontend_ctx->lang_ctx.names_pool.data[cur_token->data.value.id.name_index]);
         return NULL;
     }
+
+    cur_token->data.value.id.id_index = (size_t) table_index;
 
     PARSER_DUMP_(cur_token, L"variable");
 
@@ -1098,15 +1127,17 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
     frontend_ctx->cur_token_index++;
 
     int func_id_index = LangIdTableGetFuncTableIndex(&frontend_ctx->lang_ctx.func_id_table, 
-                                                     function_name->data.value.id);
+                                                     function_name->data.value.id.id_index);
 
     if (func_id_index == -1)
     {
         WPRINTERR(L"Function %ls was not declared\n",
                   LangGetIdName(&frontend_ctx->lang_ctx.names_pool, 
-                                function_name->data.value.id));
+                                function_name->data.value.id.name_index));
         return NULL;
     }
+
+    function_name->data.value.id.id_index = (size_t) func_id_index;
 
     TreeNode_t* function_call_rhs = FrontendGetCurrentToken(frontend_ctx);
 
@@ -1125,7 +1156,7 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
     function_name->left = ParseFunctionArguments(frontend_ctx, &args_count);
 
     WDPRINTF(L"args_count for func %ls = %d\n", 
-             frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id], args_count);
+             frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id.name_index], args_count);
 
     if (LangIsFuncCallArgsCorrect(&frontend_ctx->lang_ctx, func_id_index, args_count))
     {

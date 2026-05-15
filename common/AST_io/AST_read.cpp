@@ -1,4 +1,5 @@
 #include "AST_read.h"
+#include "tree_dump.h"
 #include "lang_funcs.h"
 
 //==========================================================================================
@@ -96,45 +97,16 @@ LangErr_t ASTReadData(LangCtx_t* lang_ctx,
         free(buffer);
         return LANG_TREE_ERROR;
     }
-    if (ReadGlobalsCount(lang_ctx, buffer, &i))
-    {
-        free(buffer);
-        return LANG_TREE_ERROR;
-    }
 
     ReadIdTable(lang_ctx, buffer, &i);
 
     free(buffer);
 
     #ifdef TREE_DEBUG
-        LangIdTableDump(&lang_ctx->main_id_table);
+        LangIdTableDump(lang_ctx, &lang_ctx->func_id_table, L"read id_table dump");
     #endif /* TREE_DEBUG */
 
     TREE_CALL_DUMP(lang_ctx, NULL, "DUMP AFTER TREE READ DATA %s", ast_file_path);
-
-    DPRINT_FUNC_LEAVE_MSG();
-    return LANG_SUCCESS;
-}
-
-//==========================================================================================
-
-static LangErr_t ReadGlobalsCount(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
-{
-    DPRINT_FUNC_ENTER_MSG();
-    assert(lang_ctx);
-    assert(buffer);
-    assert(pos);
-
-    int symbols_count = 0;
-
-    if (swscanf(&buffer[*pos], L" global variables: %zu\n%n",
-                &lang_ctx->global_vars_count, &symbols_count) != 1)
-    {
-        WPRINTERR(L"Error: no global vars count in AST\n");
-        return LANG_WRONG_AST_FORMAT;
-    }
-
-    *pos = *pos + symbols_count;
 
     DPRINT_FUNC_LEAVE_MSG();
     return LANG_SUCCESS;
@@ -170,6 +142,7 @@ static void ReadIdTable(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
 
 static bool ReadIdData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
 {
+    DPRINT_FUNC_ENTER_MSG();
     assert(lang_ctx);
     assert(buffer);
     assert(pos);
@@ -178,25 +151,38 @@ static bool ReadIdData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
     int symbols_read = 0;
 
     wchar_t id_buff[MAX_IDENTIFIER_LEN] = {};
-    int ret_value = 0;
+    int     ret_value = 0;
+    int     type      = 0;
 
-    if ((ret_value = swscanf(&buffer[*pos], L" [%zu, \"%l[^\"]\", %zu, %zu]\n%n",
+    // name_index, name, id_type, n_local_vars, n_params, addr
+    if ((ret_value = swscanf(&buffer[*pos], L"[%zu, \"%l[^\"]\", %d, %zu, %zu, %d]\n%n",
                              &id_data.name_index,
                              id_buff,
-                             &id_data.memory_needed,
+                             &type,
+                             &id_data.n_local_vars,
                              &id_data.n_params,
-                             &symbols_read)) != 4)
+                             &id_data.addr,
+                             &symbols_read)) != 6)
     {
         WDPRINTF(L"ret_value = %d\n", ret_value);
         WDPRINTF(L"!!! RETURNING FALSE !!!\n", ret_value);
         return false;
     }
 
+    id_data.type = (IdType_t) type;
+
     WDPRINTF(L"id_buff = %ls\n", id_buff);
 
-    id_data.name = lang_ctx->names_pool.data[id_data.name_index];
+    if (id_data.name_index != (size_t)-1)
+    {
+        id_data.name = lang_ctx->names_pool.data[id_data.name_index];
+    }
+    else
+    {
+        id_data.name = L"main";
+    }
 
-    LangIdTablePush(&lang_ctx->main_id_table, &id_data);
+    LangIdTablePush(&lang_ctx->func_id_table, &id_data, NULL);
 
     *pos = *pos + symbols_read;
 
@@ -205,6 +191,7 @@ static bool ReadIdData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos)
         return false;
     }
 
+    DPRINT_FUNC_LEAVE_MSG();
     return true;
 }
 
@@ -298,8 +285,8 @@ LangErr_t ReadNodeData(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos, Token
 //==========================================================================================
 
 static LangErr_t GetNodeDataKeyword (TokenData_t* node_data, wchar_t* string_data);
-static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data);
-static LangErr_t GetNodeDataId (LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_t* string_data);
+static LangErr_t GetNodeDataNum     (TokenData_t* node_data, wchar_t* string_data);
+static LangErr_t GetNodeDataId      (LangCtx_t* lang_ctx, TokenData_t* node_data, wchar_t* string_data);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -415,13 +402,23 @@ static LangErr_t GetNodeDataId(LangCtx_t* lang_ctx, TokenData_t* node_data, wcha
     assert(node_data   != NULL);
 
     size_t name_index = 0;
+    size_t id_index   = 0;
+
+    wchar_t name[MAX_BUFFER_LEN] = {};
+
+    if (swscanf(string_data, L"%zu_%ls", &id_index, string_data) != 2)
+    {
+        WPRINTERR("swscanf in AST read NodeDataId failed");
+        return LANG_INVALID_AST_INPUT;
+    }
 
     LangErr_t error = LANG_SUCCESS;
 
     if ((error = LangNamesPoolPush(&lang_ctx->names_pool, string_data, &name_index)))
         return error;
 
-    node_data->value.id = name_index;
+    node_data->value.id.name_index = name_index;
+    node_data->value.id.id_index   = id_index;
 
     return LANG_SUCCESS;
 }

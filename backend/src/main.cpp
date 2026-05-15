@@ -31,6 +31,9 @@ int main(int argc, char* argv[])
         if (ASTReadData(&backend_ctx.lang_ctx, argv[1], backend_ctx.ast_file_name))
             break;
 
+        if (LangCountAddresses(&backend_ctx.lang_ctx))
+            break;
+
         if (BackendOpenAsmFile(&backend_ctx))
             break;
 

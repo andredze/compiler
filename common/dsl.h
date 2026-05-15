@@ -28,9 +28,9 @@
         FRONTEND_SET_ERROR_(frontend_ctx, LANG_PARSER_SYNTAX_ERROR, node, expected, ##__VA_ARGS__); \
         END
 
-#define IDENTIFIER_(id_index) LangIdentifierNodeCtor(&frontend_ctx->lang_ctx, (name_index))
-#define KEYWORD_(keyword)     LangKeywordNodeCtor   (&frontend_ctx->lang_ctx, (keyword), NULL, NULL)
-#define NUMBER_(number)       LangNumberNodeCtor    (&frontend_ctx->lang_ctx, (number ))
+#define IDENTIFIER_(name_index) LangIdentifierNodeCtor(&frontend_ctx->lang_ctx, (name_index))
+#define KEYWORD_(keyword)       LangKeywordNodeCtor   (&frontend_ctx->lang_ctx, (keyword), NULL, NULL)
+#define NUMBER_(number)         LangNumberNodeCtor    (&frontend_ctx->lang_ctx, (number ))
 
 //==========================================================================================
  
@@ -69,9 +69,9 @@
         fwprintf(frontend_ctx->output_file, ##__VA_ARGS__);              \
         END
 
-#define SRC_PRINT_ID_(node__)                                                       \
-        BEGIN                                                                       \
-        SRC_PRINT_(L"%ls", frontend_ctx->names_pool.data[(node__)->data.value.id]); \
+#define SRC_PRINT_ID_(node__)                                                                  \
+        BEGIN                                                                                  \
+        SRC_PRINT_(L"%ls", frontend_ctx->names_pool.data[(node__)->data.value.id.name_index]); \
         END
 
 #define SRC_PRINT_KEYWORD_(opcode_)                                   \

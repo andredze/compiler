@@ -29,25 +29,25 @@ LangErr_t   LangOpenReverseFile   (LangCtx_t* lang_ctx);
 LangErr_t LangNamesPoolCtor       (NamesPool_t* names_pool);
 void      LangNamesPoolDtor       (NamesPool_t* names_pool);
 LangErr_t LangNamesPoolPush       (NamesPool_t* names_pool, const wchar_t* name_buf, size_t* name_index);
-wchar_t*  LangGetIdName           (NamesPool_t* names_pool, Identifier_t index);
+wchar_t*  LangGetIdName           (NamesPool_t* names_pool, size_t name_index);
 
 //==========================================================================================
 
 LangErr_t   LangIdTableCtor       (IdTable_t* id_table);
 void        LangIdTableDtor       (IdTable_t* id_table);
-LangErr_t   LangIdTablePush       (IdTable_t* id_table, IdData_t* id_data);
+LangErr_t   LangIdTablePush       (IdTable_t* id_table, IdData_t* id_data, int* dest_index_p);
 
 void LangIdDataBuild(LangCtx_t*   lang_ctx, 
                      IdData_t*    id_data, 
-                     Identifier_t id,
+                     size_t       name_index,
                      size_t       n_local_vars,
                      size_t       n_params,
                      IdType_t     id_type);
 
-bool LangIdTableFuncIsDeclared             (IdTable_t* id_table, Identifier_t id);
-int  LangIdTableGetFuncTableIndex          (IdTable_t* id_table, Identifier_t id);
-bool LangIdTableVarIsDeclaredInCurrentScope(IdTable_t* id_table, Identifier_t id);
-bool LangIdTableIdentifierIsDeclared       (IdTable_t* id_table, Identifier_t id);
+bool LangIdTableFuncIsDeclared          (IdTable_t* id_table, size_t name_index);
+int  LangIdTableGetFuncTableIndex       (IdTable_t* id_table, size_t name_index);
+int  LangIdTableVarGetTableIndex        (IdTable_t* id_table, size_t name_index);
+bool LangIdTableIdentifierIsDeclared    (IdTable_t* id_table, size_t name_index);
 
 LangErr_t LangIsFuncCallArgsCorrect      (LangCtx_t* lang_ctx, 
                                           int        func_index, 
@@ -55,30 +55,40 @@ LangErr_t LangIsFuncCallArgsCorrect      (LangCtx_t* lang_ctx,
 
 LangErr_t LangIdTablePushVariableIfUnique(LangCtx_t*   lang_ctx, 
                                           IdTable_t*   id_table,  
-                                          Identifier_t id,
-                                          IdType_t     type);
+                                          size_t       name_id,
+                                          IdType_t     type,
+                                          int*         table_index);
 
 LangErr_t LangIdTablePushFunctionIfUnique(LangCtx_t*   lang_ctx, 
-                                          Identifier_t id,
-                                          size_t       n_local_vars,
-                                          size_t       n_params);
+                                          size_t       name_index,
+                                          int*         table_index);
 
-wchar_t*    LangGetIdName (NamesPool_t* names_pool, Identifier_t index);
-LangErr_t   LangGetIdData (IdTable_t* id_table, size_t index, IdData_t* id_data);
+void LangIdTableCountVarsAndParams(IdTable_t* id_table, 
+                                   size_t*    n_local_vars_p, 
+                                   size_t*    n_params_p);
 
-// LangErr_t   LangIsFuncCallArgsCorrect     (LangCtx_t* lang_ctx, size_t func_id_index, int args_count);
-// LangErr_t   LangSafePushIdTable           (LangCtx_t* lang_ctx, IdTable_t* id_table, IdData_t* id_data);
-// size_t      LangIdTableCountVars          (IdTable_t* id_table);
+void LangIdTableGetFunctionVarsAndParams(IdTable_t*   id_table, 
+                                         size_t       id_index, 
+                                         size_t*      n_local_vars,
+                                         size_t*      n_params);
 
-// LangErr_t   LangGetFuncIndex              (LangCtx_t* lang_ctx, Identifier_t id, size_t* func_id_index);
-// bool        LangFuncWasDeclared           (LangCtx_t* lang_ctx, Identifier_t id);
-// LangErr_t   LangCheckVariableIsNotFunction(IdTable_t* id_table, Identifier_t id);
-// LangErr_t   LangIdTableGetAddress         (IdTable_t* id_table, Identifier_t id, int* addr);
-// bool        LangIdTableGetIdIndex         (IdTable_t* id_table, Identifier_t id, size_t* id_index);
-// bool        LangIdInTable                 (IdTable_t* id_table, Identifier_t id);
+LangErr_t LangIdTableGetVariableAddress(IdTable_t* id_table, size_t id_index, int* address);
 
-//==========================================================================================
+LangErr_t LangGetIdData (IdTable_t* id_table, size_t index, IdData* id_data);
 
+LangErr_t LangIdTableFunctionSetParamsLocals(IdTable_t*   id_table, 
+                                             size_t       id_index, 
+                                             size_t       n_local_vars, 
+                                             size_t       n_params);
+
+//------------------------------------------------------------------//
+
+LangErr_t LangCountAddresses(LangCtx_t* lang_ctx);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+const size_t STACK_ELEMENT_SIZE          = 8; // 64-bit arch
+const size_t STACK_FRAME_PROLOGUE_SIZE   = 2; // for rbp + return address
 const size_t DEFAULT_ID_TABLE_CAPACITY   = 64;
 const size_t DEFAULT_NAMES_POOL_CAPACITY = 64;
 const size_t MAX_BUFFER_SIZE             = 256;

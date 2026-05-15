@@ -168,8 +168,8 @@ LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx,
 
     va_start(args, fmt);
 
-    fwprintf(fp, L"<pre><h4><font color=blue>"
-                 L" Dump IdTable_t %p"
+    fwprintf(fp, L"<h4><font color=blue>"
+                 L"Dump IdTable_t %p"
                  L" Message: ",
                  id_table);
 
@@ -177,7 +177,7 @@ LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx,
 
     va_end(args);
 
-    fwprintf(fp, L"</h4></font>\n");
+    fwprintf(fp, L"</h4></font>\n\n");
 
     fwprintf(fp,
              L".size     = %zu\n"
@@ -191,13 +191,13 @@ LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx,
 
     IdData_t* id_data = NULL;
 
-    fwprintf(fp, L"index  {id,    name,          type,        n_local_vars, n_params, addr }\n");
+    fwprintf(fp, L"index  {           id,           name,          type,        n_local_vars,  n_params,  addr }\n");
 
     for (size_t i = 0; i < id_table->size; i++)
     {
         id_data = &id_table->data[i];
 
-        fwprintf(fp, L"[ %-2d]: {%3zu, %10ls, %17s,             %2zu,         %2zu,     %2d  }\n",
+        fwprintf(fp, L"[ %-2d]: {%21zu, %10ls, %17s,          %2zu,         %2zu,     %2d  }\n",
                      i,
                      id_data->name_index,
                      id_data->name,
@@ -208,7 +208,7 @@ LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx,
     }
 
     fwprintf(fp, L"---------------------------------------"
-                 L"---------------------------------------\n");
+                 L"---------------------------------------\n\n");
     
     fflush(fp);
 
@@ -688,10 +688,11 @@ static void DumpNodeDataIdentifier(NodeDumpParams_t* params, LangCtx_t* lang_ctx
     assert(params   != NULL);
 
     swprintf(params->str_data, sizeof(params->str_data) / sizeof(params->str_data[0]),
-             L"type = %s | value = %ls (%zu)",
+             L"type = %s | value = %ls (pool %zu, id %zu)",
              TYPE_CASES_TABLE[params->node->data.type].name,
-             lang_ctx->names_pool.data[params->node->data.value.id],
-             params->node->data.value.id);
+             lang_ctx->names_pool.data[params->node->data.value.id.name_index],
+             params->node->data.value.id.name_index,
+             params->node->data.value.id.id_index);
 }
 
 //==========================================================================================
@@ -702,7 +703,7 @@ static void DumpNodeDataNumber(NodeDumpParams_t* params, LangCtx_t* lang_ctx)
     assert(params   != NULL);
 
     swprintf(params->str_data, sizeof(params->str_data) / sizeof(params->str_data[0]),
-             L"type = %s | value = %lg",
+             L"type = %s | value = " LANG_NUM_SPEC,
              TYPE_CASES_TABLE[params->node->data.type].name,
              params->node->data.value.number);
 }

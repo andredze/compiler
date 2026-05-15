@@ -37,8 +37,8 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         L"_start:\n"
     );
 
-    size_t main_vars_size = backend_ctx->lang_ctx.global_vars_count *
-                            TYPE_INT_SIZE_IN_BYTES;
+    size_t main_vars_size = 0;//backend_ctx->lang_ctx.global_vars_count *
+    //                         TYPE_INT_SIZE_IN_BYTES;
 
     ASM_COMMENT_(L"stack frame for main variables");
 
@@ -81,6 +81,7 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
             return BACKEND_INVALID_AST_INPUT;
 
         case TYPE_KEYWORD:
+        {
             KeywordCase_t  kw_case   = KEYWORD_CASES_TABLE[node->data.value.keyword];
             EmitFunction_t emit_func = kw_case.emit_function;
 
@@ -92,6 +93,7 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
                 return BACKEND_CANT_EMIT_KEYWORD;
             }
             return emit_func(backend_ctx, node);
+        }
 
         case TYPE_VAR:
             return EmitVariable(backend_ctx, node);
@@ -125,12 +127,12 @@ static BackendErr_t EmitVariable(BackendCtx_t* backend_ctx, TreeNode_t* node)
     
     int var_offset = 0;
 
-    if (LangIdTableGetAddress(&backend_ctx->lang_ctx, 
-                              node->data.value.id, 
-                              &var_offset))
-    {
-        return BACKEND_LANG_ERROR;
-    }
+    // if (LangIdTableGetAddress(&backend_ctx->lang_ctx, 
+    //                           node->data.value.id, 
+    //                           &var_offset))
+    // {
+    //     return BACKEND_LANG_ERROR;
+    // }
 
     MOV_REG_MEM_DISP_(REG_RDX, REG_RBP, var_offset);
 

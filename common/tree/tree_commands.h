@@ -48,8 +48,8 @@ TreeErr_t TreeShowLogs(Tree_t* tree);
 TreeNode_t* LangKeywordNodeCtor   (LangCtx_t*  lang_ctx, Keyword_t  keyword,
                                    TreeNode_t* left,     TreeNode_t* right);
 
-TreeNode_t* LangIdentifierNodeCtor(LangCtx_t*  lang_ctx, size_t     id_index);
-TreeNode_t* LangNumberNodeCtor    (LangCtx_t*  lang_ctx, double     number  );
+TreeNode_t* LangIdentifierNodeCtor(LangCtx_t*  lang_ctx, size_t     name_index);
+TreeNode_t* LangNumberNodeCtor    (LangCtx_t*  lang_ctx, Number_t   number  );
 
 TreeErr_t TreeVerify           (const Tree_t* tree);
 TreeErr_t TreeCtor             (Tree_t*     tree);

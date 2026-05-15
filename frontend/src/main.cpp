@@ -40,6 +40,9 @@ int main(int argc, char* argv[])
         if (ParseTokens(&frontend_ctx))
             break;
 
+        if (FrontendRecountIdentifiersIndexes(&frontend_ctx.lang_ctx))
+            break;
+
         if (ASTWriteData(&frontend_ctx.lang_ctx))
             break;
     } 

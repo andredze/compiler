@@ -8,7 +8,7 @@ static void ASTWriteNode(LangCtx_t*         lang_ctx,
                          FILE*              fp, 
                          int                rank);
 
-static void ASTWriteIdTable(LangCtx_t* lang_ctx, FILE* fp);
+static void ASTWriteIdTable(IdTable_t* id_table, FILE* fp);
 
 //==========================================================================================
 
@@ -35,11 +35,8 @@ LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
 
     fwprintf(fp, L"\n\n");
 
-    fwprintf(fp, L"global variables: %zu\n", 
-             LangIdTableCountVars(&lang_ctx->main_id_table));
-
-    ASTWriteIdTable(lang_ctx, &lang_ctx->main_id_table, fp);
-    ASTWriteIdTable(lang_ctx, &lang_ctx->func_id_table, fp);
+    ASTWriteIdTable(&lang_ctx->main_id_table, fp);
+    ASTWriteIdTable(&lang_ctx->func_id_table, fp);
 
     fclose(fp);
 
@@ -58,35 +55,30 @@ LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
 
 //==========================================================================================
 
-static void ASTWriteIdData(LangCtx_t* lang_ctx, IdData_t* id_data, FILE* fp);
+static void ASTWriteIdData(IdData_t* id_data, FILE* fp);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static void ASTWriteIdTable(LangCtx_t* lang_ctx, IdTable_t* id_table, FILE* fp)
+static void ASTWriteIdTable(IdTable_t* id_table, FILE* fp)
 {
     assert(fp);
-    assert(lang_ctx);
     assert(id_table);
 
     for (size_t i = 0; i < id_table->size; i++)
     {
-        if (id_table->data[i].type == ID_TYPE_FUNCTION)
-        {
-            ASTWriteIdData(lang_ctx, &(id_table->data[i]), fp);
-        }
+        ASTWriteIdData(&(id_table->data[i]), fp);
     }
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static void ASTWriteIdData(LangCtx_t* lang_ctx, IdData_t* id_data, FILE* fp)
+static void ASTWriteIdData(IdData_t* id_data, FILE* fp)
 {
-    assert(lang_ctx);
     assert(id_data);
     assert(fp);
 
     // name_index, name, id_type, n_local_vars, n_params, addr
-    fwprintf(fp, L"[%zu, %ls, %d, %zu, %zu, %d]\n",
+    fwprintf(fp, L"[%zu, \"%ls\", %d, %zu, %zu, %d]\n",
                  id_data->name_index,
                  id_data->name,
                  id_data->type,
@@ -154,7 +146,9 @@ static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE*
         case TYPE_VAR_DECL:
         case TYPE_FUNC_CALL:
         case TYPE_FUNC_DECL:
-            fwprintf(fp, L"%ls", lang_ctx->names_pool.data[data->value.id]);
+            fwprintf(fp, L"%zu_%ls", 
+                         data->value.id.id_index, 
+                         lang_ctx->names_pool.data[data->value.id.name_index]);
             break;
 
         case TYPE_NUM:

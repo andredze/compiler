@@ -211,7 +211,7 @@ LR"(    node [%p]:
         case TYPE_FUNC_DECL:
         case TYPE_FUNC_CALL:
             wprintf(L"%ls", 
-                    frontend_ctx->lang_ctx.names_pool.data[node->data.value.id]);
+                    frontend_ctx->lang_ctx.names_pool.data[node->data.value.id.name_index]);
             break;
 
         default:
@@ -301,6 +301,88 @@ TreeNode_t* FrontendGetCurrentToken(FrontendCtx_t* frontend_ctx)
     }
 
     return token;
+}
+
+//==========================================================================================
+
+static void FrontendShiftNodeIdIndexesForInFuncIdentifiers(LangCtx_t*  lang_ctx,
+                                                           TreeNode_t* node, 
+                                                           size_t      indexes_shift,
+                                                           int         in_func)
+{
+    assert(node);
+
+    if (node->data.type == TYPE_FUNC_DECL)
+    {
+        in_func = 1;
+    }
+
+    switch (node->data.type)
+    {
+        case TYPE_VAR:
+        case TYPE_VAR_DECL:
+            if (!in_func)
+            {
+                break;
+            }
+        // else fallthrough
+        case TYPE_FUNC_CALL:
+        case TYPE_FUNC_DECL:
+            WDPRINTF(L"changed id %ls from %zu to %zu\n", 
+                     LangGetIdName(&lang_ctx->names_pool, node->data.value.id.name_index),
+                     node->data.value.id.id_index,
+                     node->data.value.id.id_index + indexes_shift);
+            node->data.value.id.id_index += indexes_shift;
+            break;
+
+        case TYPE_ID:
+        case TYPE_KEYWORD:
+        case TYPE_NUM:
+        default:
+            break;
+    }
+    
+    if (node->left)
+    {
+        FrontendShiftNodeIdIndexesForInFuncIdentifiers(lang_ctx, node->left , indexes_shift, in_func);
+    }
+    if (node->right)
+    {
+        FrontendShiftNodeIdIndexesForInFuncIdentifiers(lang_ctx, node->right, indexes_shift, in_func);   
+    }
+}
+
+//==========================================================================================
+
+LangErr_t FrontendRecountIdentifiersIndexes(LangCtx_t* lang_ctx)
+{
+    assert(lang_ctx);
+
+    LangErr_t error = LANG_SUCCESS;
+
+    size_t n_main_params = 0;
+    size_t n_main_vars   = 0;
+
+    LangIdTableCountVarsAndParams(&lang_ctx->main_id_table, &n_main_vars, &n_main_params);
+
+    if (n_main_params != 0)
+    {
+        WPRINTERR(L"IdTable error! Main can not have params");
+        return LANG_WRONG_ID_TABLE;
+    }
+
+    lang_ctx->main_id_table.data[0].n_local_vars = n_main_vars;
+
+    WDPRINTF(L"n_main_vars = %zu\n\n", n_main_vars);
+
+    FrontendShiftNodeIdIndexesForInFuncIdentifiers(lang_ctx,
+                                                   lang_ctx->tree.dummy->right,
+                                                   n_main_vars + 1,
+                                                   0);
+
+    GRAPH_DUMP_(lang_ctx, lang_ctx->tree.dummy->right, DUMP_SHORT, L"after recounting ids");
+
+    return LANG_SUCCESS;
 }
 
 //==========================================================================================

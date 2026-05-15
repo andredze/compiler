@@ -319,10 +319,10 @@ static LangErr_t ProcessNumberTokenCase(FrontendCtx_t* frontend_ctx, bool* do_co
 
     *do_continue = true;
 
-    double   value = 0.0;
+    int      value = 0;
     wchar_t* num_code_end = NULL;
 
-    value = wcstod(frontend_ctx->cur_symbol_ptr, &num_code_end);
+    value = wcstol(frontend_ctx->cur_symbol_ptr, &num_code_end, 10);
 
     frontend_ctx->cur_symbol_ptr = num_code_end;
 

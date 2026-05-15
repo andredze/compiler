@@ -18,10 +18,10 @@ const int MAX_DATA_LEN      = 128;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#define GRAPH_DUMP_(lang_ctx, node, dump_type, fmt, ...)                           \
-        BEGIN                                                                      \
-        TreeDumpInfo_t _dump_info_ = {TREE_SUCCESS, __func__, __FILE__, __LINE__}; \
-        GraphDump((lang_ctx), (node), &_dump_info_, (dump_type), fmt);             \
+#define GRAPH_DUMP_(lang_ctx, node, dump_type, fmt, ...)                                \
+        BEGIN                                                                           \
+        TreeDumpInfo_t _dump_info_ = {TREE_SUCCESS, __func__, __FILE__, __LINE__};      \
+        GraphDump((lang_ctx), (node), &_dump_info_, (dump_type), fmt, ##__VA_ARGS__);   \
         END
 
 //——————————————————————————————————————————————————————————————————————————————————————————
