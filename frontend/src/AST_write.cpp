@@ -152,7 +152,7 @@ static void ASTWriteNodeData(LangCtx_t* lang_ctx, const TokenData_t* data, FILE*
             break;
 
         case TYPE_NUM:
-            fwprintf(fp, L"%lg", data->value.number);
+            fwprintf(fp, LANG_NUM_SPEC, data->value.number);
             break;
 
         default:

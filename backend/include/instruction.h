@@ -153,14 +153,14 @@ Instruction_t* InstructionCreateRegReg  (OpcodeType_t opcode, Register_t reg1, R
 
 //------------------------------------------------------------------//
 
-#ifdef BACKEND_DEBUG
+#ifdef ENCODING_DEBUG
     #define INSTRUCTION_DUMP(instr)                                   \
             BEGIN                                                     \
             InstructionDump((instr), __func__, __FILE__, __LINE__);   \
             END
 #else
     #define INSTRUCTION_DUMP(instr) ;
-#endif /* BACKEND_DEBUG */
+#endif /* ENCODING_DEBUG */
 
 //------------------------------------------------------------------//
 

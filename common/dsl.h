@@ -28,9 +28,9 @@
         FRONTEND_SET_ERROR_(frontend_ctx, LANG_PARSER_SYNTAX_ERROR, node, expected, ##__VA_ARGS__); \
         END
 
-#define IDENTIFIER_(name_index) LangIdentifierNodeCtor(&frontend_ctx->lang_ctx, (name_index))
-#define KEYWORD_(keyword)       LangKeywordNodeCtor   (&frontend_ctx->lang_ctx, (keyword), NULL, NULL)
-#define NUMBER_(number)         LangNumberNodeCtor    (&frontend_ctx->lang_ctx, (number ))
+#define IDENTIFIER_(name_index) LangIdentifierNodeCtor(&frontend_ctx->lang_ctx, frontend_ctx->current_line, (name_index))
+#define KEYWORD_(keyword)       LangKeywordNodeCtor   (&frontend_ctx->lang_ctx, frontend_ctx->current_line, (keyword), NULL, NULL)
+#define NUMBER_(number)         LangNumberNodeCtor    (&frontend_ctx->lang_ctx, frontend_ctx->current_line, (number ))
 
 //==========================================================================================
  
@@ -50,12 +50,12 @@
 #define ISVALUE_(node, number) (node->data.type == TYPE_NUM && \
                                 CompareDoubles(node->data.value.num, (number)) == 0)
 
-#define ADD_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_ADD,     (l), (r))
-#define SUB_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_SUB,     (l), (r))
-#define MUL_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_MUL,     (l), (r))
-#define DIV_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_DIV,     (l), (r))
-#define POW_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, KW_POW,     (l), (r))
-#define UNARY_(keyword, r) LangKeywordNodeCtor(&frontend_ctx->lang_ctx, (keyword), NULL, (r))
+#define ADD_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, frontend_ctx->current_line, KW_ADD,     (l), (r))
+#define SUB_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, frontend_ctx->current_line, KW_SUB,     (l), (r))
+#define MUL_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, frontend_ctx->current_line, KW_MUL,     (l), (r))
+#define DIV_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, frontend_ctx->current_line, KW_DIV,     (l), (r))
+#define POW_(l, r)         LangKeywordNodeCtor(&frontend_ctx->lang_ctx, frontend_ctx->current_line, KW_POW,     (l), (r))
+#define UNARY_(keyword, r) LangKeywordNodeCtor(&frontend_ctx->lang_ctx, frontend_ctx->current_line, (keyword), NULL, (r))
 
 //==========================================================================================
 
@@ -211,11 +211,11 @@
 
 //------------------------------------------------------------------//
 
-#define ASM_VERIFY_(cond)                                 \
+#define EMIT_VERIFY_(cond)                                 \
         BEGIN                                             \
         if (!(cond))                                      \
         {                                                 \
-            WPRINTERR(L"ASM_VERIFY_(%s) dropped", #cond); \
+            WPRINTERR(L"EMIT_VERIFY_(%s) dropped", #cond); \
             return BACKEND_INVALID_AST_INPUT;             \
         }                                                 \
         END
@@ -259,7 +259,7 @@
 #undef SRC_PRINT_KEYWORD_
 
 #undef ASM_PRINT_
-#undef ASM_VERIFY_
+#undef EMIT_VERIFY_
 
 #undef ENCODE_VERIFY_
 

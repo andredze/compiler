@@ -22,7 +22,8 @@ void FrontendSetError(FrontendCtx_t*   frontend_ctx,
     frontend_ctx->error_info = *error_info;
 
     wcsncpy(frontend_ctx->error_info.message, buffer,
-            sizeof(frontend_ctx->error_info.message));
+            sizeof(frontend_ctx->error_info.message) / 
+            sizeof(frontend_ctx->error_info.message[0]));
 
     va_end(message_args);
 }

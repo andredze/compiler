@@ -29,6 +29,8 @@ typedef struct BackendCtx
     size_t      while_labels_count;
 
     BinCode_t   bin_code;
+
+    size_t      current_stack_local_vars_size;
 }
 BackendCtx_t;
 
@@ -51,7 +53,8 @@ typedef enum BackendErr
     BACKEND_BINCODE_BUFFER_ERROR,
 
     BACKEND_CREATE_INSTRUCTION_ERROR,
-    BACKEND_INSTRUCTION_CAN_NOT_BE_ENCODED
+    BACKEND_INSTRUCTION_CAN_NOT_BE_ENCODED,
+    BACKEND_WRONG_ID_TABLE_INDEX
 }
 BackendErr_t;
 
@@ -60,6 +63,19 @@ BackendErr_t;
 BackendErr_t BackendCtxCtor    (BackendCtx_t* backend_ctx);
 BackendErr_t BackendCtxDtor    (BackendCtx_t* backend_ctx);
 BackendErr_t BackendOpenAsmFile(BackendCtx_t* backend_ctx);
+
+BackendErr_t BackendGetFuncIdTableIdData(BackendCtx_t* backend_ctx, 
+                                         size_t        index, 
+                                         IdData_t**    id_data_p);
+
+BackendErr_t BackendGetVarsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst);
+BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst);
+
+BackendErr_t BackendGetVariableOffset(BackendCtx_t* backend_ctx, 
+                                      size_t        id_index, 
+                                      int*          offset);
+
+wchar_t* BackendGetIdName(BackendCtx_t* backend_ctx, TreeNode_t* node);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

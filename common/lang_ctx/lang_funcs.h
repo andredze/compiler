@@ -72,8 +72,6 @@ void LangIdTableGetFunctionVarsAndParams(IdTable_t*   id_table,
                                          size_t*      n_local_vars,
                                          size_t*      n_params);
 
-LangErr_t LangIdTableGetVariableAddress(IdTable_t* id_table, size_t id_index, int* address);
-
 LangErr_t LangGetIdData (IdTable_t* id_table, size_t index, IdData* id_data);
 
 LangErr_t LangIdTableFunctionSetParamsLocals(IdTable_t*   id_table, 

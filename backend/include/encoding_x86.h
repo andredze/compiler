@@ -226,14 +226,14 @@ BinInstruction_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#ifdef BACKEND_DEBUG
+#ifdef ENCODING_DEBUG
     #define BIN_INSTRUCTION_DUMP(bin_instr)                                 \
             BEGIN                                                           \
             BinInstructionDump((bin_instr), __func__, __FILE__, __LINE__);  \
             END
 #else
     #define BIN_INSTRUCTION_DUMP(bin_instr) ;
-#endif /* BACKEND_DEBUG */
+#endif /* ENCODING_DEBUG */
 
 //------------------------------------------------------------------//
 

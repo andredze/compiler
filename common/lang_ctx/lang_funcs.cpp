@@ -391,8 +391,8 @@ LangErr_t LangIsFuncCallArgsCorrect(LangCtx_t* lang_ctx, int func_index, int arg
     }
     if (args_count != (int) id_data.n_params)
     {
-        WPRINTERR(L"Given %d arguments for %ls, but %zu expected",
-                  args_count, id_data.name, id_data.n_params);
+        WPRINTERR(L"Given %d arguments for %ls, but %zu expected (func_index %d)",
+                  args_count, id_data.name, id_data.n_params, func_index);
         return LANG_WRONG_ARGS_COUNT;
     }
 
@@ -607,30 +607,6 @@ LangErr_t LangCountAddresses(LangCtx_t* lang_ctx)
     return LANG_SUCCESS;
 }
 
-// //==========================================================================================
-
-// LangErr_t LangIdTableGetVariableAddress(IdTable_t* id_table, Identifier_t id, int* address)
-// {
-//     assert(id_table);
-//     assert(address);
-
-//     size_t scope_start = id_table->current_function + 1;
-//     size_t local_vars  = id_table->data[id_table->current_function].n_local_vars;
-//     size_t params      = id_table->data[id_table->current_function].n_params;
-//     size_t scope_size  = id_table->current_function + params + local_vars + 1;
-
-//     for (size_t i = scope_start; i < scope_size; i++)
-//     {
-//         if (id_table->data[i].name_index == id)
-//         {
-//             *address = id_table->data[i].addr;
-//             return LANG_SUCCESS;
-//         }
-//     }
-
-//     return LANG_VAR_NOT_DECLARED;
-// }
-
 //==========================================================================================
 
 void LangIdTableGetFunctionVarsAndParams(IdTable_t*   id_table, 
@@ -645,38 +621,6 @@ void LangIdTableGetFunctionVarsAndParams(IdTable_t*   id_table,
     *n_local_vars = id_table->data[id_index].n_local_vars;
     *n_params     = id_table->data[id_index].n_params;
 }
-
-//==========================================================================================
-
-LangErr_t LangIdTableGetVariableAddress(IdTable_t* id_table, size_t id_index, int* address)
-{
-    assert(id_table);
-    assert(address);
-
-    if (id_index >= id_table->size)
-    {
-        return LANG_VAR_NOT_DECLARED;
-    }
-
-    *address = id_table->data[id_index].addr;
-
-    return LANG_SUCCESS;
-}
-
-//     size_t scope_start = id_table->current_function + 1;
-//     size_t table_size  = id_table->size;
-
-//     for (size_t i = scope_start; i < table_size; i++)
-//     {
-//         if (id_table->data[i].name_index == id)
-//         {
-//             *address = id_table->data[i].addr;
-//             return LANG_SUCCESS;
-//         }
-//     }
-
-//     return LANG_VAR_NOT_DECLARED;
-// }
 
 //==========================================================================================
 

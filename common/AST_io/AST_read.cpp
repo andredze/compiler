@@ -7,7 +7,6 @@
 static void SkipSpaces(wchar_t* buffer, ssize_t* pos);
 static int  SkipLetter(wchar_t* buffer, ssize_t* pos, wchar_t letter);
 static void ReadIdTable(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos);
-static LangErr_t ReadGlobalsCount(LangCtx_t* lang_ctx, wchar_t* buffer, ssize_t* pos);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -218,7 +217,7 @@ LangErr_t ReadNode(LangCtx_t* lang_ctx, TreeNode_t** node, wchar_t* buffer, ssiz
         if ((error = ReadNodeData(lang_ctx, buffer, pos, &data)))
             return error;
 
-        *node = TreeNodeCtor(&lang_ctx->tree, data, NULL, NULL, NULL);
+        *node = TreeNodeCtor(&lang_ctx->tree, data, 0, NULL, NULL, NULL);
 
         TREE_CALL_DUMP(lang_ctx, NULL, "DUMP AFTER NODE CTOR in READ AST");
 
@@ -387,7 +386,7 @@ static LangErr_t GetNodeDataNum(TokenData_t* node_data, wchar_t* string_data)
         return LANG_INVALID_AST_INPUT;
     }
 
-    double value = wcstod(string_data, NULL);
+    Number_t value = (Number_t) wcstol(string_data, NULL, 10);
 
     node_data->type         = TYPE_NUM;
     node_data->value.number = value;
@@ -407,7 +406,7 @@ static LangErr_t GetNodeDataId(LangCtx_t* lang_ctx, TokenData_t* node_data, wcha
 
     wchar_t name[MAX_BUFFER_LEN] = {};
 
-    if (swscanf(string_data, L"%zu_%ls", &id_index, string_data) != 2)
+    if (swscanf(string_data, L"%zu_%ls", &id_index, name) != 2)
     {
         WPRINTERR("swscanf in AST read NodeDataId failed");
         return LANG_INVALID_AST_INPUT;
@@ -415,7 +414,7 @@ static LangErr_t GetNodeDataId(LangCtx_t* lang_ctx, TokenData_t* node_data, wcha
 
     LangErr_t error = LANG_SUCCESS;
 
-    if ((error = LangNamesPoolPush(&lang_ctx->names_pool, string_data, &name_index)))
+    if ((error = LangNamesPoolPush(&lang_ctx->names_pool, name, &name_index)))
         return error;
 
     node_data->value.id.name_index = name_index;

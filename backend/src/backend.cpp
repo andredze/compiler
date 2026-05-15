@@ -81,3 +81,113 @@ BackendErr_t BackendCtxDtor(BackendCtx_t* backend_ctx)
 }
 
 //==========================================================================================
+
+BackendErr_t BackendGetFuncIdTableIdData(BackendCtx_t* backend_ctx, 
+                                         size_t        index, 
+                                         IdData_t**    id_data_p)
+{
+    assert(backend_ctx);
+    assert(id_data_p);
+
+    IdTable_t* table = &backend_ctx->lang_ctx.func_id_table;
+
+    if (index >= table->size)
+    {
+        WPRINTERR(L"Index exceeds id_table size");
+        return BACKEND_WRONG_ID_TABLE_INDEX;
+    }
+
+    *id_data_p = &table->data[index];
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t BackendGetVarsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst)
+{
+    assert(backend_ctx);
+
+    BackendErr_t error   = BACKEND_SUCCESS;
+    IdData_t*    id_data = NULL;    
+
+    if ((error = BackendGetFuncIdTableIdData(backend_ctx, func_index, &id_data)))
+    {
+        return error;
+    }
+    if (id_data->type != ID_TYPE_FUNCTION)
+    {
+        WPRINTERR(L"Requested func index %d for %ls doesn't point to a func in table",
+                  func_index, id_data->name);
+        return BACKEND_WRONG_ID_TABLE_INDEX;
+    }
+
+    *dst = id_data->n_local_vars * STACK_ELEMENT_SIZE;
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst)
+{
+    assert(backend_ctx);
+
+    BackendErr_t error   = BACKEND_SUCCESS;
+    IdData_t*    id_data = NULL;    
+
+    if ((error = BackendGetFuncIdTableIdData(backend_ctx, func_index, &id_data)))
+    {
+        return error;
+    }
+    if (id_data->type != ID_TYPE_FUNCTION)
+    {
+        WPRINTERR(L"Requested func index %d for %ls doesn't point to a func in table",
+                  func_index, id_data->name);
+        return BACKEND_WRONG_ID_TABLE_INDEX;
+    }
+
+    *dst = id_data->n_params * STACK_ELEMENT_SIZE;
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+wchar_t* BackendGetIdName(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    assert(backend_ctx);
+    assert(node);
+
+    return LangGetIdName(&backend_ctx->lang_ctx.names_pool, node->data.value.id.name_index);
+}
+
+//==========================================================================================
+
+BackendErr_t BackendGetVariableOffset(BackendCtx_t* backend_ctx, 
+                                      size_t        id_index, 
+                                      int*          offset)
+{
+    assert(backend_ctx);
+    assert(offset);
+
+    BackendErr_t error   = BACKEND_SUCCESS;
+    IdData_t*    id_data = NULL;    
+
+    if ((error = BackendGetFuncIdTableIdData(backend_ctx, id_index, &id_data)))
+    {
+        return error;
+    }
+    if (!((id_data->type == ID_TYPE_VARIABLE) || (id_data->type == ID_TYPE_PARAMETER)))
+    {
+        WPRINTERR(L"Requested var index %d for %ls doesn't point to a var or param in table",
+                  id_index, id_data->name);
+        return BACKEND_WRONG_ID_TABLE_INDEX;
+    }
+
+    *offset = id_data->addr;
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================

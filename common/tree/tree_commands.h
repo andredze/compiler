@@ -45,16 +45,15 @@
 
 TreeErr_t TreeShowLogs(Tree_t* tree);
 
-TreeNode_t* LangKeywordNodeCtor   (LangCtx_t*  lang_ctx, Keyword_t  keyword,
-                                   TreeNode_t* left,     TreeNode_t* right);
+TreeNode_t* LangKeywordNodeCtor(LangCtx_t* lang_ctx, size_t line, Keyword_t keyword,
+                                TreeNode_t* left, TreeNode_t* right);
 
-TreeNode_t* LangIdentifierNodeCtor(LangCtx_t*  lang_ctx, size_t     name_index);
-TreeNode_t* LangNumberNodeCtor    (LangCtx_t*  lang_ctx, Number_t   number  );
+TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t line, size_t name_index);
+TreeNode_t* LangNumberNodeCtor    (LangCtx_t* lang_ctx, size_t line, Number_t number);
 
 TreeErr_t TreeVerify           (const Tree_t* tree);
 TreeErr_t TreeCtor             (Tree_t*     tree);
 
-TreeNode_t* TreeNodeCtor       (Tree_t* tree, TokenData_t data, TreeNode_t* left, TreeNode_t* right, TreeNode_t* parent);
 TreeErr_t   TreeGetData        (TreeNode_t* node, TokenType_t type, TokenData_t data);
 TreeNode_t* TreeCopySubtree    (Tree_t* dest_tree, TreeNode_t* node, TreeNode_t* parent);
 TreeErr_t   TreeDtor           (Tree_t*     tree);
@@ -66,6 +65,13 @@ TreeErr_t TreeSubtreesDtor     (TreeNode_t*  node    , Tree_t* tree);
 TreeErr_t TreeLeftSubtreeDtor  (TreeNode_t*  node    , Tree_t* tree);
 TreeErr_t TreeRightSubtreeDtor (TreeNode_t*  node    , Tree_t* tree);
 TreeErr_t TreeSubtreeDtor      (TreeNode_t** node_ptr, Tree_t* tree);
+
+TreeNode_t* TreeNodeCtor(Tree_t*        tree,
+                         TreeElem_t     data,
+                         size_t         line,
+                         TreeNode_t*    left,
+                         TreeNode_t*    right,
+                         TreeNode_t*    parent);
 
 #ifdef TREE_DEBUG
 TreeErr_t TreeCheck(LangCtx_t*  lang_ctx,

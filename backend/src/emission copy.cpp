@@ -111,11 +111,11 @@ BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* 
     assert(backend_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_ADD) ||
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_ADD) ||
                 IS_KEYWORD_(node, KW_SUB));
 
-    ASM_VERIFY_(node->left );
-    ASM_VERIFY_(node->right);
+    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->right);
 
     // ASM_PRINT_(L"; math operation: %ls\n\n", 
     //            KEYWORD_CASES_TABLE[node->data.value.opcode].asm_name);
@@ -158,9 +158,9 @@ static LangErr_t AssembleNumber(LangCtx_t* lang_ctx, TreeNode_t* node)
 {
     assert(node);
 
-    ASM_VERIFY_(IS_NUMBER_(node));
-    ASM_VERIFY_(node->left  == NULL);
-    ASM_VERIFY_(node->right == NULL);
+    EMIT_VERIFY_(IS_NUMBER_(node));
+    EMIT_VERIFY_(node->left  == NULL);
+    EMIT_VERIFY_(node->right == NULL);
 
     ASM_PRINT_(L"; number: %lg\n", node->data.value.number);
     ASM_PRINT_(L"PUSH %lg\n", node->data.value.number);
@@ -201,9 +201,9 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_VARIABLE_(node));
-    ASM_VERIFY_(node->left  == NULL);
-    ASM_VERIFY_(node->right == NULL);
+    EMIT_VERIFY_(IS_VARIABLE_(node));
+    EMIT_VERIFY_(node->left  == NULL);
+    EMIT_VERIFY_(node->right == NULL);
 
     IdTable_t* id_table = NULL;
 
@@ -265,9 +265,9 @@ static LangErr_t AssembleVariableDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_VAR_DECL_(node));
-    ASM_VERIFY_(node->left  == NULL);
-    ASM_VERIFY_(node->right == NULL);
+    EMIT_VERIFY_(IS_VAR_DECL_(node));
+    EMIT_VERIFY_(node->left  == NULL);
+    EMIT_VERIFY_(node->right == NULL);
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -341,8 +341,8 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
 
     int last_cur_addr = lang_ctx->cur_addr;
 
-    ASM_VERIFY_(IS_FUNC_DECL_(node));
-    ASM_VERIFY_(node->right != NULL);
+    EMIT_VERIFY_(IS_FUNC_DECL_(node));
+    EMIT_VERIFY_(node->right != NULL);
 
     if (lang_ctx->is_in_function)
     {
@@ -417,7 +417,7 @@ static LangErr_t AssembleFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_FUNC_CALL_(node));
+    EMIT_VERIFY_(IS_FUNC_CALL_(node));
 
     size_t id_index = 0;
 
@@ -543,8 +543,8 @@ LangErr_t AssembleReturn(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_RETURN));
-    ASM_VERIFY_(node->right);
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_RETURN));
+    EMIT_VERIFY_(node->right);
 
     ASM_PRINT_(L"; return\n\n");
 
@@ -585,7 +585,7 @@ LangErr_t AssembleParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_PARAMS_SEPARATOR));
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_PARAMS_SEPARATOR));
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -635,8 +635,8 @@ LangErr_t AssembleCmdSeparator(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_CMD_SEPARATOR));
-    ASM_VERIFY_(node->left);
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_CMD_SEPARATOR));
+    EMIT_VERIFY_(node->left);
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -667,9 +667,9 @@ LangErr_t AssembleIf(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_IF_LHS));
-    ASM_VERIFY_(node->left );
-    ASM_VERIFY_(node->right);
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_IF_LHS));
+    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->right);
 
     ASM_PRINT_(L"; if\n");
     ASM_PRINT_(L"; ----------------condition----------------\n\n");
@@ -705,9 +705,9 @@ LangErr_t AssembleWhile(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_WHILE));
-    ASM_VERIFY_(node->left );
-    ASM_VERIFY_(node->right);
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_WHILE));
+    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->right);
 
     ASM_PRINT_(L"; while\n");
 
@@ -746,9 +746,9 @@ static LangErr_t AssembleCondition(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_TYPE_(node, TYPE_KEYWORD));
-    ASM_VERIFY_(node->left );
-    ASM_VERIFY_(node->right);
+    EMIT_VERIFY_(IS_TYPE_(node, TYPE_KEYWORD));
+    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->right);
 
     LangErr_t error = LANG_SUCCESS;
 
@@ -770,9 +770,9 @@ LangErr_t AssembleAssignment(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_ASSIGNMENT));
-    ASM_VERIFY_(node->left && IS_VARIABLE_(node->left));
-    ASM_VERIFY_(node->right);
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_ASSIGNMENT));
+    EMIT_VERIFY_(node->left && IS_VARIABLE_(node->left));
+    EMIT_VERIFY_(node->right);
 
     ASM_PRINT_(L"; assignment:\n\n");
 
@@ -828,13 +828,13 @@ LangErr_t AssembleUnaryOperation(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_INPUT ) ||
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_INPUT ) ||
                 IS_KEYWORD_(node, KW_OUTPUT) ||
                 IS_KEYWORD_(node, KW_DRAW  ) ||
                 IS_KEYWORD_(node, KW_SQRT  ));
 
-    ASM_VERIFY_(node->left == NULL);
-    ASM_VERIFY_(node->right);
+    EMIT_VERIFY_(node->left == NULL);
+    EMIT_VERIFY_(node->right);
 
     ASM_PRINT_(L"; output\n\n");
 
@@ -857,10 +857,10 @@ LangErr_t AssembleInput(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_INPUT));
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_INPUT));
 
-    ASM_VERIFY_(node->left == NULL);
-    ASM_VERIFY_(node->right && IS_VARIABLE_(node->right));
+    EMIT_VERIFY_(node->left == NULL);
+    EMIT_VERIFY_(node->right && IS_VARIABLE_(node->right));
 
     ASM_PRINT_(L"; input\n\n", lang_ctx->names_pool.data[node->right->data.value.id]);
     ASM_PRINT_(L"%ls\n", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
@@ -883,9 +883,9 @@ LangErr_t AssembleHlt(LangCtx_t* lang_ctx, TreeNode_t* node)
     assert(lang_ctx);
     assert(node);
 
-    ASM_VERIFY_(IS_KEYWORD_(node, KW_ABORT));
-    ASM_VERIFY_(node->left  == NULL);
-    ASM_VERIFY_(node->right == NULL);
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_ABORT));
+    EMIT_VERIFY_(node->left  == NULL);
+    EMIT_VERIFY_(node->right == NULL);
 
     ASM_PRINT_(L"; halt\n\n");
 

@@ -73,7 +73,7 @@ TreeErr_t TreeShowLogs(Tree_t* tree)
 
 //==========================================================================================
 
-TreeNode_t* LangKeywordNodeCtor(LangCtx_t* lang_ctx, Keyword_t keyword, 
+TreeNode_t* LangKeywordNodeCtor(LangCtx_t* lang_ctx, size_t line, Keyword_t keyword,
                                 TreeNode_t* left, TreeNode_t* right)
 {
     assert(lang_ctx != NULL);
@@ -83,12 +83,12 @@ TreeNode_t* LangKeywordNodeCtor(LangCtx_t* lang_ctx, Keyword_t keyword,
     token_data.type          = TYPE_KEYWORD;
     token_data.value.keyword = keyword;
 
-    return TreeNodeCtor(&lang_ctx->tree, token_data, left, right, NULL);
+    return TreeNodeCtor(&lang_ctx->tree, token_data, line, left, right, NULL);
 }
 
 //==========================================================================================
 
-TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t name_index)
+TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t line, size_t name_index)
 {
     assert(lang_ctx != NULL);
 
@@ -97,12 +97,12 @@ TreeNode_t* LangIdentifierNodeCtor(LangCtx_t* lang_ctx, size_t name_index)
     token_data.type                = TYPE_ID;
     token_data.value.id.name_index = name_index;
 
-    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
+    return TreeNodeCtor(&lang_ctx->tree, token_data, line, NULL, NULL, NULL);
 }
 
 //==========================================================================================
 
-TreeNode_t* LangNumberNodeCtor(LangCtx_t* lang_ctx, Number_t number)
+TreeNode_t* LangNumberNodeCtor(LangCtx_t* lang_ctx, size_t line, Number_t number)
 {
     assert(lang_ctx != NULL);
 
@@ -111,7 +111,7 @@ TreeNode_t* LangNumberNodeCtor(LangCtx_t* lang_ctx, Number_t number)
     token_data.type         = TYPE_NUM;
     token_data.value.number = number;
 
-    return TreeNodeCtor(&lang_ctx->tree, token_data, NULL, NULL, NULL);
+    return TreeNodeCtor(&lang_ctx->tree, token_data, line, NULL, NULL, NULL);
 }
 
 //==========================================================================================
@@ -124,7 +124,7 @@ TreeErr_t TreeCtor(Tree_t* tree)
         return TREE_NULL;
     }
 
-    tree->dummy = TreeNodeCtor(tree, {TYPE_NUM, { .number = 0 }}, NULL, NULL, NULL);
+    tree->dummy = TreeNodeCtor(tree, {TYPE_NUM, { .number = 0 }}, 0, NULL, NULL, NULL);
 
     if (tree->dummy == NULL)
     {
@@ -145,6 +145,7 @@ TreeErr_t TreeCtor(Tree_t* tree)
 
 TreeNode_t* TreeNodeCtor(Tree_t*        tree,
                          TreeElem_t     data,
+                         size_t         line,
                          TreeNode_t*    left,
                          TreeNode_t*    right,
                          TreeNode_t*    parent)
@@ -165,7 +166,7 @@ TreeNode_t* TreeNodeCtor(Tree_t*        tree,
     // DPRINTF(L"Allocated %p\n", node);
 
     node->parent = parent;
-
+    node->line   = line;
     node->data   = data;
     node->left   = left;
     node->right  = right;
@@ -188,7 +189,7 @@ TreeNode_t* TreeCopySubtree(Tree_t* dest_tree, TreeNode_t* node, TreeNode_t* par
         return NULL;
     }
 
-    return TreeNodeCtor(dest_tree, node->data,
+    return TreeNodeCtor(dest_tree, node->data, node->line,
                         TreeCopySubtree(dest_tree, node->left, node),
                         TreeCopySubtree(dest_tree, node->right, node),
                         parent);

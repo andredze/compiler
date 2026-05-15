@@ -91,10 +91,10 @@ static TreeNode_t* ParseProgram(FrontendCtx_t* frontend_ctx)
 
     TreeNode_t* cur_token = ParseBody(frontend_ctx);
 
-    PARSER_DUMP_(cur_token, L"program");
-
     if (cur_token == NULL)
         return NULL;
+
+    PARSER_DUMP_(cur_token, L"program");
 
     if (StackSize(&frontend_ctx->tokens) != frontend_ctx->cur_token_index)
     {
@@ -127,9 +127,13 @@ static TreeNode_t* ParseBody(FrontendCtx_t* frontend_ctx)
 
         if (separator == NULL)
         {
-            SET_PARSER_ERROR_(statement, L"Missing \"%ls\"", GetKeywordName(KW_CMD_SEPARATOR));
-            // WPRINTERR("There should be a cmd separator after statement, cur_tok_ind = %zu",
-            //             frontend_ctx->cur_token_index);
+            SET_PARSER_ERROR_(statement, L"Missing \"%ls\"", 
+                                         GetKeywordName(KW_CMD_SEPARATOR));
+
+            TreeNode_t* cur_tok = FrontendGetCurrentToken(frontend_ctx);
+
+            WPRINTERR(L"Missing \"%ls\", line %d", GetKeywordName(KW_CMD_SEPARATOR),
+                      cur_tok->line);
             // PARSER_DUMP_(lang_ctx->tokens.data[frontend_ctx->cur_token_index - 1],
             //                 L"expected to have a separator after");
             return NULL;
@@ -1127,7 +1131,7 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
     frontend_ctx->cur_token_index++;
 
     int func_id_index = LangIdTableGetFuncTableIndex(&frontend_ctx->lang_ctx.func_id_table, 
-                                                     function_name->data.value.id.id_index);
+                                                     function_name->data.value.id.name_index);
 
     if (func_id_index == -1)
     {
@@ -1156,7 +1160,9 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
     function_name->left = ParseFunctionArguments(frontend_ctx, &args_count);
 
     WDPRINTF(L"args_count for func %ls = %d\n", 
-             frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id.name_index], args_count);
+             LangGetIdName(&frontend_ctx->lang_ctx.names_pool, 
+                           function_name->data.value.id.name_index), 
+             args_count);
 
     if (LangIsFuncCallArgsCorrect(&frontend_ctx->lang_ctx, func_id_index, args_count))
     {

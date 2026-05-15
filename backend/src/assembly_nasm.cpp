@@ -22,7 +22,9 @@ void PrintAsm(FILE* asm_file, const wchar_t* format_string, ...)
     
     va_end(args);
 
+#ifdef BACKEND_DEBUG
     wvfcprintf(stderr, GREEN, format_string, args_copy);
+#endif /* BACKEND_DEBUG */
 
     va_end(args_copy);
 }

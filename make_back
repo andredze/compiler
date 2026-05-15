@@ -66,6 +66,10 @@ ifdef TEST_DSL
 	CXXFLAGS += -D TEST_DSL
 endif
 
+ifdef ENCODING
+	CXXFLAGS += -D ENCODING_DEBUG
+endif
+
 all: back
 
 back: $(BACKEND_TARGET)

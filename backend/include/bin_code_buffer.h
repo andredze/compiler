@@ -33,14 +33,14 @@ BinCodeErr_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-#ifdef BACKEND_DEBUG
+#ifdef ENCODING_DEBUG
     #define BIN_CODE_DUMP(bin_code_)                                    \
             BEGIN                                                       \
             BinCodeDump((bin_code_), __func__, __FILE__, __LINE__);     \
             END
 #else
     #define BIN_CODE_DUMP(bin_code_) ;
-#endif /* BACKEND_DEBUG */
+#endif /* ENCODING_DEBUG */
 
 //------------------------------------------------------------------//
 

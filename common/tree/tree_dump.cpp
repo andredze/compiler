@@ -333,7 +333,14 @@ TreeErr_t GraphDump(LangCtx_t*            lang_ctx,  TreeNode_t*    node,
 
     if (fp == NULL)
     {
-        WPRINTERR("fp is NULL");
+        WPRINTERR(L"fp is NULL (error %s (code %d))\n"
+                  L"TREE DUMP called from %s at %s:%d\n\n",
+                  TREE_STR_ERRORS[dump_info->error],
+                  dump_info->error,
+                  dump_info->func,
+                  dump_info->file,
+                  dump_info->line);
+
         return TREE_SUCCESS;
     }
 
