@@ -1,3 +1,5 @@
+ID_TABLE 1 общий для main и для funcs
+
 0) fix: func call args and func params наоборот порядок
     + какая то хуита в целом когда вызов функции внутри функции
     (мб если сделать пункты 1 и 2 станет понятнее)
@@ -14,6 +16,8 @@ DRIVER
 сделать аргументы с помощью getopt и --help
 
 ссылки на источники сохранить когда буду байтики писать вместо асма
+// intel manual ISA (https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
+// OSDev (https://wiki.osdev.org/X86-64_Instruction_Encoding)
 
 // сделать plt в заранее фиксированном месте
 // на насме реализовать вспомогательные функции как библиотеку (printf, scanf, draw)
@@ -22,3 +26,42 @@ DRIVER
 GOT !!!
 
 for elf header /usr/include/elf.h (заинклюдить)
+
+1. id_table
+2. emitter basic
+3. rel table
+4. emitter full
+5. elf header for exec
+6. linking with "my lib":
+   draw, printf, scanf in nasm
+   (place in GOT?)
+7. fix frontend error messages
+8. make 1st sem backend
+
+Изменить строение symbol table (id_table)
+ - в структуру добавить current_function (or scope)
+   потом в зависимости от params+local_vars count идти по таблице 
+   и проверять идентификатор. таким образом буду находить переменные
+   чтобы call func иду с 0 по всей таблице
+   изначально сделать func main и туда пихнуть то что щас в global_vars_size
+   Ctor, Dtor, Dump, SetParam, SetVar, SetFunc,
+   GetVarAddr(), GetFuncAddr()
+
+   Потом в бэкенде можно будет добавить поле для меток?
+   // не хуйня, лучше сделать отдельную rel_table в которой будут
+   // высчитываться rel_addr + имена меток для асма для функций и jmp
+   // также мб индекс чтобы потом находить куда делать джамп и сравнивать по индексу
+   // а не стркмп!!!
+
+    ElfHeader
+
+1) Сделать единую таблицу для всех идентификаторов с больше полей в структуре элемента
+   из нее можно убрать name потому что ее можно брать из names_pool? либо оставить для удобства
+2) enum с видом идентификаторов
+3) интерфейс для работы с таблицей
+4) метод чтобы положить параметр, функцию, переменную
+5) для функции колво параметров и колво переменных
+6) обращение к элементу таблицы по id?
+7) переменная по типу tail/head которая указывает на текущую функцию 
+   чтобы достать все параметры и переменные
+8) 

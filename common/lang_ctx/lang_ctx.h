@@ -81,8 +81,6 @@ typedef struct LangCtx
 
     IdTable_t   main_id_table;
     IdTable_t   func_id_table;
-
-    size_t      global_vars_count;
 }
 LangCtx_t;
 

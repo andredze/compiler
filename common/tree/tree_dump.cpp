@@ -154,42 +154,62 @@ TreeErr_t TreeDump(LangCtx_t*              lang_ctx,
 
 //==========================================================================================
 
-LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* fmt, ...)
+LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx, 
+                          IdTable_t*     id_table, 
+                          const wchar_t* fmt,
+                          ...)
 {
-    va_list args = {};
-    va_start(args, fmt);
+    assert(lang_ctx);
+    assert(id_table);
 
     FILE* fp = lang_ctx->tree.debug.fp;
 
-    fwprintf(fp, L"<pre><h4><font color=blue>");
+    va_list args = {};
 
-    // vfprintf(fp, fmt, args);
+    va_start(args, fmt);
 
-    fwprintf(fp, L"</h4></font>");
+    fwprintf(fp, L"<pre><h4><font color=blue>"
+                 L" Dump IdTable_t %p"
+                 L" Message: ",
+                 id_table);
 
-    fwprintf(fp, L"vars_table [%p]:\n\n"
-                L"size     = %zu\n"
-                L"capacity = %zu\n\n",
-                id_table->data,
-                id_table->size,
-                id_table->capacity);
-
-    fwprintf(fp, L"index: ");
-
-    for (size_t i = 0; i <id_table->capacity; i++)
-    {
-        fwprintf(fp, L"%12zu |", i);
-    }
-
-    fwprintf(fp, L"\nnames: ");
-
-    for (size_t i = 0; i < id_table->capacity; i++)
-    {
-        fwprintf(fp, L"%12ls |", id_table->data[i]);
-    }
+    vfwprintf(fp, fmt, args);
 
     va_end(args);
 
+    fwprintf(fp, L"</h4></font>\n");
+
+    fwprintf(fp,
+             L".size     = %zu\n"
+             L".cap      = %zu\n"
+             L".data     = %p\n"
+             L".cur_func = %zu\n",
+             id_table->size,
+             id_table->capacity,
+             id_table->data,
+             id_table->current_function);
+
+    IdData_t* id_data = NULL;
+
+    fwprintf(fp, L"index  {id,    name,          type,        n_local_vars, n_params, addr }\n");
+
+    for (size_t i = 0; i < id_table->size; i++)
+    {
+        id_data = &id_table->data[i];
+
+        fwprintf(fp, L"[ %-2d]: {%3zu, %10ls, %17s,             %2zu,         %2zu,     %2d  }\n",
+                     i,
+                     id_data->name_index,
+                     id_data->name,
+                     ID_TYPE_NAMES[id_data->type],
+                     id_data->n_local_vars,
+                     id_data->n_params,
+                     id_data->addr);
+    }
+
+    fwprintf(fp, L"---------------------------------------"
+                 L"---------------------------------------\n");
+    
     fflush(fp);
 
     return LANG_SUCCESS;
@@ -211,10 +231,6 @@ TreeErr_t vTreeDump(LangCtx_t*              lang_ctx,
     FILE*   fp   = lang_ctx->tree.debug.fp;
 
     fwprintf(fp, L"<pre>\n<h3><font color=blue>");
-
-    //FIXME -
-    // vfprintf(fp, fmt, args);
-
     fwprintf(fp, L"</font></h3>");
 
     fwprintf(fp, dump_info->error == TREE_SUCCESS ?
@@ -389,12 +405,23 @@ TreeErr_t GraphDump(LangCtx_t*            lang_ctx,  TreeNode_t*    node,
     if ((error = TreeConvertGraphFile(lang_ctx)))
         return error;
 
-    int image_width = tree->size <= 5 ? 25 : 50;
+    int image_width = 50;
 
-    fwprintf(debug_data->fp, L"\n<img src = svg/%ls.svg width = %d%%>\n\n"
-                             L"============================================================="
-                             L"=============================================================\n\n",
-                             debug_data->graph_file_name, image_width);
+    if ((tree->size <= 5) || 
+        ((node->left == NULL) && 
+         (node->right == NULL)))
+    {
+        image_width = 25;
+    }
+
+    LangIdTableDump(lang_ctx, &lang_ctx->main_id_table, L"main id table");
+    LangIdTableDump(lang_ctx, &lang_ctx->func_id_table, L"func id table");
+
+    fwprintf(debug_data->fp, 
+             L"\n<img src = svg/%ls.svg width = %d%%>\n\n"
+             L"============================================================="
+             L"=============================================================\n\n",
+             debug_data->graph_file_name, image_width);
 
     return TREE_SUCCESS;
 }

@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
         if (ASTReadData(&lang_ctx, argv[1]))
             break;
 
-        LangIdTableDump(&lang_ctx.main_id_table);
+        LangIdTableConsoleDump(&lang_ctx.main_id_table);
 
         if (LangOpenAsmFile(&lang_ctx))
             break;

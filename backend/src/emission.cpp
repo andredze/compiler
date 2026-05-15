@@ -75,23 +75,26 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
     switch (node->data.type)
     {
         case TYPE_NUM:
-            // return EmitNumber(backend_ctx, node);
+            return EmitNumber(backend_ctx, node);
 
         case TYPE_ID:
             return BACKEND_INVALID_AST_INPUT;
 
         case TYPE_KEYWORD:
-            if (KEYWORD_CASES_TABLE[node->data.value.keyword].emit_function == NULL)
+            KeywordCase_t  kw_case   = KEYWORD_CASES_TABLE[node->data.value.keyword];
+            EmitFunction_t emit_func = kw_case.emit_function;
+
+            if (emit_func == NULL)
             {
-                WPRINTERR("Error: keyword %ls doesn't support assembling",
-                          KEYWORD_CASES_TABLE[node->data.value.keyword].name);
+                WPRINTERR(L"Error: keyword %ls doesn't support assembling",
+                          kw_case.name);
 
                 return BACKEND_CANT_EMIT_KEYWORD;
             }
-            return KEYWORD_CASES_TABLE[node->data.value.keyword].emit_function(backend_ctx, node);
+            return emit_func(backend_ctx, node);
 
         case TYPE_VAR:
-            // return EmitVariable(backend_ctx, node);
+            return EmitVariable(backend_ctx, node);
 
         case TYPE_VAR_DECL:
             // return EmitVariableDeclaration(backend_ctx, node);
@@ -111,6 +114,53 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 //==========================================================================================
 
+static BackendErr_t EmitVariable(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    assert(backend_ctx);
+    assert(node);
+
+    ASM_VERIFY_(IS_VARIABLE_(node));
+    ASM_VERIFY_(node->left  == NULL);
+    ASM_VERIFY_(node->right == NULL);
+    
+    int var_offset = 0;
+
+    if (LangIdTableGetAddress(&backend_ctx->lang_ctx, 
+                              node->data.value.id, 
+                              &var_offset))
+    {
+        return BACKEND_LANG_ERROR;
+    }
+
+    MOV_REG_MEM_DISP_(REG_RDX, REG_RBP, var_offset);
+
+    PUSH_REG_(REG_RDX);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitNumber(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    assert(backend_ctx);
+    assert(node);
+
+    ASM_VERIFY_(IS_NUMBER_(node));
+    ASM_VERIFY_(node->left  == NULL);
+    ASM_VERIFY_(node->right == NULL);
+
+    ASM_COMMENT_(L"number");
+
+    MOV_REG_IMM_(REG_RDX, node->data.value.number);
+    
+    PUSH_REG_(REG_RDX);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
 BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
@@ -122,8 +172,8 @@ BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* 
     ASM_VERIFY_(node->left );
     ASM_VERIFY_(node->right);
 
-    // ASM_PRINT_(L"; math operation: %ls\n\n", 
-    //            KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
+    ASM_COMMENT_(L"math expression %ls", 
+                 KEYWORD_CASES_TABLE[node->data.value.keyword].name);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
@@ -132,72 +182,98 @@ BackendErr_t EmitMathExpressionOperation(BackendCtx_t* backend_ctx, TreeNode_t* 
         return error;
     }
     if ((error = EmitNode(backend_ctx, node->right)))
-    {    
+    {
         return error;
     }
 
-    // POP_IN_REG(REG_RBX); // right node
-    // POP_IN_REG(REG_RAX); // left node
+    POP_REG_(REG_RBX); // right node
+    POP_REG_(REG_RAX); // left  node
     
     if (node->data.type == KW_ADD)
     {
-        // ADD_REG_TO_REG(REG_RAX, REG_RBX);
+        ADD_REG_REG_(REG_RAX, REG_RBX);
     }
     else
     {
-        // SUB_REG_FROM_REG(REG_RAX, REG_RBX);
+        SUB_REG_REG_(REG_RAX, REG_RBX);
     }
-
-    // ASM_PRINT_(L"pop rbx");
-    // ASM_PRINT_(L"pop rcx");
-    // ASM_PRINT_(L"add rcx, rbx");
-    // ASM_PRINT_(L"%ls\n", KEYWORD_CASES_TABLE[node->data.value.keyword].asm_name);
-    // ASM_PRINT_(L"\n");
 
     return BACKEND_SUCCESS;
 }
 
-BackendErr_t EmitIf             (BackendCtx_t* backend_ctx, TreeNode_t* node)
+//==========================================================================================
+
+BackendErr_t EmitIf(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitAssignment     (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitMathOperation  (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitUnaryOperation (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitInput          (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
 // BackendErr_t EmitElse           (BackendCtx_t* backend_ctx, TreeNode_t* node);
+
+//==========================================================================================
+
 BackendErr_t EmitWhile          (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitCmdSeparator   (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitParamsSeparator(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitHlt            (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitReturn         (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;
 }
+
+//==========================================================================================
+
 BackendErr_t EmitPoint          (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     return BACKEND_SUCCESS;

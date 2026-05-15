@@ -152,7 +152,7 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
     {
         WDPRINTF(L"assemble var %ls func table dump:\n",
                 lang_ctx->names_pool.data[node->data.value.id]);
-        LangIdTableDump(&lang_ctx->func_id_table);
+        LangIdTableConsoleDump(&lang_ctx->func_id_table);
         ASM_PRINT_(L"; rbp + %zu (local address)\n", addr);
         ASM_PRINT_(L"PUSHR RGX ; rbp\n");
         ASM_PRINT_(L"PUSH %zu ; local addr\n", addr);
@@ -162,7 +162,7 @@ static LangErr_t AssembleVariableBody(LangCtx_t* lang_ctx, TreeNode_t* node)
     {
         WDPRINTF(L"assemble var %ls main table dump:\n",
                 lang_ctx->names_pool.data[node->data.value.id]);
-        LangIdTableDump(&lang_ctx->main_id_table);
+        LangIdTableConsoleDump(&lang_ctx->main_id_table);
         ASM_PRINT_(L"PUSH %zu ; global addr\n", addr);
     }
 
@@ -265,7 +265,7 @@ static LangErr_t AssembleFunctionDeclaration(LangCtx_t* lang_ctx, TreeNode_t* no
 
     size_t table_index = 0;
 
-    if (!LangGetIdInTable(&lang_ctx->main_id_table, node->data.value.id, &table_index))
+    if (!LangIdTableGetIdIndex(&lang_ctx->main_id_table, node->data.value.id, &table_index))
     {
         WPRINTERR(L"Error: declared function is not in table %ls",
                     lang_ctx->names_pool.data[node->data.value.id]);
@@ -334,7 +334,7 @@ static LangErr_t AssembleFunctionCall(LangCtx_t* lang_ctx, TreeNode_t* node)
 
     size_t id_index = 0;
 
-    if (!LangGetIdInTable(&lang_ctx->main_id_table, node->data.value.id, &id_index))
+    if (!LangIdTableGetIdIndex(&lang_ctx->main_id_table, node->data.value.id, &id_index))
     {
         WPRINTERR(L"Syntax error: function %ls was not declared",
                     lang_ctx->names_pool.data[node->data.value.id]);

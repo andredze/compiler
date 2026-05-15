@@ -65,14 +65,10 @@ LangErr_t SrcParamsSeparator(LangCtx_t* lang_ctx, TreeNode_t* node);
 #define SET_KW_CASE_(code,          repeat_times,   name,                                     ast_format,   emit_function,                          src_function) \
         [(code)] = {(code), #code, (repeat_times), (name), sizeof(name) / sizeof(*name) - 1, (ast_format), (LangErr_t (*)(LangCtx_t*, TreeNode_t*))(src_function)}
 
-#elif defined(FRONTEND)
+#else // defined(FRONTEND)
 
 #define SET_KW_CASE_(code,          repeat_times,   name,                                     ast_format, asm_function, src_function) \
         [(code)] = {(code), #code, (repeat_times), (name), sizeof(name) / sizeof(*name) - 1, (ast_format) }
-
-#else
-
-#define SET_KW_CASE_(code, repeat_times, name, ast_format, asm_function, src_function) ;
 
 #endif /* FRONTEND */
 

@@ -38,7 +38,8 @@ LangErr_t ASTWriteData(LangCtx_t* lang_ctx)
     fwprintf(fp, L"global variables: %zu\n", 
              LangIdTableCountVars(&lang_ctx->main_id_table));
 
-    ASTWriteIdTable(lang_ctx, fp);
+    ASTWriteIdTable(lang_ctx, &lang_ctx->main_id_table, fp);
+    ASTWriteIdTable(lang_ctx, &lang_ctx->func_id_table, fp);
 
     fclose(fp);
 
@@ -61,12 +62,11 @@ static void ASTWriteIdData(LangCtx_t* lang_ctx, IdData_t* id_data, FILE* fp);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-static void ASTWriteIdTable(LangCtx_t* lang_ctx, FILE* fp)
+static void ASTWriteIdTable(LangCtx_t* lang_ctx, IdTable_t* id_table, FILE* fp)
 {
     assert(fp);
     assert(lang_ctx);
-
-    IdTable_t* id_table = &lang_ctx->main_id_table;
+    assert(id_table);
 
     for (size_t i = 0; i < id_table->size; i++)
     {
@@ -85,12 +85,14 @@ static void ASTWriteIdData(LangCtx_t* lang_ctx, IdData_t* id_data, FILE* fp)
     assert(id_data);
     assert(fp);
 
-    // name_index, name, memory_needed, n_params
-    fwprintf(fp, L"[%zu, \"%ls\", %zu, %zu]\n",
+    // name_index, name, id_type, n_local_vars, n_params, addr
+    fwprintf(fp, L"[%zu, %ls, %d, %zu, %zu, %d]\n",
                  id_data->name_index,
-                 lang_ctx->names_pool.data[id_data->name_index],
-                 id_data->memory_needed,
-                 id_data->n_params);
+                 id_data->name,
+                 id_data->type,
+                 id_data->n_local_vars,
+                 id_data->n_params,
+                 id_data->addr);
 }
 
 //==========================================================================================

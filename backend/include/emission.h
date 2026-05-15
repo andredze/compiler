@@ -25,4 +25,8 @@ BackendErr_t EmitPoint          (BackendCtx_t* backend_ctx, TreeNode_t* node);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+typedef BackendErr_t (*EmitFunction_t) (BackendCtx_t* backend_ctx, TreeNode_t* node);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 #endif /* EMISSION_H */

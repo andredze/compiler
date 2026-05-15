@@ -68,6 +68,11 @@ typedef struct EdgeDumpParams
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx, 
+                          IdTable_t*     id_table, 
+                          const wchar_t* fmt,
+                          ...);
+
 TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...);
 
 LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* fmt, ...);
