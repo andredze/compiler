@@ -23,8 +23,7 @@ static BackendErr_t EmitFunctionArguments   (BackendCtx_t* backend_ctx, TreeNode
 
 static BackendErr_t EmitAndPushLabel(BackendCtx_t* backend_ctx,
                                      wchar_t*      label,
-                                     int           id_table_index,
-                                     size_t*       rel_table_index_dst);
+                                     int           id_table_index);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -39,7 +38,7 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         L"global %ls\n\n"
         L"default rel\n\n"
         L"section .text\n\n",
-        NASM_ENTRY_LABEL
+        MAIN_ENTRY_LABEL
     );
 
     if ((error = EmitFunctions(backend_ctx, backend_ctx->lang_ctx.tree.dummy->right)))
@@ -75,8 +74,7 @@ BackendErr_t EmitExit(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 static BackendErr_t EmitAndPushLabel(BackendCtx_t* backend_ctx, 
                                      wchar_t*      label, 
-                                     int           id_table_index,
-                                     size_t*       rel_table_index_dst)
+                                     int           id_table_index)
 {
     assert(backend_ctx);
     assert(label);
@@ -86,11 +84,11 @@ static BackendErr_t EmitAndPushLabel(BackendCtx_t* backend_ctx,
 
     BackendErr_t error = BACKEND_SUCCESS;
     
-    if ((error = RelTablePush(&backend_ctx->rel_table,
-                              label,
-                              BinCodeGetCurrentPos(&backend_ctx->bin_code),
-                              id_table_index,
-                              rel_table_index_dst)))
+    if ((error = RelTablePushInnerFuncDecl(&backend_ctx->rel_table,
+                                           (size_t) id_table_index,
+                                           label,
+                                           BinCodeGetCurrentPos(&backend_ctx->bin_code),
+                                           REL_FUNC_LOCAL)))
     {
         return error;
     }
@@ -116,7 +114,9 @@ static BackendErr_t EmitMain(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
     BackendErr_t error = BACKEND_SUCCESS;
     
-    ASM_PRINT_(L"\n%ls:\n", NASM_ENTRY_LABEL);
+    ASM_PRINT_(L"\n%ls:\n", MAIN_ENTRY_LABEL);
+
+    size_t main_start_bin_code_pos = BinCodeGetCurrentPos(&backend_ctx->bin_code);
 
     // 0 table element is main
     size_t main_vars_size = 0;
@@ -146,6 +146,17 @@ static BackendErr_t EmitMain(BackendCtx_t* backend_ctx, TreeNode_t* node)
     {
         return error;
     }
+
+    if ((error = RelTablePushInnerFuncDecl(&backend_ctx->rel_table,
+                                           0,
+                                           MAIN_ENTRY_LABEL,
+                                           main_start_bin_code_pos,
+                                           REL_FUNC_GLOBAL)))
+    {
+        return error;
+    }
+
+    REL_TABLE_DUMP_(L"GLOBAL: %ls", MAIN_ENTRY_LABEL);
 
     DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;
@@ -265,8 +276,7 @@ static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_
 
     if ((error = EmitAndPushLabel(backend_ctx,
                                   BackendGetIdName(backend_ctx, node),
-                                  (int) node->data.value.id.id_index,
-                                  NULL)))
+                                  (int) node->data.value.id.id_index)))
     {
         return error;
     }
@@ -335,6 +345,16 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
     {
         return error;
     }
+
+    if ((error = RelTablePushInnerFuncCall(&backend_ctx->rel_table,
+                                           node->data.value.id.id_index,
+                                           BackendGetIdName(backend_ctx, node),
+                                           BinCodeGetCurrentPos(&backend_ctx->bin_code))))
+    {
+        return error;
+    }
+
+    REL_TABLE_DUMP_(L"CALL: added func %ls", BackendGetIdName(backend_ctx, node));
 
     int rel_addr = CountLabelRelAddr(func_label_bin_code_pos, 
                                      BinCodeGetCurrentPos(&backend_ctx->bin_code));
@@ -556,6 +576,37 @@ BackendErr_t EmitMathExprOperation(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 //==========================================================================================
 
+static BackendErr_t EmitAssignRegRaxToVariable(BackendCtx_t* backend_ctx, TreeNode_t* var)
+{
+    assert(backend_ctx);
+    assert(var);
+
+    EMIT_VERIFY_(IS_VARIABLE_(var));
+    EMIT_VERIFY_(var->left  == NULL);
+    EMIT_VERIFY_(var->right == NULL);
+
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    int var_offset = 0;
+
+    if ((error = BackendGetVariableOffset(backend_ctx, 
+                                          var->data.value.id.id_index,
+                                          &var_offset)))
+    {
+        return error;
+    }
+
+    ASM_COMMENT_(L"assignment to variable %ls with offset %d", 
+                 BackendGetIdName(backend_ctx, var),
+                 var_offset);
+
+    MOV_MEM_DISP_REG_(REG_RBP, var_offset, REG_RAX);
+
+    return BACKEND_SUCCESS;
+} 
+
+//==========================================================================================
+
 BackendErr_t EmitAssignment(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
@@ -579,22 +630,12 @@ BackendErr_t EmitAssignment(BackendCtx_t* backend_ctx, TreeNode_t* node)
         return error;
     }
 
-    int var_offset = 0;
+    POP_REG_(REG_RAX);
 
-    if ((error = BackendGetVariableOffset(backend_ctx, 
-                                          var->data.value.id.id_index,
-                                          &var_offset)))
+    if ((error = EmitAssignRegRaxToVariable(backend_ctx, var)))
     {
         return error;
     }
-
-    ASM_COMMENT_(L"assignment to variable %ls with offset %d", 
-                 BackendGetIdName(backend_ctx, var),
-                 var_offset);
-
-    POP_REG_(REG_RDX);
-
-    MOV_MEM_DISP_REG_(REG_RBP, var_offset, REG_RDX);
 
     return BACKEND_SUCCESS;
 }
@@ -851,10 +892,16 @@ BackendErr_t EmitWhile(BackendCtx_t* backend_ctx, TreeNode_t* node)
     // jmp .check_condition
     //------------------------------------------------------------------//
     wchar_t check_condition_label[MAX_BUFFER_SIZE] = {};
+    wchar_t next_label           [MAX_BUFFER_SIZE] = {};
 
     swprintf(check_condition_label, 
              sizeof(check_condition_label) / sizeof(check_condition_label[0]),
              L".check_condition_%zu", backend_ctx->while_labels_count);
+
+    swprintf(next_label, sizeof(next_label) / sizeof(next_label[0]),
+             L".next_%zu", backend_ctx->while_labels_count);
+    
+    backend_ctx->while_labels_count++;
 
     size_t jmp_check_cond_addr      = 0;
     size_t jmp_check_cond_disp_addr = 0;
@@ -868,12 +915,6 @@ BackendErr_t EmitWhile(BackendCtx_t* backend_ctx, TreeNode_t* node)
     }
     //------------------------------------------------------------------//
     // .next:
-    wchar_t next_label[MAX_BUFFER_SIZE] = {};
-
-    swprintf(next_label, sizeof(next_label) / sizeof(next_label[0]),
-             L".next_%zu", backend_ctx->while_labels_count);
-    
-    backend_ctx->while_labels_count++;
 
     ASM_PRINT_(L"%ls:\n", next_label);
     size_t next_label_addr = BinCodeGetCurrentPos(&backend_ctx->bin_code);
@@ -899,26 +940,6 @@ BackendErr_t EmitWhile(BackendCtx_t* backend_ctx, TreeNode_t* node)
         return error;
     }
     //------------------------------------------------------------------//
-
-    return BACKEND_SUCCESS;
-}
-
-//==========================================================================================
-
-BackendErr_t EmitUnaryOperation (BackendCtx_t* backend_ctx, TreeNode_t* node)
-{
-    assert(backend_ctx);
-    assert(node);
-
-    return BACKEND_SUCCESS;
-}
-
-//==========================================================================================
-
-BackendErr_t EmitInput          (BackendCtx_t* backend_ctx, TreeNode_t* node)
-{
-    assert(backend_ctx);
-    assert(node);
 
     return BACKEND_SUCCESS;
 }
@@ -956,10 +977,91 @@ BackendErr_t EmitCmdSeparator(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 //==========================================================================================
 
-BackendErr_t EmitPoint          (BackendCtx_t* backend_ctx, TreeNode_t* node)
+BackendErr_t EmitUnaryOperation(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
     assert(node);
+
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_OUTPUT) ||
+                 IS_KEYWORD_(node, KW_SQRT  ) ||
+                 IS_KEYWORD_(node, KW_DRAW  ) ||
+                 IS_KEYWORD_(node, KW_POINT ));
+    
+    EMIT_VERIFY_(node->left == NULL);
+    EMIT_VERIFY_(node->right);
+
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    if ((error = EmitNode(backend_ctx, node->right)))
+    {
+        return error;
+    }
+
+    POP_REG_(REG_RDI);
+
+    const wchar_t* func_name = NULL;
+
+    switch (node->data.value.keyword)
+    {
+        case KW_OUTPUT: func_name = KW_OUTPUT_FUNC_NAME; break;
+        case KW_SQRT:   func_name = KW_SQRT_FUNC_NAME;   break;
+        case KW_DRAW:   func_name = KW_DRAW_FUNC_NAME;   break;
+        case KW_POINT:  func_name = KW_POINT_FUNC_NAME;  break;
+        default:
+            WPRINTERR(L"Keyword %d for unary operation doesn't have a function",
+                      node->data.value.keyword);
+            return BACKEND_INVALID_AST_INPUT;
+    }
+
+    if ((error = RelTablePushExternCall(&backend_ctx->rel_table, 
+                                        func_name, 
+                                        BinCodeGetCurrentPos(&backend_ctx->bin_code))))
+    {
+        return error;
+    }
+
+    CALL_REL_(UNDEFINED_FUNC_ADDR, func_name);
+    
+    REL_TABLE_DUMP_(L"EXTERN: %s added func %ls", 
+                    KEYWORD_CASES_TABLE[node->data.value.keyword].code_str,
+                    func_name);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t EmitInput(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    assert(backend_ctx);
+    assert(node);
+
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_INPUT));
+    EMIT_VERIFY_(node->right);
+    EMIT_VERIFY_(IS_VARIABLE_(node->right));
+    EMIT_VERIFY_(node->left == NULL);
+
+    const wchar_t* func_name = KW_INPUT_FUNC_NAME;
+
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    if ((error = RelTablePushExternCall(&backend_ctx->rel_table, 
+                                        func_name, 
+                                        BinCodeGetCurrentPos(&backend_ctx->bin_code))))
+    {
+        return error;
+    }
+
+    CALL_REL_(UNDEFINED_FUNC_ADDR, func_name);
+
+    if ((error = EmitAssignRegRaxToVariable(backend_ctx, node->right)))
+    {
+        return error;
+    }
+
+    REL_TABLE_DUMP_(L"EXTERN: %s added func %ls", 
+                    KEYWORD_CASES_TABLE[node->data.value.keyword].code_str,
+                    func_name);
 
     return BACKEND_SUCCESS;
 }

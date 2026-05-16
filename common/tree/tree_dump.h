@@ -73,31 +73,6 @@ LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx,
                           const wchar_t* fmt,
                           ...);
 
-#ifdef BACKEND_DEBUG
-
-LangErr_t RelTableDump(LangCtx_t*     lang_ctx, 
-                       RelTable_t*    rel_table, 
-                       const char*    func,
-                       const char*    file,
-                       int            line,
-                       const wchar_t* fmt,
-                       ...);
-
-    #define REL_TABLE_DUMP_(fmt, ...)                       \
-            BEGIN                                           \
-            WDPRINTF(fmt, ##__VA_ARGS__);                   \
-            if (RelTableDump(&backend_ctx->lang_ctx,        \
-                             &backend_ctx->rel_table,       \
-                             __func__, __FILE__, __LINE__,  \
-                            fmt, ##__VA_ARGS__))            \
-            {                                               \
-                return BACKEND_LANG_ERROR;                  \
-            }                                               \
-            END
-#else
-    #define REL_TABLE_DUMP_(fmt, ...)   ;
-#endif /* BACKEND_DEBUG */
-
 TreeErr_t TreeReadBufferDump(LangCtx_t* lang_ctx, const char* fmt, ...);
 
 LangErr_t LangIdTableDump(LangCtx_t* lang_ctx, IdTable_t* id_table, const char* fmt, ...);

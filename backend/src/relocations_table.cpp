@@ -1,4 +1,5 @@
 #include "relocations_table.h"
+#include "lang_ctx.h"
 
 //==========================================================================================
 
@@ -59,13 +60,65 @@ void RelTableDtor(RelTable_t* rel_table)
 
 //==========================================================================================
 
-BackendErr_t RelTablePush (RelTable_t* rel_table, 
-                           wchar_t*    label, 
-                           size_t      bin_code_pos,
-                           int         id_table_index,
-                           size_t*     rel_table_index_dst)
+BackendErr_t RelTablePushExternCall (RelTable_t*    rel_table, 
+                                     const wchar_t* label, 
+                                     size_t         bin_code_pos)
 {
     assert(rel_table);
+    assert(label);
+
+    RelElem_t elem = {.id_table_index = (int) ID_TABLE_INDEX_EXTERN_FUNC_POISON,
+                      .label          = label, 
+                      .bin_code_pos   = bin_code_pos,
+                      .scope          = REL_FUNC_EXTERN,
+                      .type           = REL_FUNC_CALL};
+
+    return RelTablePush(rel_table, &elem);
+}
+
+//==========================================================================================
+
+BackendErr_t RelTablePushInnerFuncDecl (RelTable_t*    rel_table,
+                                        size_t         id_table_index,
+                                        const wchar_t* label,
+                                        size_t         bin_code_pos,
+                                        RelScopeType_t scope)
+{
+    assert(rel_table);
+
+    RelElem_t elem = {.id_table_index = (int) id_table_index,
+                      .label          = label, 
+                      .bin_code_pos   = bin_code_pos,
+                      .scope          = scope,
+                      .type           = REL_FUNC_DECL};
+
+    return RelTablePush(rel_table, &elem);
+}
+
+//==========================================================================================
+
+BackendErr_t RelTablePushInnerFuncCall (RelTable_t*    rel_table,
+                                        size_t         id_table_index,
+                                        const wchar_t* label,
+                                        size_t         bin_code_pos)
+{
+    assert(rel_table);
+
+    RelElem_t elem = {.id_table_index = (int) id_table_index,
+                      .label          = label, 
+                      .bin_code_pos   = bin_code_pos,
+                      .scope          = REL_FUNC_LOCAL,
+                      .type           = REL_FUNC_CALL};
+
+    return RelTablePush(rel_table, &elem);
+}
+
+//==========================================================================================
+
+BackendErr_t RelTablePush (RelTable_t* rel_table, RelElem_t* elem)
+{
+    assert(rel_table);
+    assert(elem);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
@@ -77,12 +130,7 @@ BackendErr_t RelTablePush (RelTable_t* rel_table,
         }
     }
 
-    if (rel_table_index_dst)
-    {
-        *rel_table_index_dst = rel_table->size;
-    }
-
-    rel_table->data[rel_table->size++] = {id_table_index, label, bin_code_pos};
+    rel_table->data[rel_table->size++] = *elem;
 
     return BACKEND_SUCCESS;
 }
@@ -149,6 +197,72 @@ BackendErr_t RelTableGetLabelBinCodePosByIdIndex(RelTable_t* rel_table,
 int CountLabelRelAddr(size_t label_pos, size_t pos_before_instr_using_label)
 {
     return (int) (label_pos) - (int) (pos_before_instr_using_label);
+}
+
+//==========================================================================================
+
+LangErr_t RelTableDump(LangCtx_t*     lang_ctx, 
+                       RelTable_t*    rel_table, 
+                       const char*    func,
+                       const char*    file,
+                       int            line,
+                       const wchar_t* fmt,
+                       ...)
+{
+    assert(lang_ctx);
+    assert(rel_table);
+
+    FILE* fp = lang_ctx->tree.debug.fp;
+
+    va_list args = {};
+
+    va_start(args, fmt);
+
+    fwprintf(fp, L"<h4><font color=blue>"
+                 L"Dump RelTable_t %p called from %s at %s:%d"
+                 L" Message: ",
+                 rel_table,
+                 func, 
+                 file,
+                 line);
+
+    vfwprintf(fp, fmt, args);
+
+    va_end(args);
+
+    fwprintf(fp, L"</h4></font>\n\n");
+
+    fwprintf(fp,
+             L".size     = %zu\n"
+             L".cap      = %zu\n"
+             L".data     = %p\n",
+             rel_table->size,
+             rel_table->capacity,
+             rel_table->data);
+
+    RelElem_t* rel_data = NULL;
+
+    fwprintf(fp, L"index  {        label,        bin_code_pos,   hex,       scope,           type      }\n");
+
+    for (size_t i = 0; i < rel_table->size; i++)
+    {
+        rel_data = &rel_table->data[i];
+
+        fwprintf(fp, L"[ %-2d]: {%20ls,      %3zu    , %#6x, %15s, %14s }\n",
+                     i,
+                     rel_data->label,
+                     rel_data->bin_code_pos,
+                     rel_data->bin_code_pos,
+                     REL_FUNC_SCOPE_NAME[rel_data->scope],
+                     REL_FUNC_TYPE_NAME[rel_data->type]);
+    }
+
+    fwprintf(fp, L"---------------------------------------"
+                 L"---------------------------------------\n\n");
+    
+    fflush(fp);
+
+    return LANG_SUCCESS;
 }
 
 //==========================================================================================

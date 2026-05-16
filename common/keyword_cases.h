@@ -113,7 +113,7 @@ const KeywordCase_t KEYWORD_CASES_TABLE[] =
     SET_KW_CASE_(KW_SMALLER             ,   1,   L"меньше"                      , L"_LOG_LESS_"      , NULL                   , SrcCompareOperator),
     SET_KW_CASE_(KW_SQRT                ,   1,   L"исток"                       , L"_MATH_SQRT_"     , EmitUnaryOperation     , SrcUnaryOperator  ),
     SET_KW_CASE_(KW_DRAW                ,   1,   L"рисуй"                       , L"_DRAW_"          , EmitUnaryOperation     , SrcUnaryOperator  ),
-    SET_KW_CASE_(KW_POINT               ,   1,   L"поставь точку"               , L"_POINT_"         , EmitPoint              , SrcUnaryOperator  )
+    SET_KW_CASE_(KW_POINT               ,   1,   L"поставь точку"               , L"_POINT_"         , EmitUnaryOperation     , SrcUnaryOperator  )
 };
 
 //==========================================================================================
