@@ -410,9 +410,7 @@ BackendErr_t EncodeRelNone(BinInstruction_t* bin_instr, Instruction_t* instr)
 
     int rel_addr = instr->operand_1.value.rel.rel_addr;
 
-    int rel_disp = (rel_addr < 0) ? 
-                    rel_addr - instr_size :
-                    rel_addr + instr_size;
+    int rel_disp = rel_addr - instr_size;
 
     // OPCODE + cd
     BinInstrSetDisp32(bin_instr, rel_disp);
@@ -543,7 +541,7 @@ static BackendErr_t GenerateCodeFromBinInstruction(BinCode_t*        bin_code,
     if (encode_info->contains_disp)
     {
         // same logic as with opcode union
-        if (BinCodeWrite(bin_code, 
+        if (BinCodeWrite(bin_code,
                          &bin_instr->disp.data.size_1_byte, 
                          bin_instr->disp.size))
             return BACKEND_BINCODE_BUFFER_ERROR;

@@ -89,6 +89,20 @@ BackendErr_t RelTablePush (RelTable_t* rel_table,
 
 //==========================================================================================
 
+BackendErr_t RelTablePopLabelBinCodePos(RelTable_t* rel_table, 
+                                        size_t*     bin_code_pos_dst)
+{
+    assert(rel_table);
+    assert(bin_code_pos_dst);
+
+    rel_table->size--;
+    *bin_code_pos_dst = rel_table->data[rel_table->size].bin_code_pos;
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
 BackendErr_t RelTableGetLabelBinCodePos(RelTable_t* rel_table, 
                                         size_t      rel_table_index, 
                                         size_t*     bin_code_pos_dst)
@@ -132,9 +146,9 @@ BackendErr_t RelTableGetLabelBinCodePosByIdIndex(RelTable_t* rel_table,
 
 //==========================================================================================
 
-int CountLabelRelAddr(size_t label_pos, size_t cur_pos)
+int CountLabelRelAddr(size_t label_pos, size_t pos_before_instr_using_label)
 {
-    return (int) (label_pos) - (int) (cur_pos);
+    return (int) (label_pos) - (int) (pos_before_instr_using_label);
 }
 
 //==========================================================================================

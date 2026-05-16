@@ -12,6 +12,7 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+static BackendErr_t EmitNode                (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitMain                (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitFunctions           (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitNumber              (BackendCtx_t* backend_ctx, TreeNode_t* node);
@@ -20,14 +21,12 @@ static BackendErr_t EmitFunctionDeclaration (BackendCtx_t* backend_ctx, TreeNode
 static BackendErr_t EmitFunctionCall        (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitFunctionArguments   (BackendCtx_t* backend_ctx, TreeNode_t* node);
 
-static BackendErr_t EmitLabel(BackendCtx_t* backend_ctx,
-                              wchar_t*      label,
-                              int           id_table_index,
-                              size_t*       rel_table_index_dst);
+static BackendErr_t EmitAndPushLabel(BackendCtx_t* backend_ctx,
+                                     wchar_t*      label,
+                                     int           id_table_index,
+                                     size_t*       rel_table_index_dst);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
-// на этом же этапе составлять таблицу rel_table для относительных сдвигов для колла
-// и метки для насма + для джампов там же
 
 BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
 {
@@ -61,10 +60,23 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
 
 //==========================================================================================
 
-static BackendErr_t EmitLabel(BackendCtx_t* backend_ctx, 
-                              wchar_t*      label, 
-                              int           id_table_index,
-                              size_t*       rel_table_index_dst)
+BackendErr_t EmitExit(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    assert(backend_ctx);
+
+    MOV_REG_IMM_(REG_RAX, SYSCALL_CODE_EXIT);
+    MOV_REG_IMM_(REG_RDI, EXIT_SUCCESS);
+    SYSCALL_();
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitAndPushLabel(BackendCtx_t* backend_ctx, 
+                                     wchar_t*      label, 
+                                     int           id_table_index,
+                                     size_t*       rel_table_index_dst)
 {
     assert(backend_ctx);
     assert(label);
@@ -76,7 +88,7 @@ static BackendErr_t EmitLabel(BackendCtx_t* backend_ctx,
     
     if ((error = RelTablePush(&backend_ctx->rel_table,
                               label,
-                              backend_ctx->bin_code.size,
+                              BinCodeGetCurrentPos(&backend_ctx->bin_code),
                               id_table_index,
                               rel_table_index_dst)))
     {
@@ -85,13 +97,8 @@ static BackendErr_t EmitLabel(BackendCtx_t* backend_ctx,
 
     REL_TABLE_DUMP_(L"after emitting label %ls at %zu (hex %#x)",
                     label,
-                    backend_ctx->bin_code.size,
-                    backend_ctx->bin_code.size);
-
-    WDPRINTF(L"after emitting label %ls at %zu (hex %#x)\n", 
-             label, 
-             backend_ctx->bin_code.size,
-             backend_ctx->bin_code.size);
+                    BinCodeGetCurrentPos(&backend_ctx->bin_code),
+                    BinCodeGetCurrentPos(&backend_ctx->bin_code));
 
     return BACKEND_SUCCESS;
 }
@@ -134,9 +141,11 @@ static BackendErr_t EmitMain(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
     MOV_REG_IMM_(REG_RDI, (int) main_vars_size);
     ADD_REG_REG_(REG_RSP, REG_RDI);
-    MOV_REG_IMM_(REG_RAX, SYSCALL_CODE_EXIT);
-    MOV_REG_IMM_(REG_RDI, EXIT_SUCCESS);
-    SYSCALL_();
+
+    if ((error = EmitExit(backend_ctx, NULL)))
+    {
+        return error;
+    }
 
     DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;
@@ -190,7 +199,7 @@ static BackendErr_t EmitFunctions(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 //==========================================================================================
 
-BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
+static BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
     assert(node);
@@ -254,10 +263,10 @@ static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_
     
     BackendErr_t error = BACKEND_SUCCESS;
 
-    if ((error = EmitLabel(backend_ctx,
-                           BackendGetIdName(backend_ctx, node),
-                           (int) node->data.value.id.id_index,
-                           NULL)))
+    if ((error = EmitAndPushLabel(backend_ctx,
+                                  BackendGetIdName(backend_ctx, node),
+                                  (int) node->data.value.id.id_index,
+                                  NULL)))
     {
         return error;
     }
@@ -328,7 +337,7 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
     }
 
     int rel_addr = CountLabelRelAddr(func_label_bin_code_pos, 
-                                     backend_ctx->bin_code.size);
+                                     BinCodeGetCurrentPos(&backend_ctx->bin_code));
 
     CALL_REL_(rel_addr, BackendGetIdName(backend_ctx, node));
 
@@ -592,13 +601,129 @@ BackendErr_t EmitAssignment(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 //==========================================================================================
 
+static OpcodeType_t GetJccOppositeOpcodeFromKeyword(Keyword_t jcc_kw)
+{
+    switch (jcc_kw)
+    {
+        case KW_EQUAL:          return OPCODE_JNE_REL;
+        case KW_NOT_EQUAL:      return OPCODE_JE_REL;
+        case KW_BIGGER:         return OPCODE_JBE_REL;
+        case KW_BIGGER_EQUAL:   return OPCODE_JB_REL;
+        case KW_SMALLER:        return OPCODE_JAE_REL;
+        case KW_SMALLER_EQUAL:  return OPCODE_JA_REL;
+        default:                break;
+    }
+
+    WPRINTERR(L"Not a comparison keyword given to function for getting jcc opcodes"
+              L" given %d", jcc_kw);
+
+    return OPCODE_UNKNOWN;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitCondition(BackendCtx_t* backend_ctx, 
+                                  TreeNode_t*   node, 
+                                  size_t*       jump_addr,
+                                  size_t*       jump_disp_addr,
+                                  wchar_t*      wrong_condition_label)
+{
+    assert(backend_ctx);
+    assert(node);
+    assert(jump_addr);
+    assert(jump_disp_addr);
+    assert(wrong_condition_label);
+
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_EQUAL        ) ||
+                 IS_KEYWORD_(node, KW_NOT_EQUAL    ) ||
+                 IS_KEYWORD_(node, KW_BIGGER       ) ||
+                 IS_KEYWORD_(node, KW_BIGGER_EQUAL ) ||
+                 IS_KEYWORD_(node, KW_SMALLER      ) ||
+                 IS_KEYWORD_(node, KW_SMALLER_EQUAL));
+
+    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->right);
+
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    if ((error = EmitNode(backend_ctx, node->left)))
+    {
+        return error;
+    }
+    if ((error = EmitNode(backend_ctx, node->right)))
+    {
+        return error;
+    }
+    // right subtree result
+    POP_REG_(REG_RBX);
+    // left  subtree result
+    POP_REG_(REG_RAX);
+
+    CMP_REG_REG_(REG_RAX, REG_RBX);
+
+    OpcodeType_t jcc_opcode = GetJccOppositeOpcodeFromKeyword(node->data.value.keyword);
+
+    if (jcc_opcode == OPCODE_UNKNOWN)
+    {
+        return BACKEND_INVALID_OPCODE;
+    }
+
+    *jump_addr = BinCodeGetCurrentPos(&backend_ctx->bin_code);
+    WDPRINTF(L"Got jump_addr %zu (%#x)\n", *jump_addr, *jump_addr);
+
+    // rel = 0 for fixing later; when 0, disp will be equal to -instr_size
+    JCC_REL_(jcc_opcode, 0, wrong_condition_label);
+
+    *jump_disp_addr = BinCodeGetCurrentPos(&backend_ctx->bin_code) - DISP_SIZE;
+    WDPRINTF(L"Got jump_disp_addr %zu (%#x)\n", *jump_disp_addr, *jump_disp_addr);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
 BackendErr_t EmitIf(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
     assert(node);
 
-    
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_IF_LHS));
+    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->right);
 
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    wchar_t endif_label[MAX_BUFFER_SIZE] = {};
+
+    swprintf(endif_label, sizeof(endif_label) / sizeof(endif_label[0]),
+             L".endif_%zu", backend_ctx->endif_labels_count++);
+
+    size_t jump_addr      = 0;
+    size_t jump_disp_addr = 0;
+
+    if ((error = EmitCondition(backend_ctx, node->left, 
+                               &jump_addr, 
+                               &jump_disp_addr, 
+                               endif_label)))
+    {
+        return error;
+    }
+    // if-statement body
+    if ((error = EmitNode(backend_ctx, node->right)))
+    {
+        return error;
+    }
+
+    ASM_PRINT_(L"%ls:\n", endif_label);
+
+    int rel_addr = CountLabelRelAddr(BinCodeGetCurrentPos(&backend_ctx->bin_code),
+                                     jump_addr);
+
+    BinAddToDisplacement(&backend_ctx->bin_code, jump_disp_addr, rel_addr);
+
+    WDPRINTF(L"Dump after inserting an addition of %#x rel_addr"
+             L" to %zu (%#x) jump_disp_addr", rel_addr, jump_disp_addr, jump_disp_addr);
+    BIN_CODE_DUMP(&backend_ctx->bin_code);
 
     return BACKEND_SUCCESS;
 }
@@ -660,16 +785,6 @@ BackendErr_t EmitCmdSeparator(BackendCtx_t* backend_ctx, TreeNode_t* node)
     {
         return error;
     }
-
-    return BACKEND_SUCCESS;
-}
-
-//==========================================================================================
-
-BackendErr_t EmitHlt            (BackendCtx_t* backend_ctx, TreeNode_t* node)
-{
-    assert(backend_ctx);
-    assert(node);
 
     return BACKEND_SUCCESS;
 }

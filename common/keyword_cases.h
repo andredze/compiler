@@ -103,7 +103,7 @@ const KeywordCase_t KEYWORD_CASES_TABLE[] =
     SET_KW_CASE_(KW_POW                 ,   1,   L"расплодить в"                , L"_MATH_POW_"      , NULL                   , SrcMathOperation  ),
     SET_KW_CASE_(KW_OUTPUT              ,   1,   L"заставь их услышать"         , L"_OUTPUT_"        , EmitUnaryOperation     , SrcUnaryOperator  ),
     SET_KW_CASE_(KW_INPUT               ,   1,   L"скажи мне кто ты,"           , L"_INPUT_"         , EmitInput              , SrcUnaryOperator  ),
-    SET_KW_CASE_(KW_ABORT               ,   1,   L"аборт"                       , L"_ABORT_"         , EmitHlt                , SrcAbort          ),
+    SET_KW_CASE_(KW_ABORT               ,   1,   L"аборт"                       , L"_ABORT_"         , EmitExit               , SrcAbort          ),
     SET_KW_CASE_(KW_VARIABLE_DECL       ,   1,   L"голос в голове"              , L""                , NULL                   , NULL              ),
     SET_KW_CASE_(KW_EQUAL               ,   1,   L"такой же как"                , L"_LOG_EQUAL_"     , NULL                   , SrcCompareOperator),
     SET_KW_CASE_(KW_NOT_EQUAL           ,   1,   L"противоположен"              , L"_LOG_NOT_EQUAL_" , NULL                   , SrcCompareOperator),

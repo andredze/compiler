@@ -76,6 +76,7 @@ LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx,
 #ifdef BACKEND_DEBUG
     #define REL_TABLE_DUMP_(fmt, ...)                       \
             BEGIN                                           \
+            WDPRINTF(fmt, ##__VA_ARGS__);                   \
             if (RelTableDump(&backend_ctx->lang_ctx,        \
                              &backend_ctx->rel_table,       \
                              __func__, __FILE__, __LINE__,  \

@@ -47,11 +47,14 @@ BackendErr_t RelTableGetLabelBinCodePos(RelTable_t* rel_table,
                                         size_t      rel_table_index, 
                                         size_t*     bin_code_pos_dst);
 
+BackendErr_t RelTablePopLabelBinCodePos(RelTable_t* rel_table, 
+                                        size_t*     bin_code_pos_dst);
+
 BackendErr_t RelTableGetLabelBinCodePosByIdIndex(RelTable_t* rel_table, 
                                                  size_t      id_table_index, 
                                                  size_t*     bin_code_pos_dst);
 
-int CountLabelRelAddr(size_t label_pos, size_t cur_pos);
+int CountLabelRelAddr(size_t label_pos, size_t pos_before_instr_using_label);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
