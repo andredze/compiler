@@ -14,6 +14,15 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#define SYNTAX_ERROR_(message, ...)                                 \
+        BEGIN                                                       \
+        TreeNode_t* _node = FrontendGetCurrentToken(frontend_ctx);  \
+        WPRINTERR(L"At line %d: " message,                          \
+                  _node->line, ##__VA_ARGS__);                      \
+        END
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 LangErr_t ParseTokens(FrontendCtx_t* frontend_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————

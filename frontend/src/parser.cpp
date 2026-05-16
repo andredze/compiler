@@ -98,7 +98,7 @@ static TreeNode_t* ParseProgram(FrontendCtx_t* frontend_ctx)
 
     if (StackSize(&frontend_ctx->tokens) != frontend_ctx->cur_token_index)
     {
-        WPRINTERR("INVALID TOKEN, size = %zu; cur_tok_ind = %zu",
+        SYNTAX_ERROR_(L"INVALID TOKEN, size = %zu; cur_tok_ind = %zu",
                    StackSize(&frontend_ctx->tokens),
                    frontend_ctx->cur_token_index);
         return NULL;
@@ -225,7 +225,7 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
                           LangGetIdName(&frontend_ctx->lang_ctx.names_pool, 
                                         function_name->data.value.id.name_index));
 
-        WPRINTERR(L"Expected function block after function declaration");
+        SYNTAX_ERROR_(L"Expected function block after function declaration");
         return NULL;
     }
 
@@ -398,7 +398,7 @@ static TreeNode_t* ParseFunctionBlock(FrontendCtx_t* frontend_ctx)
 
     if (block_end == NULL || !IS_KEYWORD_(block_end, KW_FUNCTION_BLOCK_END))
     {
-        WPRINTERR(L"Expected function block end");
+        SYNTAX_ERROR_(L"Expected function block end");
         return NULL;
     }
 
@@ -577,7 +577,7 @@ static TreeNode_t* ParseWhileStatement(FrontendCtx_t* frontend_ctx)
 
     if (condition == NULL)
     {
-        WPRINTERR("Expected condition inside while");
+        SYNTAX_ERROR_("Expected condition inside while");
         return NULL;
     }
 
@@ -623,7 +623,7 @@ static TreeNode_t* ParseCondition(FrontendCtx_t* frontend_ctx)
           HAS_KEYWORD_(comp, KW_SMALLER_EQUAL) ||
           HAS_KEYWORD_(comp, KW_SMALLER      )))
     {
-        WPRINTERR("Expected comparison sign in condition");
+        SYNTAX_ERROR_(L"Expected comparison sign in condition");
         return NULL;
     }
 
@@ -635,7 +635,7 @@ static TreeNode_t* ParseCondition(FrontendCtx_t* frontend_ctx)
 
     if (rhs == NULL)
     {
-        WPRINTERR("Expected second expression after sign in condition");
+        SYNTAX_ERROR_(L"Expected second expression after sign in condition");
         return NULL;
     }
 
@@ -845,7 +845,7 @@ static TreeNode_t* ParseExpression(FrontendCtx_t* frontend_ctx)
 
         if (next_token == NULL)
         {
-            WPRINTERR("Should be an argument after expression operation");
+            SYNTAX_ERROR_("Should be an argument after expression operation");
             return NULL;
         }
 
@@ -1046,8 +1046,8 @@ static TreeNode_t* ParseVariable(FrontendCtx_t* frontend_ctx)
 
     if (table_index == -1)
     {
-        WPRINTERR(L"Variable %ls was not declared\n",
-                  frontend_ctx->lang_ctx.names_pool.data[cur_token->data.value.id.name_index]);
+        SYNTAX_ERROR_(L"Variable %ls was not declared\n",
+                      frontend_ctx->lang_ctx.names_pool.data[cur_token->data.value.id.name_index]);
         return NULL;
     }
 

@@ -1,6 +1,9 @@
 #include "tree_dump.h"
-#include "relocations_table.h"
 #include <wchar.h>
+
+#ifdef BACKEND_DEBUG
+    #include "relocations_table.h"
+#endif /* BACKEND_DEBUG */
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -218,6 +221,7 @@ LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx,
 
 //==========================================================================================
 
+#ifdef BACKEND_DEBUG
 LangErr_t RelTableDump(LangCtx_t*     lang_ctx, 
                        RelTable_t*    rel_table, 
                        const char*    func,
@@ -279,6 +283,7 @@ LangErr_t RelTableDump(LangCtx_t*     lang_ctx,
 
     return LANG_SUCCESS;
 }
+#endif /* BACKEND_DEBUG */
 
 //==========================================================================================
 

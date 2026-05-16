@@ -622,17 +622,10 @@ static OpcodeType_t GetJccOppositeOpcodeFromKeyword(Keyword_t jcc_kw)
 
 //==========================================================================================
 
-static BackendErr_t EmitCondition(BackendCtx_t* backend_ctx, 
-                                  TreeNode_t*   node, 
-                                  size_t*       jump_addr,
-                                  size_t*       jump_disp_addr,
-                                  wchar_t*      wrong_condition_label)
+static BackendErr_t EmitConditionComparison(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
     assert(node);
-    assert(jump_addr);
-    assert(jump_disp_addr);
-    assert(wrong_condition_label);
 
     EMIT_VERIFY_(IS_KEYWORD_(node, KW_EQUAL        ) ||
                  IS_KEYWORD_(node, KW_NOT_EQUAL    ) ||
@@ -661,6 +654,48 @@ static BackendErr_t EmitCondition(BackendCtx_t* backend_ctx,
 
     CMP_REG_REG_(REG_RAX, REG_RBX);
 
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitJccForFixup(BackendCtx_t* backend_ctx, 
+                                    OpcodeType_t  jcc_opcode, 
+                                    size_t*       jump_addr,
+                                    size_t*       jump_disp_addr,
+                                    wchar_t*      jump_label)
+{
+    assert(jump_label);
+    assert(jump_disp_addr);
+    assert(jump_addr);
+    assert(backend_ctx);
+
+    *jump_addr = BinCodeGetCurrentPos(&backend_ctx->bin_code);
+    WDPRINTF(L"Got jump_addr %zu (%#x)\n", *jump_addr, *jump_addr);
+
+    // rel = 0 for fixing later; when 0, disp will be equal to -instr_size
+    JCC_REL_(jcc_opcode, 0, jump_label);
+
+    *jump_disp_addr = BinCodeGetCurrentPos(&backend_ctx->bin_code) - DISP_SIZE;
+    WDPRINTF(L"Got jump_disp_addr %zu (%#x)\n", *jump_disp_addr, *jump_disp_addr);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitJccNodeForFixup(BackendCtx_t* backend_ctx, 
+                                        TreeNode_t*   node, 
+                                        size_t*       jump_addr,
+                                        size_t*       jump_disp_addr,
+                                        wchar_t*      jump_label)
+{
+    assert(jump_label);
+    assert(jump_disp_addr);
+    assert(jump_addr);
+    assert(backend_ctx);
+    assert(node);
+
     OpcodeType_t jcc_opcode = GetJccOppositeOpcodeFromKeyword(node->data.value.keyword);
 
     if (jcc_opcode == OPCODE_UNKNOWN)
@@ -668,14 +703,60 @@ static BackendErr_t EmitCondition(BackendCtx_t* backend_ctx,
         return BACKEND_INVALID_OPCODE;
     }
 
-    *jump_addr = BinCodeGetCurrentPos(&backend_ctx->bin_code);
-    WDPRINTF(L"Got jump_addr %zu (%#x)\n", *jump_addr, *jump_addr);
+    return EmitJccForFixup(backend_ctx, jcc_opcode, 
+                           jump_addr, jump_disp_addr, jump_label);
+}
 
-    // rel = 0 for fixing later; when 0, disp will be equal to -instr_size
-    JCC_REL_(jcc_opcode, 0, wrong_condition_label);
+//==========================================================================================
 
-    *jump_disp_addr = BinCodeGetCurrentPos(&backend_ctx->bin_code) - DISP_SIZE;
-    WDPRINTF(L"Got jump_disp_addr %zu (%#x)\n", *jump_disp_addr, *jump_disp_addr);
+static BackendErr_t EmitConditionForFixup(BackendCtx_t* backend_ctx, 
+                                          TreeNode_t*   node, 
+                                          size_t*       jump_addr,
+                                          size_t*       jump_disp_addr,
+                                          wchar_t*      wrong_condition_label)
+{
+    assert(wrong_condition_label);
+    assert(jump_disp_addr);
+    assert(jump_addr);
+    assert(backend_ctx);
+    assert(node);
+
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    if ((error = EmitConditionComparison(backend_ctx, node)))
+    {
+        return error;
+    }
+    if ((error = EmitJccNodeForFixup(backend_ctx, node,
+                                     jump_addr, jump_disp_addr,
+                                     wrong_condition_label)))
+    {
+        return error;
+    }
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitAndFixupLabel(BackendCtx_t* backend_ctx, 
+                                      wchar_t*      label,
+                                      size_t        jump_addr,
+                                      size_t        jump_disp_addr)
+{
+    assert(backend_ctx);
+    assert(label);
+
+    ASM_PRINT_(L"%ls:\n", label);
+
+    int rel_addr = CountLabelRelAddr(BinCodeGetCurrentPos(&backend_ctx->bin_code),
+                                     jump_addr);
+
+    BinAddToDisplacement(&backend_ctx->bin_code, jump_disp_addr, rel_addr);
+
+    WDPRINTF(L"Dump after inserting an addition of %#x rel_addr"
+             L" to %zu (%#x) jump_disp_addr", rel_addr, jump_disp_addr, jump_disp_addr);
+    BIN_CODE_DUMP(&backend_ctx->bin_code);
 
     return BACKEND_SUCCESS;
 }
@@ -701,10 +782,10 @@ BackendErr_t EmitIf(BackendCtx_t* backend_ctx, TreeNode_t* node)
     size_t jump_addr      = 0;
     size_t jump_disp_addr = 0;
 
-    if ((error = EmitCondition(backend_ctx, node->left, 
-                               &jump_addr, 
-                               &jump_disp_addr, 
-                               endif_label)))
+    if ((error = EmitConditionForFixup(backend_ctx, node->left, 
+                                       &jump_addr, 
+                                       &jump_disp_addr, 
+                                       endif_label)))
     {
         return error;
     }
@@ -713,17 +794,111 @@ BackendErr_t EmitIf(BackendCtx_t* backend_ctx, TreeNode_t* node)
     {
         return error;
     }
+    if ((error = EmitAndFixupLabel(backend_ctx, endif_label, jump_addr, jump_disp_addr)))
+    {
+        return error;
+    }
 
-    ASM_PRINT_(L"%ls:\n", endif_label);
+    return BACKEND_SUCCESS;
+}
 
-    int rel_addr = CountLabelRelAddr(BinCodeGetCurrentPos(&backend_ctx->bin_code),
-                                     jump_addr);
+//==========================================================================================
 
-    BinAddToDisplacement(&backend_ctx->bin_code, jump_disp_addr, rel_addr);
+static BackendErr_t EmitConditionNoFixup(BackendCtx_t* backend_ctx, 
+                                         TreeNode_t*   node, 
+                                         wchar_t*      wrong_condition_label,
+                                         size_t        wrong_condition_label_addr)
+{
+    assert(wrong_condition_label);
+    assert(backend_ctx);
+    assert(node);
 
-    WDPRINTF(L"Dump after inserting an addition of %#x rel_addr"
-             L" to %zu (%#x) jump_disp_addr", rel_addr, jump_disp_addr, jump_disp_addr);
-    BIN_CODE_DUMP(&backend_ctx->bin_code);
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    if ((error = EmitConditionComparison(backend_ctx, node)))
+    {
+        return error;
+    }
+
+    OpcodeType_t jcc_opcode = GetJccOppositeOpcodeFromKeyword(node->data.value.keyword);
+
+    if (jcc_opcode == OPCODE_UNKNOWN)
+    {
+        return BACKEND_INVALID_OPCODE;
+    }
+
+    int rel_addr = CountLabelRelAddr(wrong_condition_label_addr, 
+                                     BinCodeGetCurrentPos(&backend_ctx->bin_code));
+
+    JCC_REL_(jcc_opcode, rel_addr, wrong_condition_label);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t EmitWhile(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    assert(backend_ctx);
+    assert(node);
+
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_WHILE));
+    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->right);
+
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    // jmp .check_condition
+    //------------------------------------------------------------------//
+    wchar_t check_condition_label[MAX_BUFFER_SIZE] = {};
+
+    swprintf(check_condition_label, 
+             sizeof(check_condition_label) / sizeof(check_condition_label[0]),
+             L".check_condition_%zu", backend_ctx->while_labels_count);
+
+    size_t jmp_check_cond_addr      = 0;
+    size_t jmp_check_cond_disp_addr = 0;
+
+    if ((error = EmitJccForFixup(backend_ctx, OPCODE_JMP_REL, 
+                                 &jmp_check_cond_addr,
+                                 &jmp_check_cond_disp_addr, 
+                                 check_condition_label)))
+    {
+        return error;
+    }
+    //------------------------------------------------------------------//
+    // .next:
+    wchar_t next_label[MAX_BUFFER_SIZE] = {};
+
+    swprintf(next_label, sizeof(next_label) / sizeof(next_label[0]),
+             L".next_%zu", backend_ctx->while_labels_count);
+    
+    backend_ctx->while_labels_count++;
+
+    ASM_PRINT_(L"%ls:\n", next_label);
+    size_t next_label_addr = BinCodeGetCurrentPos(&backend_ctx->bin_code);
+    //------------------------------------------------------------------//
+    // cycle body
+    if ((error = EmitNode(backend_ctx, node->right)))
+    {
+        return error;
+    }
+    //------------------------------------------------------------------//
+    // .check_condition:
+    if ((error = EmitAndFixupLabel(backend_ctx, check_condition_label, 
+                                   jmp_check_cond_addr, 
+                                   jmp_check_cond_disp_addr)))
+    {
+        return error;
+    }
+    //------------------------------------------------------------------//
+    // jcc .next
+    if ((error = EmitConditionNoFixup(backend_ctx, node->left, 
+                                      next_label,  next_label_addr)))
+    {
+        return error;
+    }
+    //------------------------------------------------------------------//
 
     return BACKEND_SUCCESS;
 }
@@ -741,16 +916,6 @@ BackendErr_t EmitUnaryOperation (BackendCtx_t* backend_ctx, TreeNode_t* node)
 //==========================================================================================
 
 BackendErr_t EmitInput          (BackendCtx_t* backend_ctx, TreeNode_t* node)
-{
-    assert(backend_ctx);
-    assert(node);
-
-    return BACKEND_SUCCESS;
-}
-
-//==========================================================================================
-
-BackendErr_t EmitWhile          (BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
     assert(node);
