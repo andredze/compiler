@@ -31,6 +31,8 @@ typedef struct BackendCtx
     BinCode_t   bin_code;
 
     size_t      current_stack_local_vars_size;
+
+    TreeNode_t* main_node;
 }
 BackendCtx_t;
 

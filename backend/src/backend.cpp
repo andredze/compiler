@@ -47,8 +47,10 @@ BackendErr_t BackendCtxCtor(BackendCtx_t* backend_ctx)
         return BACKEND_BINCODE_BUFFER_ERROR;
     }
 
-    backend_ctx->endif_labels_count = 0;
-    backend_ctx->while_labels_count = 0;
+    backend_ctx->endif_labels_count            = 0;
+    backend_ctx->while_labels_count            = 0;
+    backend_ctx->current_stack_local_vars_size = 0;
+    backend_ctx->main_node                     = NULL;
 
     DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;
@@ -64,8 +66,10 @@ BackendErr_t BackendCtxDtor(BackendCtx_t* backend_ctx)
     // zero the string so it can not be used
     memset(backend_ctx->ast_file_name, 0, sizeof(backend_ctx->ast_file_name));
 
-    backend_ctx->endif_labels_count = 0;
-    backend_ctx->while_labels_count = 0;
+    backend_ctx->endif_labels_count            = 0;
+    backend_ctx->while_labels_count            = 0;
+    backend_ctx->current_stack_local_vars_size = 0;
+    backend_ctx->main_node                     = NULL;
 
     if (backend_ctx->asm_file)
     {

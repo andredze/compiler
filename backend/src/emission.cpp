@@ -21,7 +21,6 @@ static BackendErr_t EmitFunctionCall        (BackendCtx_t* backend_ctx, TreeNode
 static BackendErr_t EmitFunctionArguments   (BackendCtx_t* backend_ctx, TreeNode_t* node);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
-// TODO: пока left Func Decl делаю объявления функций, потом делаю объявление main-а
 // на этом же этапе составлять таблицу rel_table для относительных сдвигов для колла
 // и метки для насма + для джампов там же
 
@@ -44,6 +43,13 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         return error;
     }
 
+    EMIT_VERIFY_(backend_ctx->main_node);
+
+    if ((error = EmitMain(backend_ctx, backend_ctx->main_node)))
+    {
+        return error;
+    }
+
     DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;
 }
@@ -57,7 +63,7 @@ static BackendErr_t EmitMain(BackendCtx_t* backend_ctx, TreeNode_t* node)
     assert(node);
 
     EMIT_VERIFY_(IS_KEYWORD_(node, KW_CMD_SEPARATOR));
-    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->left);
 
     BackendErr_t error = BACKEND_SUCCESS;
     
@@ -103,8 +109,7 @@ static BackendErr_t EmitFunctions(BackendCtx_t* backend_ctx, TreeNode_t* node)
     assert(node);
 
     EMIT_VERIFY_(IS_KEYWORD_(node, KW_CMD_SEPARATOR));
-    EMIT_VERIFY_(node->left );
-    EMIT_VERIFY_(node->right);
+    EMIT_VERIFY_(node->left);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
@@ -118,10 +123,20 @@ static BackendErr_t EmitFunctions(BackendCtx_t* backend_ctx, TreeNode_t* node)
         {
             return error;
         }
+
+        DPRINT_FUNC_LEAVE_MSG();
+        return BACKEND_SUCCESS;
     }
-    else
+
+    // the first node without FUNC_DECL left child is main
+    if (backend_ctx->main_node == NULL)
     {
-        if ((error = EmitMain(backend_ctx, node)))
+        backend_ctx->main_node = node;
+    }
+    // but firstly emit all the other functions
+    if (node->right)
+    {
+        if ((error = EmitFunctions(backend_ctx, node->right)))
         {
             return error;
         }
@@ -168,7 +183,8 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
             return BACKEND_SUCCESS;
 
         case TYPE_FUNC_DECL:
-            return EmitFunctionDeclaration(backend_ctx, node);
+            // function declarations were emitted by EmitFunctions
+            return BACKEND_SUCCESS;
 
         case TYPE_FUNC_CALL:
             return EmitFunctionCall(backend_ctx, node);
@@ -191,8 +207,9 @@ static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_
     EMIT_VERIFY_(IS_FUNC_DECL_(node));
     EMIT_VERIFY_(node->right);
 
-    ASM_COMMENT_(L"function declaration %ls", BackendGetIdName(backend_ctx, node));
-    ASM_PRINT_(L"\n%ls:\n", BackendGetIdName(backend_ctx, node));
+    ASM_COMMENT_(L"\nfunction declaration %ls", BackendGetIdName(backend_ctx, node));
+    //TODO: translit
+    ASM_PRINT_(L"%ls:\n", BackendGetIdName(backend_ctx, node));
 
     BackendErr_t error = BACKEND_SUCCESS;
     
