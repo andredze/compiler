@@ -78,9 +78,10 @@ static void InstructionSetOperand2_Value(Instruction_t* instr,
 //==========================================================================================
 
 Instruction_t* InstructionCreateRelNone(OpcodeType_t      opcode,
-                                        RelativeAddress_t rel)
+                                        RelativeAddress_t rel_addr,
+                                        const wchar_t*    label)
 {
-    return InstructionCreate(opcode, {.rel = rel}, {.none = 1});
+    return InstructionCreate(opcode, {.rel = {.rel_addr = rel_addr, .label = label}}, {.none = 1});
 }
 
 //==========================================================================================
@@ -313,7 +314,10 @@ static void InstructionOperandValueDump(Operand_t operand)
             break;
 
         case OPERAND_REL_32:
-            wcprintf(MAGENTA, L"%d", operand.value.rel);
+            wcprintf(MAGENTA, L"%ls (%d | HEX %#x)", 
+                              operand.value.rel.label, 
+                              operand.value.rel.rel_addr,
+                              operand.value.rel.rel_addr);
             break;
 
         case OPERAND_NONE:

@@ -62,22 +62,22 @@ BackendErr_t TestDSLEncoding(BackendCtx_t* backend_ctx)
 
     //------------------------------------------------------------------//
 
-    CALL_REL_(50);
-    CALL_REL_(-100);
+    CALL_REL_(50, L"penis");
+    CALL_REL_(-100, L"penis");
 
     //------------------------------------------------------------------//
 
-    JMP_REL_(3);
-    JMP_REL_(-100);
+    JMP_REL_(3, L"penis");
+    JMP_REL_(-100, L"penis");
     
-    JA_REL_(-1);
+    JCC_REL_(OPCODE_JA_REL, -1, L"penis");
 
-    JE_REL_ (0xded);
-    JNE_REL_(0xded);
-    JA_REL_ (0xded);
-    JAE_REL_(0xded);
-    JB_REL_ (0xded);
-    JBE_REL_(0xded);
+    JCC_REL_(OPCODE_JE_REL,  0xded, L"ded");
+    JCC_REL_(OPCODE_JNE_REL, 0xded, L"ded");
+    JCC_REL_(OPCODE_JA_REL,  0xded, L"ded");
+    JCC_REL_(OPCODE_JAE_REL, 0xded, L"ded");
+    JCC_REL_(OPCODE_JB_REL,  0xded, L"ded");
+    JCC_REL_(OPCODE_JBE_REL, 0xded, L"ded");
 
     //------------------------------------------------------------------//
     

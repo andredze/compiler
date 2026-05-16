@@ -1,4 +1,5 @@
 #include "tree_dump.h"
+#include "relocations_table.h"
 #include <wchar.h>
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -205,6 +206,70 @@ LangErr_t LangIdTableDump(LangCtx_t*     lang_ctx,
                      id_data->n_local_vars,
                      id_data->n_params,
                      id_data->addr);
+    }
+
+    fwprintf(fp, L"---------------------------------------"
+                 L"---------------------------------------\n\n");
+    
+    fflush(fp);
+
+    return LANG_SUCCESS;
+}
+
+//==========================================================================================
+
+LangErr_t RelTableDump(LangCtx_t*     lang_ctx, 
+                       RelTable_t*    rel_table, 
+                       const char*    func,
+                       const char*    file,
+                       int            line,
+                       const wchar_t* fmt,
+                       ...)
+{
+    assert(lang_ctx);
+    assert(rel_table);
+
+    FILE* fp = lang_ctx->tree.debug.fp;
+
+    va_list args = {};
+
+    va_start(args, fmt);
+
+    fwprintf(fp, L"<h4><font color=blue>"
+                 L"Dump RelTable_t %p called from %s at %s:%d"
+                 L" Message: ",
+                 rel_table,
+                 func, 
+                 file,
+                 line);
+
+    vfwprintf(fp, fmt, args);
+
+    va_end(args);
+
+    fwprintf(fp, L"</h4></font>\n\n");
+
+    fwprintf(fp,
+             L".size     = %zu\n"
+             L".cap      = %zu\n"
+             L".data     = %p\n",
+             rel_table->size,
+             rel_table->capacity,
+             rel_table->data);
+
+    RelElem_t* rel_data = NULL;
+
+    fwprintf(fp, L"index  {   label,   bin_code_pos,   hex }\n");
+
+    for (size_t i = 0; i < rel_table->size; i++)
+    {
+        rel_data = &rel_table->data[i];
+
+        fwprintf(fp, L"[ %-2d]: {%10ls,      %3zu    , %#6x}\n",
+                     i,
+                     rel_data->label,
+                     rel_data->bin_code_pos,
+                     rel_data->bin_code_pos);
     }
 
     fwprintf(fp, L"---------------------------------------"

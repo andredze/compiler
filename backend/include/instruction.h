@@ -70,12 +70,21 @@ typedef int32_t RelativeAddress_t;
 
 //------------------------------------------------------------------//
 
+typedef struct RelOperand
+{
+    RelativeAddress_t rel_addr;
+    const wchar_t*    label;
+}
+RelOperand_t;
+
+//------------------------------------------------------------------//
+
 typedef union OperandValue
 {
     Register_t          reg;
     Imm_t               imm;
     MemoryOperand_t     mem;
-    RelativeAddress_t   rel;
+    RelOperand_t        rel;
 
     int                 none;
 }
@@ -143,7 +152,7 @@ const char* InstructionGetOpcodeTypeString(OpcodeType_t opcode_type);
 
 /* Note: returned instr has to be freed */
 Instruction_t* InstructionCreateNoneNone(OpcodeType_t opcode);
-Instruction_t* InstructionCreateRelNone (OpcodeType_t opcode, RelativeAddress_t rel);
+Instruction_t* InstructionCreateRelNone (OpcodeType_t opcode, RelativeAddress_t rel_addr, const wchar_t* label);
 Instruction_t* InstructionCreateMemNone (OpcodeType_t opcode, Register_t base, Disp_t disp);
 Instruction_t* InstructionCreateRegImm  (OpcodeType_t opcode, Register_t reg1, Imm_t imm);
 Instruction_t* InstructionCreateMemReg  (OpcodeType_t opcode, Register_t base, Disp_t disp, Register_t reg2);

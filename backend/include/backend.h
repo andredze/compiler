@@ -9,6 +9,8 @@
 #include "lang_ctx.h"
 #include "id_types.h"
 #include "bin_code_buffer.h"
+#include "backend_err.h"
+#include "relocations_table.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -33,32 +35,10 @@ typedef struct BackendCtx
     size_t      current_stack_local_vars_size;
 
     TreeNode_t* main_node;
+
+    RelTable_t  rel_table;
 }
 BackendCtx_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef enum BackendErr
-{
-    BACKEND_SUCCESS,
-    BACKEND_INVALID_AST_INPUT,
-    BACKEND_CANT_EMIT_KEYWORD,
-    BACKEND_UNKNOWN_TOKEN_TYPE,
-    BACKEND_FILE_ERROR,
-    BACKEND_LANG_ERROR,
-
-    BACKEND_INVALID_REGISTER,
-    BACKEND_INVALID_OPCODE,
-    BACKEND_INVALID_OPERAND_TYPE,
-
-    BACKEND_INVALID_INSTRUCTION,
-    BACKEND_BINCODE_BUFFER_ERROR,
-
-    BACKEND_CREATE_INSTRUCTION_ERROR,
-    BACKEND_INSTRUCTION_CAN_NOT_BE_ENCODED,
-    BACKEND_WRONG_ID_TABLE_INDEX
-}
-BackendErr_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

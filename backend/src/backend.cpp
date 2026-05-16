@@ -38,6 +38,8 @@ BackendErr_t BackendCtxCtor(BackendCtx_t* backend_ctx)
     DPRINT_FUNC_ENTER_MSG();
     assert(backend_ctx);
 
+    BackendErr_t error = BACKEND_SUCCESS;
+
     if (LangCtxCtor(&backend_ctx->lang_ctx))
     {
         return BACKEND_LANG_ERROR;
@@ -45,6 +47,10 @@ BackendErr_t BackendCtxCtor(BackendCtx_t* backend_ctx)
     if (BinCodeCtor(&backend_ctx->bin_code, BIN_CODE_INIT_CAPACITY))
     {
         return BACKEND_BINCODE_BUFFER_ERROR;
+    }
+    if ((error = RelTableCtor(&backend_ctx->rel_table)))
+    {
+        return error;
     }
 
     backend_ctx->endif_labels_count            = 0;
@@ -77,8 +83,9 @@ BackendErr_t BackendCtxDtor(BackendCtx_t* backend_ctx)
         backend_ctx->asm_file = NULL;
     }
 
-    LangCtxDtor(&backend_ctx->lang_ctx);
-    BinCodeDtor(&backend_ctx->bin_code);
+    LangCtxDtor (&backend_ctx->lang_ctx);
+    BinCodeDtor (&backend_ctx->bin_code);
+    RelTableDtor(&backend_ctx->rel_table);
 
     DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;

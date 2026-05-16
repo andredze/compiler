@@ -173,29 +173,17 @@
 #define POP_REG_(reg) \
         GENERATE_CODE_(InstructionCreateRegNone, OPCODE_POP_REG, reg)
 
-#define CALL_REL_(rel) \
-        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_CALL_REL, rel)
+#define CALL_REL_(rel, label) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_CALL_REL, rel, label)
 
-#define JMP_REL_(rel) \
-        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JMP_REL, rel)
+#define JMP_REL_(rel, label) \
+        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JMP_REL, rel, label)
 
-#define JE_REL_(rel) \
-        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JE_REL, rel)
+#define JCC_REL_(opcode, rel, label) \
+        GENERATE_CODE_(InstructionCreateRelNone, opcode, rel, label)
 
-#define JNE_REL_(rel) \
-        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JNE_REL, rel)
-
-#define JA_REL_(rel) \
-        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JA_REL, rel)
-
-#define JAE_REL_(rel) \
-        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JAE_REL, rel)
-
-#define JB_REL_(rel) \
-        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JB_REL, rel)
-
-#define JBE_REL_(rel) \
-        GENERATE_CODE_(InstructionCreateRelNone, OPCODE_JBE_REL, rel)
+#define JE_REL_(rel, label) \
+        JCC_REL_(OPCODE_JE_REL, rel, label)
 
 #define RET_() \
         GENERATE_CODE_(InstructionCreateNoneNone, OPCODE_RET)
@@ -212,12 +200,12 @@
 //------------------------------------------------------------------//
 
 #define EMIT_VERIFY_(cond)                                 \
-        BEGIN                                             \
-        if (!(cond))                                      \
-        {                                                 \
+        BEGIN                                              \
+        if (!(cond))                                       \
+        {                                                  \
             WPRINTERR(L"EMIT_VERIFY_(%s) dropped", #cond); \
-            return BACKEND_INVALID_AST_INPUT;             \
-        }                                                 \
+            return BACKEND_INVALID_AST_INPUT;              \
+        }                                                  \
         END
 
 /* ==================================================================================== */

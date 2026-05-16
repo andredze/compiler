@@ -404,8 +404,18 @@ BackendErr_t EncodeRelNone(BinInstruction_t* bin_instr, Instruction_t* instr)
     ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REL_32);
     ENCODE_VERIFY_(instr->operand_2.type == OPERAND_NONE);
 
+    int instr_size = bin_instr->info.contains_rex    * (int) sizeof(bin_instr->rex) + 
+                     bin_instr->info.contains_opcode * bin_instr->opcode.size + 
+                     BINVALUE_SIZE_4_BYTE; // for 32-bit disp
+
+    int rel_addr = instr->operand_1.value.rel.rel_addr;
+
+    int rel_disp = (rel_addr < 0) ? 
+                    rel_addr - instr_size :
+                    rel_addr + instr_size;
+
     // OPCODE + cd
-    BinInstrSetDisp32(bin_instr, instr->operand_1.value.rel);
+    BinInstrSetDisp32(bin_instr, rel_disp);
 
     return BACKEND_SUCCESS;
 }

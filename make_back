@@ -35,21 +35,22 @@ BACKEND_INCLUDES  := -D BACKEND 		\
                      -I common/AST_io 	\
                      -I common
 
-BACKEND_SOURCES := backend/src/main.cpp 			\
-                   backend/src/backend.cpp 			\
-                   backend/src/emission.cpp 		\
-                   backend/src/testing.cpp 			\
-                   backend/src/instruction.cpp 		\
-                   backend/src/bin_code_buffer.cpp 	\
-                   backend/src/elf_build.cpp 		\
-                   backend/src/encoding_x86.cpp 	\
-                   backend/src/assembly_nasm.cpp 	\
-                   common/lang_ctx/lang_funcs.cpp 	\
-                   common/stack/stack.cpp 			\
-                   common/AST_io/AST_read.cpp 		\
-                   common/tree/tree_commands.cpp 	\
-                   common/tree/tree_dump.cpp 		\
-                   common/colors/colors.cpp 		\
+BACKEND_SOURCES := backend/src/main.cpp 			 \
+                   backend/src/backend.cpp 			 \
+                   backend/src/emission.cpp 		 \
+                   backend/src/relocations_table.cpp \
+                   backend/src/testing.cpp 			 \
+                   backend/src/instruction.cpp 		 \
+                   backend/src/bin_code_buffer.cpp 	 \
+                   backend/src/elf_build.cpp 		 \
+                   backend/src/encoding_x86.cpp 	 \
+                   backend/src/assembly_nasm.cpp 	 \
+                   common/lang_ctx/lang_funcs.cpp 	 \
+                   common/stack/stack.cpp 			 \
+                   common/AST_io/AST_read.cpp 		 \
+                   common/tree/tree_commands.cpp 	 \
+                   common/tree/tree_dump.cpp 		 \
+                   common/colors/colors.cpp 		 \
                    common/io_file/io_file.cpp
 
 LOGS := log/*

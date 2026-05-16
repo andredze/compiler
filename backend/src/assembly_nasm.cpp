@@ -137,11 +137,12 @@ static BackendErr_t AssembleOperandMem(BackendCtx_t* backend_ctx, MemoryOperand_
 
 //==========================================================================================
 
-static BackendErr_t AssembleOperandRel(BackendCtx_t* backend_ctx, RelativeAddress_t rel)
+static BackendErr_t AssembleOperandRel(BackendCtx_t* backend_ctx, RelOperand_t rel)
 {
     assert(backend_ctx);
 
-    AssembleNumber(backend_ctx, rel);
+    ASM_PRINT_(L"%ls", rel.label);
+    ASM_PRINT_(L" ; %#x", rel.rel_addr);
 
     return BACKEND_SUCCESS;
 }

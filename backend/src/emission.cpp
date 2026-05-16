@@ -20,6 +20,11 @@ static BackendErr_t EmitFunctionDeclaration (BackendCtx_t* backend_ctx, TreeNode
 static BackendErr_t EmitFunctionCall        (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitFunctionArguments   (BackendCtx_t* backend_ctx, TreeNode_t* node);
 
+static BackendErr_t EmitLabel(BackendCtx_t* backend_ctx,
+                              wchar_t*      label,
+                              int           id_table_index,
+                              size_t*       rel_table_index_dst);
+
 //——————————————————————————————————————————————————————————————————————————————————————————
 // на этом же этапе составлять таблицу rel_table для относительных сдвигов для колла
 // и метки для насма + для джампов там же
@@ -51,6 +56,43 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
     }
 
     DPRINT_FUNC_LEAVE_MSG();
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitLabel(BackendCtx_t* backend_ctx, 
+                              wchar_t*      label, 
+                              int           id_table_index,
+                              size_t*       rel_table_index_dst)
+{
+    assert(backend_ctx);
+    assert(label);
+
+    //TODO: translit
+    ASM_PRINT_(L"%ls:\n", label);
+
+    BackendErr_t error = BACKEND_SUCCESS;
+    
+    if ((error = RelTablePush(&backend_ctx->rel_table,
+                              label,
+                              backend_ctx->bin_code.size,
+                              id_table_index,
+                              rel_table_index_dst)))
+    {
+        return error;
+    }
+
+    REL_TABLE_DUMP_(L"after emitting label %ls at %zu (hex %#x)",
+                    label,
+                    backend_ctx->bin_code.size,
+                    backend_ctx->bin_code.size);
+
+    WDPRINTF(L"after emitting label %ls at %zu (hex %#x)\n", 
+             label, 
+             backend_ctx->bin_code.size,
+             backend_ctx->bin_code.size);
+
     return BACKEND_SUCCESS;
 }
 
@@ -207,11 +249,18 @@ static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_
     EMIT_VERIFY_(IS_FUNC_DECL_(node));
     EMIT_VERIFY_(node->right);
 
-    ASM_COMMENT_(L"\nfunction declaration %ls", BackendGetIdName(backend_ctx, node));
-    //TODO: translit
-    ASM_PRINT_(L"%ls:\n", BackendGetIdName(backend_ctx, node));
-
+    ASM_PRINT_(L"\n");
+    ASM_COMMENT_(L"function declaration %ls", BackendGetIdName(backend_ctx, node));
+    
     BackendErr_t error = BACKEND_SUCCESS;
+
+    if ((error = EmitLabel(backend_ctx,
+                           BackendGetIdName(backend_ctx, node),
+                           (int) node->data.value.id.id_index,
+                           NULL)))
+    {
+        return error;
+    }
     
     size_t stack_local_vars_size = 0;
 
@@ -269,9 +318,19 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
         }
     }
 
-    // call
-    // FIXME: make labels and relocation table
-    CALL_REL_(42);
+    size_t func_label_bin_code_pos = 0;
+
+    if ((error = RelTableGetLabelBinCodePosByIdIndex(&backend_ctx->rel_table,
+                                                     node->data.value.id.id_index,
+                                                     &func_label_bin_code_pos)))
+    {
+        return error;
+    }
+
+    int rel_addr = CountLabelRelAddr(func_label_bin_code_pos, 
+                                     backend_ctx->bin_code.size);
+
+    CALL_REL_(rel_addr, BackendGetIdName(backend_ctx, node));
 
     // return stack to its state
     MOV_REG_IMM_(REG_RDX, (int) stack_frame_size);

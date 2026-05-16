@@ -1,0 +1,33 @@
+#ifndef BACKEND_ERR_H
+#define BACKEND_ERR_H 
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+typedef enum BackendErr
+{
+    BACKEND_SUCCESS,
+    BACKEND_MEMALLOC_ERROR,
+    BACKEND_INVALID_AST_INPUT,
+    BACKEND_CANT_EMIT_KEYWORD,
+    BACKEND_UNKNOWN_TOKEN_TYPE,
+    BACKEND_FILE_ERROR,
+    BACKEND_LANG_ERROR,
+
+    BACKEND_INVALID_REGISTER,
+    BACKEND_INVALID_OPCODE,
+    BACKEND_INVALID_OPERAND_TYPE,
+
+    BACKEND_INVALID_INSTRUCTION,
+    BACKEND_BINCODE_BUFFER_ERROR,
+
+    BACKEND_CREATE_INSTRUCTION_ERROR,
+    BACKEND_INSTRUCTION_CAN_NOT_BE_ENCODED,
+    BACKEND_WRONG_ID_TABLE_INDEX,
+    BACKEND_WRONG_REL_TABLE_INDEX,
+    BACKEND_REL_TABLE_LABEL_NOT_FOUND
+}
+BackendErr_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+#endif /* BACKEND_ERR_H */
