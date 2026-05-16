@@ -12,6 +12,8 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+static BackendErr_t EmitMain                (BackendCtx_t* backend_ctx, TreeNode_t* node);
+static BackendErr_t EmitFunctions           (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitNumber              (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitVariable            (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitFunctionDeclaration (BackendCtx_t* backend_ctx, TreeNode_t* node);
@@ -19,6 +21,9 @@ static BackendErr_t EmitFunctionCall        (BackendCtx_t* backend_ctx, TreeNode
 static BackendErr_t EmitFunctionArguments   (BackendCtx_t* backend_ctx, TreeNode_t* node);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
+// TODO: пока left Func Decl делаю объявления функций, потом делаю объявление main-а
+// на этом же этапе составлять таблицу rel_table для относительных сдвигов для колла
+// и метки для насма + для джампов там же
 
 BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
 {
@@ -28,11 +33,35 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
     BackendErr_t error = BACKEND_SUCCESS;
 
     ASM_PRINT_(
-        L"global _start\n\n"
+        L"global %ls\n\n"
         L"default rel\n\n"
-        L"section .text\n\n"
-        L"_start:\n"
+        L"section .text\n\n",
+        NASM_ENTRY_LABEL
     );
+
+    if ((error = EmitFunctions(backend_ctx, backend_ctx->lang_ctx.tree.dummy->right)))
+    {
+        return error;
+    }
+
+    DPRINT_FUNC_LEAVE_MSG();
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitMain(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    DPRINT_FUNC_ENTER_MSG();
+    assert(backend_ctx);
+    assert(node);
+
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_CMD_SEPARATOR));
+    EMIT_VERIFY_(node->left );
+
+    BackendErr_t error = BACKEND_SUCCESS;
+    
+    ASM_PRINT_(L"\n%ls:\n", NASM_ENTRY_LABEL);
 
     // 0 table element is main
     size_t main_vars_size = 0;
@@ -48,7 +77,7 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
     MOV_REG_IMM_(REG_RDI, (int) main_vars_size);
     SUB_REG_REG_(REG_RSP, REG_RDI);
 
-    if ((error = EmitNode(backend_ctx, backend_ctx->lang_ctx.tree.dummy->right)))
+    if ((error = EmitNode(backend_ctx, node)))
     {    
         return error;
     }
@@ -60,6 +89,43 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
     MOV_REG_IMM_(REG_RAX, SYSCALL_CODE_EXIT);
     MOV_REG_IMM_(REG_RDI, EXIT_SUCCESS);
     SYSCALL_();
+
+    DPRINT_FUNC_LEAVE_MSG();
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t EmitFunctions(BackendCtx_t* backend_ctx, TreeNode_t* node)
+{
+    DPRINT_FUNC_ENTER_MSG();
+    assert(backend_ctx);
+    assert(node);
+
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_CMD_SEPARATOR));
+    EMIT_VERIFY_(node->left );
+    EMIT_VERIFY_(node->right);
+
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    if (IS_FUNC_DECL_(node->left))
+    {
+        if ((error = EmitFunctionDeclaration(backend_ctx, node->left)))
+        {
+            return error;
+        }
+        if ((error = EmitFunctions(backend_ctx, node->right)))
+        {
+            return error;
+        }
+    }
+    else
+    {
+        if ((error = EmitMain(backend_ctx, node)))
+        {
+            return error;
+        }
+    }
 
     DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;
@@ -118,6 +184,7 @@ BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
+    DPRINT_FUNC_ENTER_MSG();
     assert(backend_ctx);
     assert(node);
 
@@ -125,6 +192,7 @@ static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_
     EMIT_VERIFY_(node->right);
 
     ASM_COMMENT_(L"function declaration %ls", BackendGetIdName(backend_ctx, node));
+    ASM_PRINT_(L"\n%ls:\n", BackendGetIdName(backend_ctx, node));
 
     BackendErr_t error = BACKEND_SUCCESS;
     
@@ -149,6 +217,7 @@ static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_
         return error;
     }
 
+    DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;
 }
 

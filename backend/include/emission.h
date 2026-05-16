@@ -29,4 +29,8 @@ typedef BackendErr_t (*EmitFunction_t) (BackendCtx_t* backend_ctx, TreeNode_t* n
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+const wchar_t * const NASM_ENTRY_LABEL = L"_start"; 
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 #endif /* EMISSION_H */
