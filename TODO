@@ -12,9 +12,6 @@ encode debug instr CC
 5) clean debug info
 6) dump processor clean
 
-MAKEFILE???
-DRIVER
-
 сделать аргументы с помощью getopt и --help
 
 ссылки на источники сохранить когда буду байтики писать вместо асма
@@ -24,8 +21,6 @@ DRIVER
 // сделать plt в заранее фиксированном месте
 // на насме реализовать вспомогательные функции как библиотеку (printf, scanf, draw)
 // расположить в начале 
-
-GOT !!!
 
 for elf header /usr/include/elf.h (заинклюдить)
 

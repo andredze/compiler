@@ -585,12 +585,12 @@ BackendErr_t EmitMathExprOperation(BackendCtx_t* backend_ctx, TreeNode_t* node)
     }
     else if (IS_KEYWORD_(node, KW_MUL))
     {
-        MOV_REG_IMM_(REG_RDX, 0);
         IMUL_REG_(REG_RCX);
     }
     else
     {
         MOV_REG_IMM_(REG_RDX, 0);
+        CQO_();
         IDIV_REG_(REG_RCX);
     }
 

@@ -6,6 +6,9 @@ run
 *.o
 *.txt
 *.psy
+exec/*
+!psy/fact.psy
+!psy/linear.psy
 fact.cpp
 example.cpp
 *.json

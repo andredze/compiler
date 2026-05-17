@@ -132,8 +132,7 @@ static TreeNode_t* ParseBody(FrontendCtx_t* frontend_ctx)
 
             TreeNode_t* cur_tok = FrontendGetCurrentToken(frontend_ctx);
 
-            WPRINTERR(L"Missing \"%ls\", line %d", GetKeywordName(KW_CMD_SEPARATOR),
-                      cur_tok->line);
+            SYNTAX_ERROR_(L"Missing \"%ls\"", GetKeywordName(KW_CMD_SEPARATOR));
             // PARSER_DUMP_(lang_ctx->tokens.data[frontend_ctx->cur_token_index - 1],
             //                 L"expected to have a separator after");
             return NULL;
@@ -177,7 +176,7 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
         SET_PARSER_ERROR_(func_decl_lhs, L"Missing function name after \"%ls\"",
                                          GetKeywordName(KW_FUNCTION_DECL_LHS));
 
-        WPRINTERR(L"Expected function name after function declaration lhs");
+        SYNTAX_ERROR_(L"Expected function name after function declaration lhs");
 
         return NULL;
     }
@@ -314,7 +313,7 @@ static TreeNode_t* ParseFunctionParameters(FrontendCtx_t* frontend_ctx,
 
         if (next_param == NULL || !IS_IDENTIFIER_(next_param))
         {
-            WPRINTERR("Should be an parameter after param separator");
+            SYNTAX_ERROR_("Should be an parameter after param separator");
             return NULL;
         }
 
@@ -375,8 +374,8 @@ static TreeNode_t* ParseFunctionBlock(FrontendCtx_t* frontend_ctx)
 
         if (separator == NULL)
         {
-            WPRINTERR("There should be a cmd separator after function statement, cur_tok_ind = %zu",
-                        frontend_ctx->cur_token_index);
+            SYNTAX_ERROR_(L"There should be a cmd separator after function statement, cur_tok_ind = %zu",
+                           frontend_ctx->cur_token_index);
             PARSER_DUMP_(frontend_ctx->tokens.data[frontend_ctx->cur_token_index - 1],
                             L"expected to have a separator after");
             return NULL;
@@ -492,7 +491,7 @@ static TreeNode_t* ParseReturn(FrontendCtx_t* frontend_ctx)
 
     if (cur_token->right == NULL)
     {
-        WPRINTERR("After return there should be an expression");
+        SYNTAX_ERROR_("After return there should be an expression");
         return NULL;
     }
 
@@ -522,7 +521,7 @@ static TreeNode_t* ParseIfStatement(FrontendCtx_t* frontend_ctx)
 
     if (condition == NULL)
     {
-        WPRINTERR("There should be a condition inside if");
+        SYNTAX_ERROR_("There should be a condition inside if");
         return NULL;
     }
 
@@ -532,7 +531,7 @@ static TreeNode_t* ParseIfStatement(FrontendCtx_t* frontend_ctx)
 
     if (if_rhs == NULL && !IS_KEYWORD_(if_rhs, KW_IF_RHS))
     {
-        WPRINTERR("There should be an if right side");
+        SYNTAX_ERROR_("There should be an if right side");
         return NULL;
     }
 
@@ -544,7 +543,7 @@ static TreeNode_t* ParseIfStatement(FrontendCtx_t* frontend_ctx)
 
     if (block_statement == NULL)
     {
-        WPRINTERR("Expected block after if statement");
+        SYNTAX_ERROR_("Expected block after if statement");
         return NULL;
     }
 
@@ -587,7 +586,7 @@ static TreeNode_t* ParseWhileStatement(FrontendCtx_t* frontend_ctx)
 
     if (block_statement == NULL)
     {
-        WPRINTERR("Expected block after while condition");
+        SYNTAX_ERROR_("Expected block after while condition");
         return NULL;
     }
 
@@ -674,7 +673,7 @@ static TreeNode_t* ParseBlockStatement(FrontendCtx_t* frontend_ctx)
 
     if (statement == NULL)
     {
-        WPRINTERR("Expected block body");
+        SYNTAX_ERROR_("Expected block body");
         return NULL;
     }
 
@@ -682,7 +681,7 @@ static TreeNode_t* ParseBlockStatement(FrontendCtx_t* frontend_ctx)
 
     if (block_close == NULL || !IS_KEYWORD_(block_close, KW_BLOCK_END))
     {
-        WPRINTERR("There should be a block end");
+        SYNTAX_ERROR_("There should be a block end");
         return NULL;
     }
 
@@ -733,7 +732,7 @@ static TreeNode_t* ParseVariableDeclaration(FrontendCtx_t* frontend_ctx)
 
     if (cur_token == NULL || !IS_IDENTIFIER_(cur_token))
     {
-        WPRINTERR(L"Expected identifier in variable declaration");
+        SYNTAX_ERROR_(L"Expected identifier in variable declaration");
         return NULL;
     }
 
@@ -788,7 +787,7 @@ static TreeNode_t* ParseAssignment(FrontendCtx_t* frontend_ctx)
 
     if (cur_token == NULL)
     {
-        WPRINTERR("There should be an identifier after assignment");
+        SYNTAX_ERROR_("There should be an identifier after assignment");
         return NULL;
     }
 
@@ -798,7 +797,7 @@ static TreeNode_t* ParseAssignment(FrontendCtx_t* frontend_ctx)
 
     if (expression == NULL)
     {
-        WPRINTERR("There should be an expression after identifier in assignment");
+        SYNTAX_ERROR_("There should be an expression after identifier in assignment");
         return NULL;
     }
 
@@ -898,7 +897,7 @@ static TreeNode_t* ParseTerm(FrontendCtx_t* frontend_ctx)
 
         if (next_token == NULL)
         {
-            WPRINTERR("Should be an argument after term operation");
+            SYNTAX_ERROR_("Should be an argument after term operation");
             return NULL;
         }
 
@@ -950,7 +949,7 @@ static TreeNode_t* ParsePower(FrontendCtx_t* frontend_ctx)
 
         if (next_token == NULL)
         {
-            WPRINTERR("Should be an argument after power operation");
+            SYNTAX_ERROR_("Should be an argument after power operation");
             return NULL;
         }
 
@@ -1078,7 +1077,7 @@ static TreeNode_t* ParseBracketsExpression(FrontendCtx_t* frontend_ctx)
     if (cur_token == NULL)
     {
         //TODO - seterror
-        WPRINTERR("No expression after opening bracket");
+        SYNTAX_ERROR_("No expression after opening bracket");
         return NULL;
     }
 
@@ -1089,7 +1088,7 @@ static TreeNode_t* ParseBracketsExpression(FrontendCtx_t* frontend_ctx)
     if (close_bracket == NULL || !IS_KEYWORD_(close_bracket, KW_BRACKET_CLOSE))
     {
         //TODO - seterror
-        WPRINTERR("No closing bracket after opening bracket");
+        SYNTAX_ERROR_("No closing bracket after opening bracket");
         return NULL;
     }
 
@@ -1120,7 +1119,7 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
 
     if (function_name == NULL || !IS_IDENTIFIER_(function_name))
     {
-        WPRINTERR("There should be a function identifier after function call");
+        SYNTAX_ERROR_("There should be a function identifier after function call");
         // lang_ctx->error_info.error = LANG_SYNTAX_ERROR;
         //TODO - set error
         return NULL;
@@ -1135,8 +1134,8 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
 
     if (func_id_index == -1)
     {
-        WPRINTERR(L"Function %ls was not declared\n",
-                  LangGetIdName(&frontend_ctx->lang_ctx.names_pool, 
+        SYNTAX_ERROR_(L"Function %ls was not declared\n",
+                      LangGetIdName(&frontend_ctx->lang_ctx.names_pool, 
                                 function_name->data.value.id.name_index));
         return NULL;
     }
@@ -1147,7 +1146,7 @@ static TreeNode_t* ParseFunctionCall(FrontendCtx_t* frontend_ctx)
 
     if (function_call_rhs == NULL || !IS_KEYWORD_(function_call_rhs, KW_FUNCTION_CALL_RHS))
     {
-        WPRINTERR("There should be a function call ending");
+        SYNTAX_ERROR_("There should be a function call ending");
         //TODO - set error
         // lang_ctx->error_info.error = LANG_SYNTAX_ERROR;
         return NULL;
@@ -1217,7 +1216,7 @@ static TreeNode_t* ParseFunctionArguments(FrontendCtx_t* frontend_ctx, int* args
 
         if (next_param == NULL)
         {
-            WPRINTERR("Should be an argument after param separator");
+            SYNTAX_ERROR_("Should be an argument after param separator");
             return NULL;
         }
 
@@ -1251,7 +1250,7 @@ static TreeNode_t* ParseUnaryOperatorCall(FrontendCtx_t* frontend_ctx)
 
     if (cur_token->right == NULL)
     {
-        WPRINTERR("After unary op there should be an expression");
+        SYNTAX_ERROR_("After unary op there should be an expression");
         return NULL;
     }
 

@@ -203,6 +203,9 @@
 #define SUB_REG_IMM_(reg, imm) \
         GENERATE_CODE_(InstructionCreateRegImm, OPCODE_SUB_REG_IMM, reg, imm)
 
+#define CQO_() \
+        GENERATE_CODE_(InstructionCreateNoneNone, OPCODE_CQO)
+
 //------------------------------------------------------------------//
 
 #define EMIT_VERIFY_(cond)                                 \

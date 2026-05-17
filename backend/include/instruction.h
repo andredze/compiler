@@ -130,6 +130,7 @@ typedef enum OpcodeType
     OPCODE_CMP_REG_IMM,
     OPCODE_ADD_REG_IMM,
     OPCODE_SUB_REG_IMM,
+    OPCODE_CQO,
 
     OPCODE_COUNT
 }

@@ -379,9 +379,15 @@ BackendErr_t EncodeNoneNone(BinInstruction_t* bin_instr, Instruction_t* instr)
     assert(instr);
 
     ENCODE_VERIFY_(instr->opcode_type    == OPCODE_RET ||
-                   instr->opcode_type    == OPCODE_SYSCALL);
+                   instr->opcode_type    == OPCODE_SYSCALL ||
+                   instr->opcode_type    == OPCODE_CQO);
     ENCODE_VERIFY_(instr->operand_1.type == OPERAND_NONE);
     ENCODE_VERIFY_(instr->operand_2.type == OPERAND_NONE);
+
+    if (instr->opcode_type == OPCODE_CQO)
+    {
+        BinInstrSetREXPrefixDefault(bin_instr, instr, MODRM_TYPE_UNKNOWN, MODRM_TYPE_UNKNOWN);   
+    }
 
     // OPCODE
     return BACKEND_SUCCESS;
