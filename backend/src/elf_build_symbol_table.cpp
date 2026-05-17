@@ -1,4 +1,5 @@
 #include "elf_build_symbol_table.h"
+#include "elf_build.h"
 
 //==========================================================================================
 
@@ -100,21 +101,36 @@ BackendErr_t SymbolTableDump(BackendCtx_t*  backend_ctx,
 
     SymbolTableElem_t* sym_elem = NULL;
 
-    fwprintf(fp, L"index  {%8ls, %8ls, %8ls, %8ls, %8ls, %8ls}\n",
-                 L"st_name", L"st_info", L"st_other", L"st_shndx", L"st_value", L"st_size");
+    fwprintf(fp, L"--------------------------------------\n");
+    fwprintf(fp, L"st_bind values:\n"
+                 L"STB_LOCAL	0  Local symbol\n"
+                 L"STB_GLOBAL	1  Global symbol\n\n");
+
+    fwprintf(fp, L"st_type values:\n"
+                 L"STT_FUNC	2  Symbol is a code object\n\n");
+    fwprintf(fp, L"--------------------------------------\n");
+
+    fwprintf(fp, L"index  {%19ls, %13ls, %13ls, %15ls, %27ls, %27ls}, %20ls\n",
+                 L"st_name", L"st_info", L"st_other", L"st_shndx", L"st_value", L"st_size", L"for debug:");
+
+    fwprintf(fp, L"index  {%19ls, %13ls, %13ls, %15ls, %27ls, %27ls}, %13ls %13ls\n",
+                 L"strtab_ind", L"scope+type", L"visibility", L"section", L"func_label addr", L"func_size", L"bind(scope)", L"type");          
 
     for (size_t i = 0; i < sym_table->size; i++)
     {
         sym_elem = &sym_table->data[i];
 
-        fwprintf(fp, L"[ %-2d]: {%8ul, %8hhu, %8hhu, %8ul, %8zu, %8zu}\n",
+        fwprintf(fp, L"[ %-2d]: {%8ul (%08x), %8hhu (%02x), %8hhu (%02x), %8ul (%04x), "
+                     L"%8zu (%016x), %8zu (%016x)}, %8hhu (%02x), %8hhu (%02x)\n",
                      i,
-                     sym_elem->st_name,
-                     sym_elem->st_info,
-                     sym_elem->st_other,
-                     sym_elem->st_shndx,
-                     sym_elem->st_value,
-                     sym_elem->st_size);
+                     sym_elem->st_name,  sym_elem->st_name,
+                     sym_elem->st_info,  sym_elem->st_info,
+                     sym_elem->st_other, sym_elem->st_other,
+                     sym_elem->st_shndx, sym_elem->st_shndx,
+                     sym_elem->st_value, sym_elem->st_value,
+                     sym_elem->st_size,  sym_elem->st_size,
+                     ELF64_ST_BIND(sym_elem->st_info), ELF64_ST_BIND(sym_elem->st_info), 
+                     ELF64_ST_TYPE(sym_elem->st_info), ELF64_ST_TYPE(sym_elem->st_info));
     }
 
     fwprintf(fp, L"---------------------------------------"
@@ -148,20 +164,24 @@ BackendErr_t SymbolTableBuildElem(SymbolTableElem_t* elem,
 
     elem->st_name = (Elf64_Word) str_tab_index; // shift of the str_name in str_tab
     
-    int st_bind = 0;
+    unsigned char st_bind = 0;
+    unsigned char st_type = STT_NOTYPE;
 
     switch (scope_type)
     {
         case REL_FUNC_EXTERN:
             st_bind = STB_GLOBAL;
+            st_type = STT_NOTYPE;
             break;
     
         case REL_FUNC_GLOBAL:
             st_bind = STB_GLOBAL;
+            st_type = STT_FUNC;
             break;
 
         case REL_FUNC_LOCAL:
             st_bind = STB_LOCAL;
+            st_type = STT_FUNC;
             break;
 
         default:
@@ -177,12 +197,12 @@ BackendErr_t SymbolTableBuildElem(SymbolTableElem_t* elem,
     }
     else
     {
-        elem->st_shndx = TEXT_SECTION_NUMBER;
+        elem->st_shndx = SH_TEXT_INDEX;
         elem->st_value = func_start_bin_code_addr;
         elem->st_size  = func_size;
     }
 
-    elem->st_info  = ELF64_ST_INFO(st_bind, STT_FUNC);
+    elem->st_info  = ELF64_ST_INFO(st_bind, st_type);
     elem->st_other = STV_DEFAULT; // default visibility
 
     return BACKEND_SUCCESS;
@@ -237,13 +257,13 @@ BackendErr_t ElfBuildSymbolTable(BackendCtx_t* backend_ctx, SymbolTable_t* sym_t
 
     RelTable_t* rel_table = &backend_ctx->rel_table;
 
-    // firstly push only locals
+    // firstly push only local funcs declarations
     for (size_t i = 0; i < rel_table->size; i++)
     {
         RelElem_t* rel_elem = &rel_table->data[i];
 
-        if (!(rel_elem->scope != REL_FUNC_LOCAL) &&
-              rel_elem->type  == REL_FUNC_DECL)
+        if (!( (rel_elem->scope == REL_FUNC_LOCAL) &&
+               (rel_elem->type  == REL_FUNC_DECL ) ) )
         {
             continue;
         }
@@ -258,11 +278,12 @@ BackendErr_t ElfBuildSymbolTable(BackendCtx_t* backend_ctx, SymbolTable_t* sym_t
     sym_table->last_local_index_plus_one = sym_table->size;
 
     // now don't push locals
+    // push only if call extern or if decl main
     for (size_t i = 0; i < rel_table->size; i++)
     {
         RelElem_t* rel_elem = &rel_table->data[i];
 
-        if (!((rel_elem->type  == REL_FUNC_DECL && rel_elem->scope == REL_FUNC_EXTERN) ||
+        if (!((rel_elem->scope == REL_FUNC_GLOBAL && rel_elem->type == REL_FUNC_DECL) ||
                rel_elem->scope == REL_FUNC_EXTERN))
         {
             continue;

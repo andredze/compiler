@@ -50,6 +50,14 @@ RelocationTable_t;
     #define RELOCATION_TABLE_DUMP_(reloc_table, fmt, ...)   ;
 #endif /* BACKEND_DEBUG */
 
+BackendErr_t RelocationTableDump(BackendCtx_t*      backend_ctx, 
+                                 RelocationTable_t* reloc_table,
+                                 const char*        func,
+                                 const char*        file,
+                                 int                line,
+                                 const wchar_t*     fmt,
+                                 ...);
+
 //------------------------------------------------------------------//
 
 BackendErr_t RelocationTableCtor(RelocationTable_t* reloc_table, size_t init_cap);

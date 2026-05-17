@@ -54,26 +54,29 @@ const size_t STRING_TABLE_INIT_CAPACITY = 256;
 //------------------------------------------------------------------//
 
 #ifdef BACKEND_DEBUG
-    #define STRING_POOL_TABLE_DUMP_(str_pool, fmt, ...)       \
-            BEGIN                                             \
-            WDPRINTF(fmt L"\n", ##__VA_ARGS__);               \
-            if (StringPoolDump(backend_ctx,                   \
-                               str_pool,                      \
-                               __func__, __FILE__, __LINE__,  \
-                               fmt, ##__VA_ARGS__))           \
-            {                                                 \
-                return BACKEND_LANG_ERROR;                    \
-            }                                                 \
-            if (StringTableDump(backend_ctx,                  \
-                                str_table,                    \
-                                __func__, __FILE__, __LINE__, \
-                                fmt, ##__VA_ARGS__))          \
-            {                                                 \
-                return BACKEND_LANG_ERROR;                    \
-            }                                                 \
+    #define STRING_POOL_TABLE_DUMP_(str_pool, str_table, fmt, ...)\
+            BEGIN                                                 \
+            WDPRINTF(fmt L"\n", ##__VA_ARGS__);                   \
+            if (str_pool)                                         \
+            {                                                     \
+                if (StringPoolDump(backend_ctx,                   \
+                                   str_pool,                      \
+                                   __func__, __FILE__, __LINE__,  \
+                                   fmt, ##__VA_ARGS__))           \
+                {                                                 \
+                    return BACKEND_LANG_ERROR;                    \
+                }                                                 \
+            }                                                     \
+            if (StringTableDump(backend_ctx,                      \
+                                str_table,                        \
+                                __func__, __FILE__, __LINE__,     \
+                                fmt, ##__VA_ARGS__))              \
+            {                                                     \
+                return BACKEND_LANG_ERROR;                        \
+            }                                                     \
             END
 #else
-    #define STRING_POOL_TABLE_DUMP_(str_pool, fmt, ...)   ;
+    #define STRING_POOL_TABLE_DUMP_(str_pool, str_table, fmt, ...)   ;
 #endif /* BACKEND_DEBUG */
 
 //------------------------------------------------------------------//

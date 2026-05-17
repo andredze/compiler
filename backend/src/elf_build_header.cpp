@@ -13,12 +13,18 @@ BackendErr_t ElfBuildHeader(Elf64_Ehdr* header, size_t section_header_table_offs
     header->e_ident[EI_MAG3]       = ELFMAG3; // 'F'
     header->e_ident[EI_CLASS]      = ELFCLASS64;
     header->e_ident[EI_DATA]       = ELFDATA2LSB;
-    header->e_ident[EI_VERSION]    = ELFOSABI_SYSV;
+    header->e_ident[EI_VERSION]    = EV_CURRENT;
+    header->e_ident[EI_OSABI]      = ELFOSABI_SYSV;
     header->e_ident[EI_ABIVERSION] = 0;
+
+    for (int ei = EI_PAD; ei < EI_NIDENT; ei++)
+    {
+        header->e_ident[ei] = 0;
+    }
 
     header->e_type      = ET_REL;
     header->e_machine   = EM_X86_64;
-    header->e_version   = EV_CURRENT;
+    header->e_version   = 1; // EV_CURRENT;
     header->e_entry     = 0; // ignore (relocatable file)
     header->e_phoff     = 0; // ignore (relocatable file)
     header->e_shoff     = section_header_table_offset;

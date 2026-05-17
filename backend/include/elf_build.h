@@ -79,8 +79,12 @@ typedef struct ElfSectionsOffsets
     size_t reloc;
     size_t reloc_size;
 
+    size_t before_reloc_padding;
+
     size_t symtab;
     size_t symtab_size;
+
+    size_t before_symtab_padding;
 
     size_t strtab;
     size_t strtab_size;
@@ -88,7 +92,10 @@ typedef struct ElfSectionsOffsets
     size_t shstrtab;
     size_t shstrtab_size;
 
-    size_t section_header;
+    size_t section_header_table;
+    size_t section_header_table_size;
+
+    size_t total_size;
 }
 ElfSectionsOffsets_t;
 
@@ -107,6 +114,10 @@ typedef struct ElfCtx
     ElfSectionsOffsets_t offsets;
 
     SectionHeader_t      section_header_table[SECTION_HEADERS_COUNT];
+
+    uint8_t*             text;
+
+    uint8_t*             buffer;
 }
 ElfCtx_t;
 
@@ -116,6 +127,32 @@ const char * const ELF_DIR_NAME = "elf";
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+#ifdef BACKEND_DEBUG
+    #define ELF_CTX_DUMP_(backend_ctx, elf_ctx, fmt, ...)      \
+            BEGIN                                              \
+            WDPRINTF(fmt L"\n", ##__VA_ARGS__);                \
+            if (ElfCtxDump(backend_ctx,                        \
+                           elf_ctx,                            \
+                           __func__, __FILE__, __LINE__,       \
+                           fmt, ##__VA_ARGS__))                \
+            {                                                  \
+                return BACKEND_LANG_ERROR;                     \
+            }                                                  \
+            END
+#else
+    #define ELF_CTX_DUMP_(backend_ctx, elf_ctx, fmt, ...) ;
+#endif /* BACKEND_DEBUG */
+
+BackendErr_t ElfCtxDump(BackendCtx_t*  backend_ctx, 
+                        ElfCtx_t*      elf_ctx,
+                        const char*    func,
+                        const char*    file,
+                        int            line,
+                        const wchar_t* fmt,
+                        ...);
+
+//------------------------------------------------------------------//
+
 BackendErr_t BackendOpenElfFile(BackendCtx_t* backend_ctx);
 
 BackendErr_t ElfCtxCtor(ElfCtx_t* elf_ctx, BackendCtx_t* backend_ctx);
@@ -123,7 +160,9 @@ void         ElfCtxDtor(ElfCtx_t* elf_ctx);
 
 BackendErr_t ElfBuild(BackendCtx_t* backend_ctx, ElfCtx_t* elf_ctx);
 
-BackendErr_t ElfWrite(FILE* elf_file, ElfCtx_t* elf_ctx, uint8_t* text);
+BackendErr_t ElfCopyContextToBuffer(ElfCtx_t* elf_ctx);
+
+BackendErr_t ElfWriteBuffer(FILE* elf_file, ElfCtx_t* elf_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

@@ -9,7 +9,7 @@ BackendErr_t BackendOpenElfFile(BackendCtx_t* backend_ctx)
 
     char elf_file_path[MAX_FILE_NAME_LEN] = {};
 
-    snprintf(elf_file_path, sizeof(elf_file_path), "elf/%s", 
+    snprintf(elf_file_path, sizeof(elf_file_path), "elf/%s.o", 
              backend_ctx->ast_file_name);
 
     WDPRINTF(L"Opening file %s\n\n", elf_file_path);
@@ -62,6 +62,12 @@ void ElfCtxDtor(ElfCtx_t* elf_ctx)
     StringTableDtor    (&elf_ctx->str_table);
     SymbolTableDtor    (&elf_ctx->sym_table);
     RelocationTableDtor(&elf_ctx->reloc_table);
+
+    if (elf_ctx->buffer)
+    {
+        free(elf_ctx->buffer);
+        elf_ctx->buffer = NULL;
+    }
 }
 
 //==========================================================================================
@@ -83,25 +89,60 @@ static void ElfCountSectionsOffsets(ElfCtx_t* elf_ctx)
 
     offsets->text = sizeof(Elf64_Ehdr);
     
+    WDPRINTF(L".text offset %#x\n", offsets->text);
+
     // must be 8-bytes aligned
+    
     offsets->reloc = GetAlignedAddress(offsets->text + offsets->text_size, SH_ADDR_ALIGN_RELA_TEXT_INDEX); 
     
+    offsets->before_reloc_padding = offsets->reloc - (offsets->text + offsets->text_size);
+    
     offsets->reloc_size = elf_ctx->reloc_table.size * sizeof(elf_ctx->reloc_table.data[0]);
+
+    WDPRINTF(L"text_size %#x\n",            offsets->text_size);
+    WDPRINTF(L"before reloc padding %#x\n", offsets->before_reloc_padding);
+    WDPRINTF(L".reloc offset %#x\n",        offsets->reloc);
 
     // must be 8-bytes aligned
     offsets->symtab = GetAlignedAddress(offsets->reloc + offsets->reloc_size, SH_ADDR_ALIGN_SYMTAB_INDEX);
     
+    offsets->before_symtab_padding = offsets->symtab - (offsets->reloc + offsets->reloc_size);
+    
     offsets->symtab_size = elf_ctx->sym_table.size * sizeof(elf_ctx->sym_table.data[0]);
+    
+    WDPRINTF(L"reloc_size %#x\n",            offsets->reloc_size);
+    WDPRINTF(L"before symtab padding %#x\n", offsets->before_symtab_padding);
+    WDPRINTF(L".symtab offset %#x\n",        offsets->symtab);
+
+    WDPRINTF(L"symtab_size %#x\n",           offsets->symtab_size);
 
     offsets->strtab = offsets->symtab + offsets->symtab_size;
 
+    WDPRINTF(L".strtab offset %#x\n",        offsets->strtab);
+
     offsets->strtab_size = elf_ctx->str_table.size * sizeof(elf_ctx->str_table.data[0]);
+
+    WDPRINTF(L"strtab_size %#x\n",           offsets->strtab_size);
 
     offsets->shstrtab = offsets->strtab + offsets->strtab_size;
 
+    WDPRINTF(L".shstrtab offset %#x\n",      offsets->shstrtab);
+
     offsets->shstrtab_size = sizeof(SH_STR_TAB);
 
-    offsets->section_header = offsets->shstrtab + offsets->shstrtab_size;
+    WDPRINTF(L"shstrtab_size %#x\n",         offsets->shstrtab_size);
+
+    offsets->section_header_table = offsets->shstrtab + offsets->shstrtab_size;
+
+    WDPRINTF(L"section_header_table offset %#x\n", offsets->section_header_table);
+
+    offsets->section_header_table_size = sizeof(elf_ctx->section_header_table);
+
+    WDPRINTF(L"section_header_table_size %#x\n", offsets->section_header_table_size);
+
+    offsets->total_size = offsets->section_header_table + offsets->section_header_table_size;
+
+    WDPRINTF(L"total_size %#x\n", offsets->total_size);
 }
 
 //==========================================================================================
@@ -209,6 +250,8 @@ BackendErr_t ElfBuild(BackendCtx_t* backend_ctx, ElfCtx_t* elf_ctx)
 
     BackendErr_t error = BACKEND_SUCCESS;
 
+    elf_ctx->text = backend_ctx->bin_code.buffer;
+
     if ((error = ElfBuildStringTable(backend_ctx, &elf_ctx->str_table)))
     {
         return error;
@@ -226,7 +269,7 @@ BackendErr_t ElfBuild(BackendCtx_t* backend_ctx, ElfCtx_t* elf_ctx)
 
     ElfCountSectionsOffsets(elf_ctx);
     
-    if ((error = ElfBuildHeader(&elf_ctx->header, elf_ctx->offsets.section_header)))
+    if ((error = ElfBuildHeader(&elf_ctx->header, elf_ctx->offsets.section_header_table)))
     {
         return error;
     }
@@ -240,134 +283,223 @@ BackendErr_t ElfBuild(BackendCtx_t* backend_ctx, ElfCtx_t* elf_ctx)
 
 //==========================================================================================
 
-static size_t fwrite_padding(FILE* file, size_t padding_bytes_count)
-{
-    assert(file);
-
-    if (padding_bytes_count == 0)
-    {
-        return 1;
-    }
-
-    if (padding_bytes_count >= MAX_PADDING)
-    {
-        return (size_t)-1;
-    }
-
-    void* padding = (void*) calloc(padding_bytes_count, 1);
-    
-    if (padding == NULL)
-    {
-        return (size_t)-1;
-    }
-
-    size_t returned = fwrite(padding, padding_bytes_count, 1, file);
-
-    free(padding);
-
-    return returned;
-}
-
-//==========================================================================================
-
-#define FWRITE(name, src_ptr, src_size)                                   \
-        BEGIN                                                             \
-        if ((src_size) != 0)                                              \
-        {                                                                 \
-            if (fwrite((void*) (src_ptr), (src_size), 1, elf_file) != 1)  \
-            {                                                             \
-                WPRINTERR(L"Failed writing " name);                       \
-                return BACKEND_FAILED_FWRITE_TO_ELF;                      \
-            }                                                             \
-        }                                                                 \
-        END
-
-//------------------------------------------------------------------//
-
-BackendErr_t ElfWrite(FILE* elf_file, ElfCtx_t* elf_ctx, uint8_t* text)
+BackendErr_t ElfWriteBuffer(FILE* elf_file, ElfCtx_t* elf_ctx)
 {
     assert(elf_file);
     assert(elf_ctx);
-    assert(text);
 
-    FWRITE(L"elf header", &elf_ctx->header, sizeof(elf_ctx->header));
-    FWRITE(L"elf text", text, elf_ctx->offsets.text_size);
-
-    size_t padding = elf_ctx->offsets.reloc - (elf_ctx->offsets.text + 
-                                               elf_ctx->offsets.text_size);
-
-    if (fwrite_padding(elf_file, padding) != 1)
+    if (fwrite(elf_ctx->buffer, elf_ctx->offsets.total_size, 1, elf_file) != 1)
     {
-        WPRINTERR(L"Failed writing text padding %d", padding);
+        WPRINTERR(L"Failed fwrite buffer to elf file");
         return BACKEND_FAILED_FWRITE_TO_ELF;
     }
-    
-    FWRITE(L"elf rela text", &elf_ctx->reloc_table.data, elf_ctx->offsets.reloc_size);
-
-    padding = elf_ctx->offsets.symtab - (elf_ctx->offsets.reloc + elf_ctx->offsets.reloc_size);
-
-    if (fwrite_padding(elf_file, padding) != 1)
-    {
-        WPRINTERR(L"Failed writing rela text padding %d", padding);
-        return BACKEND_FAILED_FWRITE_TO_ELF;
-    }
-
-    FWRITE(L"elf symtab",   elf_ctx->sym_table.data,       elf_ctx->offsets.symtab_size);
-
-    // if (fwrite((void*) &elf_ctx->sym_table.data, elf_ctx->offsets.symtab_size, 
-    //             1, elf_file) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing symtab");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
-    // if (fwrite((void*) elf_ctx->str_table.data, elf_ctx->offsets.strtab_size, 
-    //             1, stderr) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing strtab");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
-
-    FWRITE(L"elf strtab",   elf_ctx->str_table.data,       elf_ctx->offsets.strtab_size);
-    FWRITE(L"elf shstrtab", SH_STR_TAB,                    elf_ctx->offsets.shstrtab_size);
-    FWRITE(L"elf sh table", elf_ctx->section_header_table, sizeof(elf_ctx->section_header_table));
 
     return BACKEND_SUCCESS;
 }
 
-//------------------------------------------------------------------//
+//==========================================================================================
 
-#undef FWRITE
+BackendErr_t ElfCopyContextToBuffer(ElfCtx_t* elf_ctx)
+{
+    assert(elf_ctx);
 
-    // if (fwrite((void*) &elf_ctx->header, sizeof(elf_ctx->header), 1, elf_file) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing elf->header");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
-    // if (fwrite((void*) text, elf_ctx->offsets.text_size, 1, elf_file) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing text");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
+    size_t buffer_pos = 0;
+
+    elf_ctx->buffer = (uint8_t*) calloc(elf_ctx->offsets.total_size, 1);
+
+    if (elf_ctx->buffer == NULL)
+    {
+        WPRINTERR(L"Failed memalloc for elf buffer");
+        return BACKEND_MEMALLOC_ERROR;
+    }
+
+    memcpy(&elf_ctx->buffer[buffer_pos], &elf_ctx->header, sizeof(Elf64_Ehdr));
+    buffer_pos += sizeof(Elf64_Ehdr);
+
+    memcpy(&elf_ctx->buffer[buffer_pos], elf_ctx->text, elf_ctx->offsets.text_size);
+    buffer_pos += elf_ctx->offsets.text_size + elf_ctx->offsets.before_reloc_padding;
+
+    memcpy(&elf_ctx->buffer[buffer_pos], elf_ctx->reloc_table.data, elf_ctx->offsets.reloc_size);
+    buffer_pos += elf_ctx->offsets.reloc_size + elf_ctx->offsets.before_symtab_padding;
+    
+    memcpy(&elf_ctx->buffer[buffer_pos], elf_ctx->sym_table.data, elf_ctx->offsets.symtab_size);
+    buffer_pos += elf_ctx->offsets.symtab_size;
+    
+    memcpy(&elf_ctx->buffer[buffer_pos], elf_ctx->str_table.data, elf_ctx->offsets.strtab_size);
+    buffer_pos += elf_ctx->offsets.strtab_size;
+
+    memcpy(&elf_ctx->buffer[buffer_pos], SH_STR_TAB, elf_ctx->offsets.shstrtab_size);
+    buffer_pos += elf_ctx->offsets.shstrtab_size;
+
+    memcpy(&elf_ctx->buffer[buffer_pos], elf_ctx->section_header_table, 
+            elf_ctx->offsets.section_header_table_size);
+
+    buffer_pos += elf_ctx->offsets.section_header_table_size;
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+#include "elf_build_string_table.h"
+
+//==========================================================================================
+
+BackendErr_t ElfCtxDump(BackendCtx_t*  backend_ctx, 
+                        ElfCtx_t*      elf_ctx,
+                        const char*    func,
+                        const char*    file,
+                        int            line,
+                        const wchar_t* fmt,
+                        ...)
+{
+    assert(backend_ctx);
+    assert(elf_ctx);
+
+    SYMBOL_TABLE_DUMP_(&elf_ctx->sym_table, L"general dump");
+    STRING_POOL_TABLE_DUMP_(NULL, &elf_ctx->str_table, L"general dump");
+    RELOCATION_TABLE_DUMP_(&elf_ctx->reloc_table, L"general dump");
+    
+    FILE* fp = backend_ctx->lang_ctx.tree.debug.fp;
+
+    va_list args = {};
+
+    va_start(args, fmt);
+
+    fwprintf(fp, L"<h4><font color=blue>"
+                 L"Dump ElfCtx_t %p called from %s at %s:%d"
+                 L" Message: ",
+                 elf_ctx,
+                 func, 
+                 file,
+                 line);
+
+    vfwprintf(fp, fmt, args);
+
+    va_end(args);
+
+    fwprintf(fp, L"</h4></font>\n\n");
+
+    fwprintf(fp,
+             L"elf_ctx->offsets:\n"
+             L".text                      = %#x\n"
+             L".text_size                 = %#x\n"
+             L".before_reloc_padding      = %#x\n"
+             L".reloc                     = %#x\n"
+             L".reloc_size                = %#x\n"
+             L".before_symtab_padding     = %#x\n"
+             L".symtab                    = %#x\n"
+             L".symtab_size               = %#x\n"
+             L".strtab                    = %#x\n"
+             L".strtab_size               = %#x\n"
+             L".shstrtab                  = %#x\n"
+             L".shstrtab_size             = %#x\n"
+             L".section_header_table      = %#x\n"
+             L".section_header_table_size = %#x\n"
+             L".total_size                = %#x\n",
+             elf_ctx->offsets.text,
+             elf_ctx->offsets.text_size,
+             elf_ctx->offsets.before_reloc_padding,
+             elf_ctx->offsets.reloc,
+             elf_ctx->offsets.reloc_size,
+             elf_ctx->offsets.before_symtab_padding,
+             elf_ctx->offsets.symtab,
+             elf_ctx->offsets.symtab_size,
+             elf_ctx->offsets.strtab,
+             elf_ctx->offsets.strtab_size,
+             elf_ctx->offsets.shstrtab,
+             elf_ctx->offsets.shstrtab_size,
+             elf_ctx->offsets.section_header_table,
+             elf_ctx->offsets.section_header_table_size,
+             elf_ctx->offsets.total_size);
+    
+    if (elf_ctx->buffer == NULL)
+    {
+        return BACKEND_SUCCESS;
+    }
+
+    fwprintf(fp, L"===================================== HEX DUMP =====================================\n");
+
+    for (size_t i = 0; i < elf_ctx->offsets.total_size; i++)
+    {
+        if (i % 16 == 0)
+        {
+            fwprintf(fp, L"%#06x: ", i);
+        }        
+
+        if ((i == elf_ctx->offsets.text                ) ||
+            (i == elf_ctx->offsets.reloc               ) ||
+            (i == elf_ctx->offsets.symtab              ) ||
+            (i == elf_ctx->offsets.strtab              ) ||
+            (i == elf_ctx->offsets.shstrtab            ) ||
+            (i == elf_ctx->offsets.section_header_table))
+        {
+            fwprintf(fp, L"<font color=red>%02x</font> ", elf_ctx->buffer[i]);
+        }
+        else
+        {
+            fwprintf(fp, L"%02x ", elf_ctx->buffer[i]);
+        }
+
+        if ((i+1) % 16 == 0)
+        {
+            fwprintf(fp, L"\n");
+        }
+    }
+
+    fwprintf(fp, L"\n=========================================="
+                 L"==========================================\n");
 
 
-    // if (fwrite((void*) &elf_ctx->reloc_table.data, elf_ctx->offsets.reloc_size, 
-    //             1, elf_file) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing rela text");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
+    fwprintf(fp, L"===================================== CHAR DUMP ====================================\n");
 
+    for (size_t i = 0; i < elf_ctx->offsets.total_size; i++)
+    {
+        if (i % 16 == 0)
+        {
+            fwprintf(fp, L"%#06x: ", i);
+        }        
 
-    // if (fwrite((void*) SH_STR_TAB, elf_ctx->offsets.shstrtab_size, 1, elf_file) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing shstrtab");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
-    // if (fwrite((void*) &elf_ctx->section_header_table, sizeof(elf_ctx->section_header_table), 
-    //             1, elf_file) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing section header table");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
+        if ((i == elf_ctx->offsets.text                ) ||
+            (i == elf_ctx->offsets.reloc               ) ||
+            (i == elf_ctx->offsets.symtab              ) ||
+            (i == elf_ctx->offsets.strtab              ) ||
+            (i == elf_ctx->offsets.shstrtab            ) ||
+            (i == elf_ctx->offsets.section_header_table))
+        {
+            if (elf_ctx->buffer[i] == '\0')
+            {
+                fwprintf(fp, L"<font color=red>00 </font>", elf_ctx->buffer[i]);
+            }
+            else
+            {
+                fwprintf(fp, L"<font color=red>%2c </font>", elf_ctx->buffer[i]);
+            }
+        }
+        else
+        {
+            if (elf_ctx->buffer[i] == '\0')
+            {
+                fwprintf(fp, L"00 ", elf_ctx->buffer[i]);
+            }
+            else
+            {
+                fwprintf(fp, L"%2c ", elf_ctx->buffer[i]);
+            }
+        }
+
+        if ((i+1) % 16 == 0)
+        {
+            fwprintf(fp, L"\n");
+        }
+    }
+
+    fwprintf(fp, L"\n=========================================="
+                 L"==========================================\n");
+
+    fflush(fp);
+
+    return BACKEND_SUCCESS;
+}
 
 //==========================================================================================

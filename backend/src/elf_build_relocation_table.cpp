@@ -96,18 +96,28 @@ BackendErr_t RelocationTableDump(BackendCtx_t*      backend_ctx,
 
     RelocationTableElem_t* reloc_elem = NULL;
 
-    fwprintf(fp, L"index  {%8ls, %8ls, %8ls}\n",
-                 L"r_offset", L"r_info", L"r_addend");
+    fwprintf(fp, L"index  {%30ls, %30ls, %30ls} %30ls\n",
+                 L"r_offset", L"r_info", L"r_addend", L"        for debug:");
+    
+    fwprintf(fp, L"index  {%30ls, %30ls, %30ls} %30ls %30ls\n",
+                 L"address of displacement", L"symtab_index shifted", L"addend to disp", L"symtab", L"type");
 
     for (size_t i = 0; i < reloc_table->size; i++)
     {
         reloc_elem = &reloc_table->data[i];
 
-        fwprintf(fp, L"[ %-2d]: {%8zu, %8zu, %8d}\n",
+        fwprintf(fp, L"[ %-2d]: {%12zu (%016lx), %12zu (%016lx), %12d (%016lx)}, %12d (%016lx), %12d (%016lx)\n",
                      i,
                      reloc_elem->r_offset,
+                     reloc_elem->r_offset,
                      reloc_elem->r_info,
-                     reloc_elem->r_addend);
+                     reloc_elem->r_info,
+                     reloc_elem->r_addend,
+                     reloc_elem->r_addend,
+                     ELF64_R_SYM(reloc_elem->r_info),
+                     ELF64_R_SYM(reloc_elem->r_info),
+                     ELF64_R_TYPE(reloc_elem->r_info),
+                     ELF64_R_TYPE(reloc_elem->r_info));
     }
 
     fwprintf(fp, L"---------------------------------------"

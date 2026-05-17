@@ -455,7 +455,7 @@ BackendErr_t ElfBuildStringTable(BackendCtx_t* backend_ctx, StringTable_t* str_t
         return error;
     }
 
-    STRING_POOL_TABLE_DUMP_(&str_pool, L"ctored");
+    STRING_POOL_TABLE_DUMP_(&str_pool, str_table, L"ctored");
 
     RelTable_t* rel_table = &backend_ctx->rel_table;
 
@@ -469,7 +469,7 @@ BackendErr_t ElfBuildStringTable(BackendCtx_t* backend_ctx, StringTable_t* str_t
             return error;
         }
 
-        STRING_POOL_TABLE_DUMP_(&str_pool, L"put elem %ls", rel_table->data[i].label);
+        STRING_POOL_TABLE_DUMP_(&str_pool, str_table, L"put elem %ls", rel_table->data[i].label);
     }
 
     REL_TABLE_DUMP_(L"put strtab_indexes");

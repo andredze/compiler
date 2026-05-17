@@ -63,7 +63,12 @@ int main(int argc, char* argv[])
         if (BackendOpenElfFile(&backend_ctx))
             break;
 
-        if (ElfWrite(backend_ctx.elf_file, &elf_ctx, backend_ctx.bin_code.buffer))
+        if (ElfCopyContextToBuffer(&elf_ctx))
+            break;
+
+        ELF_CTX_DUMP_(&backend_ctx, &elf_ctx, L"dump after copying to buffer");
+
+        if (ElfWriteBuffer(backend_ctx.elf_file, &elf_ctx))
             break;
     }
     while (0);
