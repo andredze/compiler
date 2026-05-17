@@ -41,7 +41,7 @@ BackendErr_t ElfCtxCtor(ElfCtx_t* elf_ctx, BackendCtx_t* backend_ctx)
     {
         return error;
     }
-    if ((error = SymbolTableCtor(&elf_ctx->sym_table, backend_ctx->rel_table.size + 1)))
+    if ((error = SymbolTableCtor(&elf_ctx->sym_table, backend_ctx->rel_table.size + 2)))
     {
         return error;
     }
@@ -312,10 +312,24 @@ BackendErr_t ElfWrite(FILE* elf_file, ElfCtx_t* elf_ctx, uint8_t* text)
         return BACKEND_FAILED_FWRITE_TO_ELF;
     }
 
-    FWRITE(L"elf symtab",   &elf_ctx->sym_table.data,       elf_ctx->offsets.symtab_size);
-    FWRITE(L"elf strtab",   &elf_ctx->str_table.data,       elf_ctx->offsets.strtab_size);
-    FWRITE(L"elf shstrtab", SH_STR_TAB,                     elf_ctx->offsets.shstrtab_size);
-    FWRITE(L"elf sh table", &elf_ctx->section_header_table, sizeof(elf_ctx->section_header_table));
+    FWRITE(L"elf symtab",   elf_ctx->sym_table.data,       elf_ctx->offsets.symtab_size);
+
+    // if (fwrite((void*) &elf_ctx->sym_table.data, elf_ctx->offsets.symtab_size, 
+    //             1, elf_file) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing symtab");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
+    // if (fwrite((void*) elf_ctx->str_table.data, elf_ctx->offsets.strtab_size, 
+    //             1, stderr) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing strtab");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
+
+    FWRITE(L"elf strtab",   elf_ctx->str_table.data,       elf_ctx->offsets.strtab_size);
+    FWRITE(L"elf shstrtab", SH_STR_TAB,                    elf_ctx->offsets.shstrtab_size);
+    FWRITE(L"elf sh table", elf_ctx->section_header_table, sizeof(elf_ctx->section_header_table));
 
     return BACKEND_SUCCESS;
 }
@@ -344,18 +358,6 @@ BackendErr_t ElfWrite(FILE* elf_file, ElfCtx_t* elf_ctx, uint8_t* text)
     // }
 
 
-    // if (fwrite((void*) &elf_ctx->sym_table.data, elf_ctx->offsets.symtab_size, 
-    //             1, elf_file) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing symtab");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
-    // if (fwrite((void*) &elf_ctx->str_table.data, elf_ctx->offsets.strtab_size, 
-    //             1, elf_file) != 1)
-    // {
-    //     WPRINTERR(L"Failed writing strtab");
-    //     return BACKEND_FAILED_FWRITE_TO_ELF;
-    // }
     // if (fwrite((void*) SH_STR_TAB, elf_ctx->offsets.shstrtab_size, 1, elf_file) != 1)
     // {
     //     WPRINTERR(L"Failed writing shstrtab");

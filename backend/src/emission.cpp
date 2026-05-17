@@ -369,7 +369,8 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
     int rel_addr = CountLabelRelAddr(func_label_bin_code_pos, 
                                      BinCodeGetCurrentPos(&backend_ctx->bin_code));
 
-    CALL_REL_(rel_addr, BackendGetIdName(backend_ctx, node));
+    // CALL_REL_(rel_addr, BackendGetIdName(backend_ctx, node));
+    CALL_REL_(UNDEFINED_FUNC_ADDR, BackendGetIdName(backend_ctx, node));
 
     // return stack to its state
     MOV_REG_IMM_(REG_RDX, (int) stack_frame_size);

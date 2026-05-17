@@ -42,6 +42,14 @@
 
 // 	return Жопа();
 // }
+#include <stdio.h>
+
+int скажи_мне_кто_ты()
+{
+	int a = 0;
+	scanf("%d", &a);
+	return a;
+}
 
 int func()
 {
