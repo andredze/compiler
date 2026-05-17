@@ -301,7 +301,9 @@ BackendErr_t EncodeRegImm(BinInstruction_t* bin_instr, Instruction_t* instr)
     assert(instr);
 
     ENCODE_VERIFY_(instr->opcode_type == OPCODE_MOV_REG_IMM ||
-                   instr->opcode_type == OPCODE_CMP_REG_IMM);
+                   instr->opcode_type == OPCODE_CMP_REG_IMM ||
+                   instr->opcode_type == OPCODE_ADD_REG_IMM ||
+                   instr->opcode_type == OPCODE_SUB_REG_IMM);
 
     ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REG_64);
     ENCODE_VERIFY_(instr->operand_2.type == OPERAND_IMM_32);
@@ -406,7 +408,8 @@ BackendErr_t EncodeRelNone(BinInstruction_t* bin_instr, Instruction_t* instr)
 
     int rel_disp = 0;
 
-    if (instr->opcode_type == OPCODE_CALL_REL)
+    if (instr->opcode_type                  == OPCODE_CALL_REL && 
+        instr->operand_1.value.rel.rel_addr == UNDEFINED_FUNC_ADDR)
     {
         rel_disp = 0;
     }

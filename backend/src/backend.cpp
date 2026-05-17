@@ -115,6 +115,14 @@ BackendErr_t BackendGetFuncIdTableIdData(BackendCtx_t* backend_ctx,
 
 //==========================================================================================
 
+// follow the System V ABI
+size_t GetAlignedUp(size_t number)
+{
+    return (number + 0xF) & ~0xF;
+}
+
+//==========================================================================================
+
 BackendErr_t BackendGetVarsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst)
 {
     assert(backend_ctx);
@@ -133,14 +141,16 @@ BackendErr_t BackendGetVarsStackSize(BackendCtx_t* backend_ctx, size_t func_inde
         return BACKEND_WRONG_ID_TABLE_INDEX;
     }
 
-    *dst = id_data->n_local_vars * STACK_ELEMENT_SIZE;
+    size_t frame_size = id_data->n_local_vars * STACK_ELEMENT_SIZE;
+
+    *dst = GetAlignedUp(frame_size);
 
     return BACKEND_SUCCESS;
 }
 
 //==========================================================================================
 
-BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst)
+BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst, int* have_to_align)
 {
     assert(backend_ctx);
 
@@ -158,7 +168,11 @@ BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_inde
         return BACKEND_WRONG_ID_TABLE_INDEX;
     }
 
-    *dst = id_data->n_params * STACK_ELEMENT_SIZE;
+    size_t frame_size = id_data->n_params * STACK_ELEMENT_SIZE;
+
+    *have_to_align = frame_size & 0xF;
+
+    *dst = GetAlignedUp(frame_size);
 
     return BACKEND_SUCCESS;
 }

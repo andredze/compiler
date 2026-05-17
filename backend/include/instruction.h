@@ -128,6 +128,8 @@ typedef enum OpcodeType
     OPCODE_SYSCALL,
     OPCODE_CMP_REG_REG,
     OPCODE_CMP_REG_IMM,
+    OPCODE_ADD_REG_IMM,
+    OPCODE_SUB_REG_IMM,
 
     OPCODE_COUNT
 }

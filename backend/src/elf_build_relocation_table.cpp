@@ -169,7 +169,7 @@ BackendErr_t ElfBuildRelocationTable(BackendCtx_t*      backend_ctx,
     {
         RelElem_t* my_rel_elem = &my_rel_table->data[i];
 
-        if (!(my_rel_elem->type == REL_FUNC_CALL))
+        if (!(my_rel_elem->type == REL_FUNC_CALL) || (my_rel_elem->scope == REL_FUNC_LOCAL))
         {
             continue;
         }

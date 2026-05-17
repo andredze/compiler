@@ -37,8 +37,18 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
     ASM_PRINT_(
         L"global %ls\n\n"
         L"default rel\n\n"
-        L"section .text\n\n",
-        MAIN_ENTRY_LABEL
+        L"section .text\n\n"
+        L"extern %ls\n"
+        L"extern %ls\n"
+        L"extern %ls\n"
+        L"extern %ls\n"
+        L"extern %ls\n\n",
+        MAIN_ENTRY_LABEL,
+        KW_INPUT_FUNC_NAME,
+        KW_OUTPUT_FUNC_NAME,
+        KW_SQRT_FUNC_NAME,
+        KW_DRAW_FUNC_NAME,
+        KW_POINT_FUNC_NAME
     );
 
     if ((error = EmitFunctions(backend_ctx, backend_ctx->lang_ctx.tree.dummy->right)))
@@ -71,6 +81,7 @@ BackendErr_t EmitExit(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
 
+    POP_REG_(REG_RBP);
     MOV_REG_IMM_(REG_RAX, SYSCALL_CODE_EXIT);
     MOV_REG_IMM_(REG_RDI, EXIT_SUCCESS);
     SYSCALL_();
@@ -135,9 +146,9 @@ static BackendErr_t EmitMain(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
     ASM_COMMENT_(L"stack frame for main variables");
 
+    PUSH_REG_(REG_RBP);
     MOV_REG_REG_(REG_RBP, REG_RSP);
-    MOV_REG_IMM_(REG_RDI, (int) main_vars_size);
-    SUB_REG_REG_(REG_RSP, REG_RDI);
+    SUB_REG_IMM_(REG_RSP, (int) main_vars_size);
 
     if ((error = EmitNode(backend_ctx, node)))
     {    
@@ -146,8 +157,7 @@ static BackendErr_t EmitMain(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
     ASM_COMMENT_(L"end program");
 
-    MOV_REG_IMM_(REG_RDI, (int) main_vars_size);
-    ADD_REG_REG_(REG_RSP, REG_RDI);
+    ADD_REG_IMM_(REG_RSP, (int) main_vars_size);
 
     if ((error = EmitExit(backend_ctx, NULL)))
     {
@@ -302,10 +312,11 @@ static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_
 
     PUSH_REG_(REG_RBP);
 
+    MOV_REG_REG_(REG_RBP, REG_RSP);
+
     backend_ctx->current_stack_local_vars_size = stack_local_vars_size;
     
-    MOV_REG_IMM_(REG_RDX, (int) stack_local_vars_size);
-    SUB_REG_REG_(REG_RSP, REG_RDX);
+    SUB_REG_IMM_(REG_RSP, (int) stack_local_vars_size);
 
     if ((error = EmitNode(backend_ctx, node->right)))
     {
@@ -332,11 +343,20 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
     
     size_t stack_frame_size = 0;
 
+    int have_to_align = 0;
+
     if ((error = BackendGetArgsStackSize(backend_ctx, 
                                          node->data.value.id.id_index, 
-                                         &stack_frame_size)))
+                                         &stack_frame_size,
+                                         &have_to_align)))
     {
         return error;
+    }
+
+    if (have_to_align)
+    {
+        ASM_COMMENT_(L"align stack by 0x10");
+        SUB_REG_IMM_(REG_RSP, 0x8);
     }
 
     if (node->left)
@@ -369,15 +389,10 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
     int rel_addr = CountLabelRelAddr(func_label_bin_code_pos, 
                                      BinCodeGetCurrentPos(&backend_ctx->bin_code));
 
-    // CALL_REL_(rel_addr, BackendGetIdName(backend_ctx, node));
-    CALL_REL_(UNDEFINED_FUNC_ADDR, BackendGetIdName(backend_ctx, node));
+    CALL_REL_(rel_addr, BackendGetIdName(backend_ctx, node));
 
     // return stack to its state
-    MOV_REG_IMM_(REG_RDX, (int) stack_frame_size);
-    ADD_REG_REG_(REG_RSP, REG_RDX);
-
-    // push return value
-    PUSH_REG_(REG_RAX);
+    ADD_REG_IMM_(REG_RSP, (int) stack_frame_size);
 
     return BACKEND_SUCCESS;
 }
@@ -399,8 +414,8 @@ static BackendErr_t EmitFunctionSingleArgument(BackendCtx_t* backend_ctx, TreeNo
     {
         return error;
     }
-    // argument was pushed in stack by EmitNode
-    // so we can do nothing
+
+    PUSH_REG_(REG_RAX);
 
     return BACKEND_SUCCESS;
 }
@@ -458,16 +473,13 @@ BackendErr_t EmitReturn(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
     BackendErr_t error = BACKEND_SUCCESS;
 
-    // Get return value
+    // Get return value to rax
     if ((error = EmitNode(backend_ctx, node->right)))
     {
         return error;
     }
 
-    POP_REG_(REG_RAX);
-
-    MOV_REG_IMM_(REG_RDX, (int) backend_ctx->current_stack_local_vars_size);
-    ADD_REG_REG_(REG_RSP, REG_RDX);
+    ADD_REG_IMM_(REG_RSP, (int) backend_ctx->current_stack_local_vars_size);
 
     POP_REG_(REG_RBP);
 
@@ -502,9 +514,7 @@ static BackendErr_t EmitVariable(BackendCtx_t* backend_ctx, TreeNode_t* node)
                  BackendGetIdName(backend_ctx, node),
                  var_offset);
 
-    MOV_REG_MEM_DISP_(REG_RDX, REG_RBP, var_offset);
-
-    PUSH_REG_(REG_RDX);
+    MOV_REG_MEM_DISP_(REG_RAX, REG_RBP, var_offset);
 
     return BACKEND_SUCCESS;
 }
@@ -522,9 +532,7 @@ static BackendErr_t EmitNumber(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
     ASM_COMMENT_(L"number");
 
-    MOV_REG_IMM_(REG_RDX, node->data.value.number);
-    
-    PUSH_REG_(REG_RDX);
+    MOV_REG_IMM_(REG_RAX, node->data.value.number);
 
     return BACKEND_SUCCESS;
 }
@@ -549,38 +557,42 @@ BackendErr_t EmitMathExprOperation(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
     BackendErr_t error = BACKEND_SUCCESS;
 
-    if ((error = EmitNode(backend_ctx, node->left)))
-    {
-        return error;
-    }
     if ((error = EmitNode(backend_ctx, node->right)))
     {
         return error;
     }
 
-    POP_REG_(REG_RBX); // right node
-    POP_REG_(REG_RAX); // left  node
+    // right subtree result (second operand) is in RAX, 
+    // save on stack for calling left subtree emission
+    PUSH_REG_(REG_RAX); 
+
+    if ((error = EmitNode(backend_ctx, node->left)))
+    {
+        return error;
+    }
+
+    // first operand is in rax
+    // get second operand to rbx
+    POP_REG_(REG_RCX);
     
     if (IS_KEYWORD_(node, KW_ADD))
     {
-        ADD_REG_REG_(REG_RAX, REG_RBX);
+        ADD_REG_REG_(REG_RAX, REG_RCX);
     }
     else if (IS_KEYWORD_(node, KW_SUB))
     {
-        SUB_REG_REG_(REG_RAX, REG_RBX);
+        SUB_REG_REG_(REG_RAX, REG_RCX);
     }
     else if (IS_KEYWORD_(node, KW_MUL))
     {
         MOV_REG_IMM_(REG_RDX, 0);
-        IMUL_REG_(REG_RBX);
+        IMUL_REG_(REG_RCX);
     }
     else
     {
         MOV_REG_IMM_(REG_RDX, 0);
-        IDIV_REG_(REG_RBX);
+        IDIV_REG_(REG_RCX);
     }
-
-    PUSH_REG_(REG_RAX);
 
     return BACKEND_SUCCESS;
 }
@@ -640,8 +652,7 @@ BackendErr_t EmitAssignment(BackendCtx_t* backend_ctx, TreeNode_t* node)
     {
         return error;
     }
-
-    POP_REG_(REG_RAX);
+    // result is in rax
 
     if ((error = EmitAssignRegRaxToVariable(backend_ctx, var)))
     {
@@ -691,20 +702,23 @@ static BackendErr_t EmitConditionComparison(BackendCtx_t* backend_ctx, TreeNode_
 
     BackendErr_t error = BACKEND_SUCCESS;
 
-    if ((error = EmitNode(backend_ctx, node->left)))
-    {
-        return error;
-    }
     if ((error = EmitNode(backend_ctx, node->right)))
     {
         return error;
     }
-    // right subtree result
-    POP_REG_(REG_RBX);
-    // left  subtree result
-    POP_REG_(REG_RAX);
 
-    CMP_REG_REG_(REG_RAX, REG_RBX);
+    PUSH_REG_(REG_RAX);
+
+    if ((error = EmitNode(backend_ctx, node->left)))
+    {
+        return error;
+    }
+
+    // first operand (left subtree) result is in rax
+    // second operand (right subtree) result
+    POP_REG_(REG_RCX);
+
+    CMP_REG_REG_(REG_RAX, REG_RCX);
 
     return BACKEND_SUCCESS;
 }
@@ -1008,7 +1022,7 @@ BackendErr_t EmitUnaryOperation(BackendCtx_t* backend_ctx, TreeNode_t* node)
         return error;
     }
 
-    POP_REG_(REG_RDI);
+    MOV_REG_REG_(REG_RDI, REG_RAX);
 
     const wchar_t* func_name = NULL;
 

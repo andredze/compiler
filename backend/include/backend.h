@@ -51,7 +51,7 @@ BackendErr_t BackendGetFuncIdTableIdData(BackendCtx_t* backend_ctx,
                                          IdData_t**    id_data_p);
 
 BackendErr_t BackendGetVarsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst);
-BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst);
+BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst, int* have_to_align);
 
 BackendErr_t BackendGetVariableOffset(BackendCtx_t* backend_ctx, 
                                       size_t        id_index, 

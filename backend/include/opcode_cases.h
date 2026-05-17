@@ -39,8 +39,6 @@ typedef struct OpcodeCase
 }
 OpcodeCase_t;
 
-// TODO: in table AssembleFunction
-
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #define SET_OPCODE_CASE(opcode, op1_type, op2_type, op_size, bin, modrm_reg, encode_func, asm_name) \
@@ -75,6 +73,8 @@ const OpcodeCase_t OPCODE_CASES_TABLE[OPCODE_COUNT] = {
     SET_OPCODE_CASE(OPCODE_SYSCALL    , OPERAND_NONE   , OPERAND_NONE   , 2, 0x0F05,   -1, EncodeNoneNone     , "syscall"), // 0F 05
     SET_OPCODE_CASE(OPCODE_CMP_REG_REG, OPERAND_REG_64 , OPERAND_REG_64 , 1,   0x3B,   -1, EncodeRegReg       , "cmp"    ), // REX.W + 3B /r
     SET_OPCODE_CASE(OPCODE_CMP_REG_IMM, OPERAND_REG_64 , OPERAND_IMM_32 , 1,   0x81,    7, EncodeRegImm       , "cmp"    ), // REX.W + 81 /7 id
+    SET_OPCODE_CASE(OPCODE_ADD_REG_IMM, OPERAND_REG_64 , OPERAND_IMM_32 , 1,   0x81,    0, EncodeRegImm       , "add"    ), // REX.W + 81 /0 id
+    SET_OPCODE_CASE(OPCODE_SUB_REG_IMM, OPERAND_REG_64 , OPERAND_IMM_32 , 1,   0x81,    5, EncodeRegImm       , "sub"    ), // REX.W + 81 /5 id 
 };
 
 //------------------------------------------------------------------//

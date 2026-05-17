@@ -197,6 +197,12 @@
 #define CMP_REG_IMM_(reg, imm) \
         GENERATE_CODE_(InstructionCreateRegImm, OPCODE_CMP_REG_IMM, reg, imm)
 
+#define ADD_REG_IMM_(reg, imm) \
+        GENERATE_CODE_(InstructionCreateRegImm, OPCODE_ADD_REG_IMM, reg, imm)
+
+#define SUB_REG_IMM_(reg, imm) \
+        GENERATE_CODE_(InstructionCreateRegImm, OPCODE_SUB_REG_IMM, reg, imm)
+
 //------------------------------------------------------------------//
 
 #define EMIT_VERIFY_(cond)                                 \

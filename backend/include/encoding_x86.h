@@ -14,6 +14,8 @@ BackendErr_t TestDSLEncoding(BackendCtx_t* backend_ctx);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+const int UNDEFINED_FUNC_ADDR = 0;
+
 const uint8_t REX_FIRST_4_BITS = 0b0100;
 
 //------------------------------------------------------------------//

@@ -542,8 +542,8 @@ static LangErr_t LangIdTableCountAddresses(IdTable_t* id_table)
                 break;
 
             case ID_TYPE_VARIABLE:
-                id_table->data[i].addr = (-1) * (int) (cur_func_locals_count * 
-                                                       STACK_ELEMENT_SIZE);
+                id_table->data[i].addr = (-1) * (int) (cur_func_locals_count * STACK_ELEMENT_SIZE)
+                                          - STACK_ELEMENT_SIZE; // additional minus, because rsp addresses up
                 cur_func_locals_count++;
                 break;
 

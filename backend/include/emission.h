@@ -25,15 +25,11 @@ typedef BackendErr_t (*EmitFunction_t) (BackendCtx_t* backend_ctx, TreeNode_t* n
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const int UNDEFINED_FUNC_ADDR = 0;
-
-//------------------------------------------------------------------//
-
-const wchar_t * const KW_INPUT_FUNC_NAME  = L"скажи_мне_кто_ты";
-const wchar_t * const KW_OUTPUT_FUNC_NAME = L"заставь_их_услышать";
-const wchar_t * const KW_SQRT_FUNC_NAME   = L"исток";
-const wchar_t * const KW_DRAW_FUNC_NAME   = L"нарисуй";
-const wchar_t * const KW_POINT_FUNC_NAME  = L"поставь";
+const wchar_t * const KW_INPUT_FUNC_NAME  = L"СкажиМнеКтоТы";
+const wchar_t * const KW_OUTPUT_FUNC_NAME = L"ЗаставьИхУслышать";
+const wchar_t * const KW_SQRT_FUNC_NAME   = L"Исток";
+const wchar_t * const KW_DRAW_FUNC_NAME   = L"Нарисуй";
+const wchar_t * const KW_POINT_FUNC_NAME  = L"Поставь";
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
