@@ -131,6 +131,10 @@ typedef enum OpcodeType
     OPCODE_ADD_REG_IMM,
     OPCODE_SUB_REG_IMM,
     OPCODE_CQO,
+    OPCODE_JG_REL,
+    OPCODE_JGE_REL,
+    OPCODE_JL_REL,
+    OPCODE_JLE_REL,
 
     OPCODE_COUNT
 }

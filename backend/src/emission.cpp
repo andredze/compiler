@@ -666,10 +666,10 @@ static OpcodeType_t GetJccOpcodeFromKeyword(Keyword_t jcc_kw)
     {
         case KW_EQUAL:          return OPCODE_JE_REL;
         case KW_NOT_EQUAL:      return OPCODE_JNE_REL;
-        case KW_BIGGER:         return OPCODE_JA_REL;
-        case KW_BIGGER_EQUAL:   return OPCODE_JAE_REL;
-        case KW_SMALLER:        return OPCODE_JB_REL;
-        case KW_SMALLER_EQUAL:  return OPCODE_JBE_REL;
+        case KW_BIGGER:         return OPCODE_JG_REL;
+        case KW_BIGGER_EQUAL:   return OPCODE_JGE_REL;
+        case KW_SMALLER:        return OPCODE_JL_REL;
+        case KW_SMALLER_EQUAL:  return OPCODE_JLE_REL;
         default:                break;
     }
 
@@ -687,10 +687,10 @@ static OpcodeType_t GetJccOppositeOpcodeFromKeyword(Keyword_t jcc_kw)
     {
         case KW_EQUAL:          return OPCODE_JNE_REL;
         case KW_NOT_EQUAL:      return OPCODE_JE_REL;
-        case KW_BIGGER:         return OPCODE_JBE_REL;
-        case KW_BIGGER_EQUAL:   return OPCODE_JB_REL;
-        case KW_SMALLER:        return OPCODE_JAE_REL;
-        case KW_SMALLER_EQUAL:  return OPCODE_JA_REL;
+        case KW_BIGGER:         return OPCODE_JLE_REL;
+        case KW_BIGGER_EQUAL:   return OPCODE_JL_REL;
+        case KW_SMALLER:        return OPCODE_JGE_REL;
+        case KW_SMALLER_EQUAL:  return OPCODE_JG_REL;
         default:                break;
     }
 
@@ -932,7 +932,7 @@ BackendErr_t EmitWhile(BackendCtx_t* backend_ctx, TreeNode_t* node)
     wchar_t check_condition_label[MAX_BUFFER_SIZE] = {};
     wchar_t next_label           [MAX_BUFFER_SIZE] = {};
 
-    swprintf(check_condition_label, 
+    swprintf(check_condition_label,
              sizeof(check_condition_label) / sizeof(check_condition_label[0]),
              L".check_condition_%zu", backend_ctx->while_labels_count);
 
@@ -944,9 +944,9 @@ BackendErr_t EmitWhile(BackendCtx_t* backend_ctx, TreeNode_t* node)
     size_t jmp_check_cond_addr      = 0;
     size_t jmp_check_cond_disp_addr = 0;
 
-    if ((error = EmitJccForFixup(backend_ctx, OPCODE_JMP_REL, 
+    if ((error = EmitJccForFixup(backend_ctx, OPCODE_JMP_REL,
                                  &jmp_check_cond_addr,
-                                 &jmp_check_cond_disp_addr, 
+                                 &jmp_check_cond_disp_addr,
                                  check_condition_label)))
     {
         return error;

@@ -76,6 +76,10 @@ const OpcodeCase_t OPCODE_CASES_TABLE[OPCODE_COUNT] = {
     SET_OPCODE_CASE(OPCODE_ADD_REG_IMM, OPERAND_REG_64 , OPERAND_IMM_32 , 1,   0x81,    0, EncodeRegImm       , "add"    ), // REX.W + 81 /0 id
     SET_OPCODE_CASE(OPCODE_SUB_REG_IMM, OPERAND_REG_64 , OPERAND_IMM_32 , 1,   0x81,    5, EncodeRegImm       , "sub"    ), // REX.W + 81 /5 id 
     SET_OPCODE_CASE(OPCODE_CQO        , OPERAND_NONE   , OPERAND_NONE   , 1,   0x99,    0, EncodeNoneNone     , "cqo"    ), // REX.W + 99
+    SET_OPCODE_CASE(OPCODE_JG_REL     , OPERAND_REL_32 , OPERAND_NONE   , 2, 0x0F8F,   -1, EncodeRelNone      , "jg"     ), // 0F 8F cd
+    SET_OPCODE_CASE(OPCODE_JGE_REL    , OPERAND_REL_32 , OPERAND_NONE   , 2, 0x0F8D,   -1, EncodeRelNone      , "jge"    ), // 0F 8D cd 
+    SET_OPCODE_CASE(OPCODE_JL_REL     , OPERAND_REL_32 , OPERAND_NONE   , 2, 0x0F8C,   -1, EncodeRelNone      , "jl"     ), // 0F 8C cd 
+    SET_OPCODE_CASE(OPCODE_JLE_REL    , OPERAND_REL_32 , OPERAND_NONE   , 2, 0x0F8E,   -1, EncodeRelNone      , "jle"    ), // 0F 8E cd 
 };
 
 //------------------------------------------------------------------//

@@ -90,7 +90,6 @@ rebuild: clean all
 
 .PHONY: all clean rebuild front front_clean dlogs front_rebuild
 
-
 # FRONTEND_OBJECTS := $(FRONTEND_SOURCES:.cpp=.o)
 #
 # FRONTEND_TARGET := front

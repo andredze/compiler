@@ -401,13 +401,8 @@ BackendErr_t EncodeRelNone(BinInstruction_t* bin_instr, Instruction_t* instr)
     assert(instr);
 
     ENCODE_VERIFY_(instr->opcode_type == OPCODE_CALL_REL ||
-                   instr->opcode_type == OPCODE_JMP_REL  ||
-                   instr->opcode_type == OPCODE_JE_REL   ||
-                   instr->opcode_type == OPCODE_JNE_REL  ||
-                   instr->opcode_type == OPCODE_JA_REL   ||
-                   instr->opcode_type == OPCODE_JAE_REL  ||
-                   instr->opcode_type == OPCODE_JB_REL   ||
-                   instr->opcode_type == OPCODE_JBE_REL);
+                   ((OPCODE_JMP_REL <= instr->opcode_type) && 
+                    (instr->opcode_type <= OPCODE_JLE_REL)));
 
     ENCODE_VERIFY_(instr->operand_1.type == OPERAND_REL_32);
     ENCODE_VERIFY_(instr->operand_2.type == OPERAND_NONE);

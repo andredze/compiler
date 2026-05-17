@@ -116,7 +116,7 @@ BackendErr_t BackendGetFuncIdTableIdData(BackendCtx_t* backend_ctx,
 //==========================================================================================
 
 // follow the System V ABI
-size_t GetAlignedUp(size_t number)
+static size_t GetAlignedUp(size_t number)
 {
     return (number + 0xF) & ~0xF;
 }
