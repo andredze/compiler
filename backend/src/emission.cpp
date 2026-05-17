@@ -79,7 +79,6 @@ static BackendErr_t EmitAndPushLabel(BackendCtx_t* backend_ctx,
     assert(backend_ctx);
     assert(label);
 
-    //TODO: translit
     ASM_PRINT_(L"%ls:\n", label);
 
     BackendErr_t error = BACKEND_SUCCESS;

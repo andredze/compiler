@@ -53,6 +53,9 @@ typedef struct RelElem
 
     RelScopeType_t  scope;
     RelFuncType_t   type;
+
+    size_t          strtab_index;
+    size_t          symtab_index;
 }
 RelElem_t;
 

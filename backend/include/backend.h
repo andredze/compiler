@@ -18,25 +18,42 @@ const size_t TYPE_INT_SIZE_IN_BYTES = 4;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+typedef struct StringTable
+{
+    size_t   capacity;
+    size_t   size;
+
+    uint8_t* data;
+}
+StringTable_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+const size_t STRING_TABLE_INIT_CAPACITY = 256;
+
+//------------------------------------------------------------------//
+
 typedef struct BackendCtx
 {
-    char        ast_file_name[MAX_FILENAME_LEN];
+    char          ast_file_name[MAX_FILENAME_LEN];
 
-    FILE*       asm_file;
-    FILE*       elf_file;
+    FILE*         asm_file;
+    FILE*         elf_file;
 
-    LangCtx_t   lang_ctx;
+    LangCtx_t     lang_ctx;
 
-    size_t      endif_labels_count;
-    size_t      while_labels_count;
+    size_t        endif_labels_count;
+    size_t        while_labels_count;
 
-    BinCode_t   bin_code;
+    BinCode_t     bin_code;
 
-    size_t      current_stack_local_vars_size;
+    size_t        current_stack_local_vars_size;
 
-    TreeNode_t* main_node;
+    TreeNode_t*   main_node;
 
-    RelTable_t  rel_table;
+    RelTable_t    rel_table;
+
+    StringTable_t str_table;
 }
 BackendCtx_t;
 

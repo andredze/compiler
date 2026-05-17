@@ -40,6 +40,18 @@ BackendErr_t BuildElf(BackendCtx_t* backend_ctx)
     {
         return error;
     }
+    if ((error = StringTableCtor(&backend_ctx->str_table, STRING_TABLE_INIT_CAPACITY)))
+    {
+        StringTableDtor(&backend_ctx->str_table);
+        return error;
+    }
+    if ((error = ElfBuildStringTable(backend_ctx)))
+    {
+        StringTableDtor(&backend_ctx->str_table);
+        return error;
+    }
+
+    StringTableDtor(&backend_ctx->str_table);
 
     return BACKEND_SUCCESS;
 }

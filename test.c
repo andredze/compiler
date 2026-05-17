@@ -1,7 +1,27 @@
 #include <stdio.h>
 
-int jopa()
+int Факториал()
 {
+	volatile int b;
+	return b;
+}
+
+int Квадратка()
+{
+	volatile int b;
+	return b;
+}
+
+int Линейка()
+{
+	volatile int b;
+	return b;
+}
+
+int Жопа()
+{
+	int a;
+	scanf("%d", &a);
 	return 2;
 }
 
@@ -20,5 +40,5 @@ int main()
 	asm volatile("add r13, rax" : : :);
 	asm volatile("sub r13, rax" : : :);
 
-	return jopa();
+	return Жопа();
 }
