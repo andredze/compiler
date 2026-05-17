@@ -473,10 +473,28 @@ bool LangIdTableIdentifierIsDeclared(IdTable_t* id_table, size_t name_index)
 
 //==========================================================================================
 
-LangErr_t LangIdTableFunctionSetParamsLocals(IdTable_t*   id_table, 
-                                             size_t       id_index, 
-                                             size_t       n_local_vars, 
-                                             size_t       n_params)
+LangErr_t LangIdTableFunctionSetParamsCount(IdTable_t*   id_table, 
+                                            size_t       id_index, 
+                                            size_t       n_params)
+{
+    assert(id_table);
+
+    if (id_index >= id_table->size)
+    {
+        WPRINTERR(L"index exceeds limits of id_table");
+        return LANG_ID_TABLE_WRONG_INDEX;
+    }
+
+    id_table->data[id_index].n_params = n_params;
+
+    return LANG_SUCCESS;
+} 
+
+//==========================================================================================
+
+LangErr_t LangIdTableFunctionSetLocalsCount(IdTable_t*   id_table,
+                                            size_t       id_index,
+                                            size_t       n_local_vars)
 {
     assert(id_table);
 
@@ -487,7 +505,6 @@ LangErr_t LangIdTableFunctionSetParamsLocals(IdTable_t*   id_table,
     }
 
     id_table->data[id_index].n_local_vars = n_local_vars;
-    id_table->data[id_index].n_params     = n_params;
 
     return LANG_SUCCESS;
 } 

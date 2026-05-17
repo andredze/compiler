@@ -213,6 +213,13 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
     TreeNode_t* function_parameters = ParseFunctionParameters(frontend_ctx, &params_count);
     //TODO - add check error
 
+    if (LangIdTableFunctionSetParamsCount(&frontend_ctx->lang_ctx.func_id_table,
+                                          function_name->data.value.id.id_index,
+                                          params_count))
+    {
+        return NULL;
+    }
+
     //FIXME: can omit counting vars, and count them afterwards for all the table + addresses
     frontend_ctx->in_func_vars_count = 0;
 
@@ -243,10 +250,9 @@ static TreeNode_t* ParseFunctionDeclaration(FrontendCtx_t* frontend_ctx)
              frontend_ctx->lang_ctx.names_pool.data[function_name->data.value.id.name_index], 
              frontend_ctx->in_func_vars_count);
 
-    if (LangIdTableFunctionSetParamsLocals(&frontend_ctx->lang_ctx.func_id_table,
-                                           function_name->data.value.id.id_index,
-                                           frontend_ctx->in_func_vars_count,
-                                           params_count))
+    if (LangIdTableFunctionSetLocalsCount(&frontend_ctx->lang_ctx.func_id_table,
+                                          function_name->data.value.id.id_index,
+                                          frontend_ctx->in_func_vars_count))
     {
         return NULL;
     }

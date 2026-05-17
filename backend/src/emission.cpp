@@ -404,10 +404,6 @@ static BackendErr_t EmitFunctionSingleArgument(BackendCtx_t* backend_ctx, TreeNo
     assert(backend_ctx);
     assert(node);
 
-    EMIT_VERIFY_(IS_VARIABLE_(node));
-    EMIT_VERIFY_(node->left  == NULL);
-    EMIT_VERIFY_(node->right == NULL);
-
     BackendErr_t error = BACKEND_SUCCESS;
 
     if ((error = EmitNode(backend_ctx, node)))
