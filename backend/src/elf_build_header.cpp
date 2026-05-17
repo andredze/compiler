@@ -28,7 +28,7 @@ BackendErr_t ElfBuildHeader(Elf64_Ehdr* header, size_t section_header_table_offs
     header->e_phnum     = 0; // ignore (relocatable file) 
     header->e_shentsize = sizeof(SectionHeader_t);
     header->e_shnum     = SECTION_HEADERS_COUNT;
-    header->e_shstrndx  = INDEX_OF_SECTION_HEADER_STRTAB;
+    header->e_shstrndx  = SH_SH_STRTAB_INDEX;
 
     return BACKEND_SUCCESS;
 }

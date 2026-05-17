@@ -188,9 +188,12 @@ static BackendErr_t EmitFunctions(BackendCtx_t* backend_ctx, TreeNode_t* node)
         {
             return error;
         }
-        if ((error = EmitFunctions(backend_ctx, node->right)))
+        if (node->right)
         {
-            return error;
+            if ((error = EmitFunctions(backend_ctx, node->right)))
+            {
+                return error;
+            }
         }
 
         DPRINT_FUNC_LEAVE_MSG();

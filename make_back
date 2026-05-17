@@ -43,6 +43,7 @@ BACKEND_SOURCES := backend/src/main.cpp 			 			\
                    backend/src/instruction.cpp 		 			\
                    backend/src/bin_code_buffer.cpp 	 			\
                    backend/src/elf_build.cpp 		 			\
+                   backend/src/elf_build_header.cpp	 			\
                    backend/src/elf_build_string_table.cpp 		\
                    backend/src/elf_build_symbol_table.cpp 		\
                    backend/src/elf_build_relocation_table.cpp 	\

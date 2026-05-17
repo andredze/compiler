@@ -134,7 +134,7 @@ void ElfSectionHeaderSet(SectionHeader_t* section_header,
 
 //==========================================================================================
 
-BackendErr_t ElfBuildSectionHeaderTable(ElfCtx_t* elf_ctx)
+static BackendErr_t ElfBuildSectionHeaderTable(ElfCtx_t* elf_ctx)
 {
     assert(elf_ctx);
 
@@ -190,8 +190,8 @@ BackendErr_t ElfBuildSectionHeaderTable(ElfCtx_t* elf_ctx)
                         SH_STRTAB_SH_STRTAB_NAME_START,
                         SHT_STRTAB,
                         SHF_NOFLAGS,
-                        elf_ctx->offsets.sh_strtab,
-                        elf_ctx->offsets.sh_strtab_size,
+                        elf_ctx->offsets.shstrtab,
+                        elf_ctx->offsets.shstrtab_size,
                         SH_NO_LINK,
                         SH_NO_INFO,
                         SH_ADDR_ALIGN_SH_STRTAB_INDEX,
@@ -244,6 +244,11 @@ static size_t fwrite_padding(FILE* file, size_t padding_bytes_count)
 {
     assert(file);
 
+    if (padding_bytes_count == 0)
+    {
+        return 1;
+    }
+
     if (padding_bytes_count >= MAX_PADDING)
     {
         return (size_t)-1;
@@ -265,72 +270,102 @@ static size_t fwrite_padding(FILE* file, size_t padding_bytes_count)
 
 //==========================================================================================
 
+#define FWRITE(name, src_ptr, src_size)                                   \
+        BEGIN                                                             \
+        if ((src_size) != 0)                                              \
+        {                                                                 \
+            if (fwrite((void*) (src_ptr), (src_size), 1, elf_file) != 1)  \
+            {                                                             \
+                WPRINTERR(L"Failed writing " name);                       \
+                return BACKEND_FAILED_FWRITE_TO_ELF;                      \
+            }                                                             \
+        }                                                                 \
+        END
+
+//------------------------------------------------------------------//
+
 BackendErr_t ElfWrite(FILE* elf_file, ElfCtx_t* elf_ctx, uint8_t* text)
 {
     assert(elf_file);
     assert(elf_ctx);
     assert(text);
 
-    if (fwrite((void*) &elf_ctx->header, sizeof(elf_ctx->header), 1, elf_file) != 1)
-    {
-        WPRINTERR(L"Failed writing elf->header");
-        return BACKEND_FAILED_FWRITE_TO_ELF;
-    }
-    if (fwrite((void*) text, elf_ctx->offsets.text_size, 1, elf_file) != 1)
-    {
-        WPRINTERR(L"Failed writing text");
-        return BACKEND_FAILED_FWRITE_TO_ELF;
-    }
+    FWRITE(L"elf header", &elf_ctx->header, sizeof(elf_ctx->header));
+    FWRITE(L"elf text", text, elf_ctx->offsets.text_size);
 
     size_t padding = elf_ctx->offsets.reloc - (elf_ctx->offsets.text + 
                                                elf_ctx->offsets.text_size);
 
-    if (fwrite_padding(elf_file, padding) != padding)
+    if (fwrite_padding(elf_file, padding) != 1)
     {
-        WPRINTERR(L"Failed writing text padding");
+        WPRINTERR(L"Failed writing text padding %d", padding);
         return BACKEND_FAILED_FWRITE_TO_ELF;
     }
     
-    if (fwrite((void*) &elf_ctx->reloc_table.data, elf_ctx->offsets.reloc_size, 
-                1, elf_file) != 1)
-    {
-        WPRINTERR(L"Failed writing rela text");
-        return BACKEND_FAILED_FWRITE_TO_ELF;
-    }
+    FWRITE(L"elf rela text", &elf_ctx->reloc_table.data, elf_ctx->offsets.reloc_size);
 
     padding = elf_ctx->offsets.symtab - (elf_ctx->offsets.reloc + elf_ctx->offsets.reloc_size);
 
-    if (fwrite_padding(elf_file, padding) != padding)
+    if (fwrite_padding(elf_file, padding) != 1)
     {
-        WPRINTERR(L"Failed writing rela text padding");
+        WPRINTERR(L"Failed writing rela text padding %d", padding);
         return BACKEND_FAILED_FWRITE_TO_ELF;
     }
 
-    if (fwrite((void*) &elf_ctx->sym_table.data, elf_ctx->offsets.symtab_size, 
-                1, elf_file) != 1)
-    {
-        WPRINTERR(L"Failed writing symtab");
-        return BACKEND_FAILED_FWRITE_TO_ELF;
-    }
-    if (fwrite((void*) &elf_ctx->str_table.data, elf_ctx->offsets.strtab_size, 
-                1, elf_file) != 1)
-    {
-        WPRINTERR(L"Failed writing strtab");
-        return BACKEND_FAILED_FWRITE_TO_ELF;
-    }
-    if (fwrite((void*) SH_STR_TAB, elf_ctx->offsets.shstrtab_size, 1, elf_file) != 1)
-    {
-        WPRINTERR(L"Failed writing shstrtab");
-        return BACKEND_FAILED_FWRITE_TO_ELF;
-    }
-    if (fwrite((void*) &elf_ctx->section_header_table, sizeof(elf_ctx->section_header_table), 
-                1, elf_file) != 1)
-    {
-        WPRINTERR(L"Failed writing section header table");
-        return BACKEND_FAILED_FWRITE_TO_ELF;
-    }
+    FWRITE(L"elf symtab",   &elf_ctx->sym_table.data,       elf_ctx->offsets.symtab_size);
+    FWRITE(L"elf strtab",   &elf_ctx->str_table.data,       elf_ctx->offsets.strtab_size);
+    FWRITE(L"elf shstrtab", SH_STR_TAB,                     elf_ctx->offsets.shstrtab_size);
+    FWRITE(L"elf sh table", &elf_ctx->section_header_table, sizeof(elf_ctx->section_header_table));
 
     return BACKEND_SUCCESS;
 }
+
+//------------------------------------------------------------------//
+
+#undef FWRITE
+
+    // if (fwrite((void*) &elf_ctx->header, sizeof(elf_ctx->header), 1, elf_file) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing elf->header");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
+    // if (fwrite((void*) text, elf_ctx->offsets.text_size, 1, elf_file) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing text");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
+
+
+    // if (fwrite((void*) &elf_ctx->reloc_table.data, elf_ctx->offsets.reloc_size, 
+    //             1, elf_file) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing rela text");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
+
+
+    // if (fwrite((void*) &elf_ctx->sym_table.data, elf_ctx->offsets.symtab_size, 
+    //             1, elf_file) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing symtab");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
+    // if (fwrite((void*) &elf_ctx->str_table.data, elf_ctx->offsets.strtab_size, 
+    //             1, elf_file) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing strtab");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
+    // if (fwrite((void*) SH_STR_TAB, elf_ctx->offsets.shstrtab_size, 1, elf_file) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing shstrtab");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
+    // if (fwrite((void*) &elf_ctx->section_header_table, sizeof(elf_ctx->section_header_table), 
+    //             1, elf_file) != 1)
+    // {
+    //     WPRINTERR(L"Failed writing section header table");
+    //     return BACKEND_FAILED_FWRITE_TO_ELF;
+    // }
 
 //==========================================================================================

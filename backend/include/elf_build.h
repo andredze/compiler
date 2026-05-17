@@ -52,7 +52,6 @@ const size_t SH_ADDR_ALIGN_SH_STRTAB_INDEX = 1;
 // [5] .shstrtab
 const size_t SECTIONS_COUNT = 5;
 const size_t SECTION_HEADERS_COUNT = SECTIONS_COUNT + 1; // + first is NULL
-const size_t INDEX_OF_SECTION_HEADER_STRTAB = 4;
 
 //------------------------------------------------------------------//
 
