@@ -664,6 +664,27 @@ BackendErr_t EmitAssignment(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 //==========================================================================================
 
+static OpcodeType_t GetJccOpcodeFromKeyword(Keyword_t jcc_kw)
+{
+    switch (jcc_kw)
+    {
+        case KW_EQUAL:          return OPCODE_JE_REL;
+        case KW_NOT_EQUAL:      return OPCODE_JNE_REL;
+        case KW_BIGGER:         return OPCODE_JA_REL;
+        case KW_BIGGER_EQUAL:   return OPCODE_JAE_REL;
+        case KW_SMALLER:        return OPCODE_JB_REL;
+        case KW_SMALLER_EQUAL:  return OPCODE_JBE_REL;
+        default:                break;
+    }
+
+    WPRINTERR(L"Not a comparison keyword given to function for getting jcc opcodes"
+              L" given %d", jcc_kw);
+
+    return OPCODE_UNKNOWN;
+}
+
+//==========================================================================================
+
 static OpcodeType_t GetJccOppositeOpcodeFromKeyword(Keyword_t jcc_kw)
 {
     switch (jcc_kw)
@@ -872,12 +893,15 @@ BackendErr_t EmitIf(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 static BackendErr_t EmitConditionNoFixup(BackendCtx_t* backend_ctx, 
                                          TreeNode_t*   node, 
-                                         wchar_t*      wrong_condition_label,
-                                         size_t        wrong_condition_label_addr)
+                                         OpcodeType_t  jcc_opcode,
+                                         wchar_t*      condition_label,
+                                         size_t        condition_label_addr)
 {
-    assert(wrong_condition_label);
+    assert(condition_label);
     assert(backend_ctx);
     assert(node);
+
+    EMIT_VERIFY_(OPCODE_JMP_REL <= jcc_opcode && jcc_opcode <= OPCODE_JBE_REL);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
@@ -886,17 +910,10 @@ static BackendErr_t EmitConditionNoFixup(BackendCtx_t* backend_ctx,
         return error;
     }
 
-    OpcodeType_t jcc_opcode = GetJccOppositeOpcodeFromKeyword(node->data.value.keyword);
-
-    if (jcc_opcode == OPCODE_UNKNOWN)
-    {
-        return BACKEND_INVALID_OPCODE;
-    }
-
-    int rel_addr = CountLabelRelAddr(wrong_condition_label_addr, 
+    int rel_addr = CountLabelRelAddr(condition_label_addr, 
                                      BinCodeGetCurrentPos(&backend_ctx->bin_code));
 
-    JCC_REL_(jcc_opcode, rel_addr, wrong_condition_label);
+    JCC_REL_(jcc_opcode, rel_addr, condition_label);
 
     return BACKEND_SUCCESS;
 }
@@ -959,7 +976,15 @@ BackendErr_t EmitWhile(BackendCtx_t* backend_ctx, TreeNode_t* node)
     }
     //------------------------------------------------------------------//
     // jcc .next
-    if ((error = EmitConditionNoFixup(backend_ctx, node->left, 
+
+    OpcodeType_t jcc_opcode = GetJccOpcodeFromKeyword(node->left->data.value.keyword);
+
+    if (jcc_opcode == OPCODE_UNKNOWN)
+    {
+        return BACKEND_INVALID_OPCODE;
+    }
+
+    if ((error = EmitConditionNoFixup(backend_ctx, node->left, jcc_opcode, 
                                       next_label,  next_label_addr)))
     {
         return error;
