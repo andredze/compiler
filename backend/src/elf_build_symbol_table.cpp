@@ -190,17 +190,45 @@ BackendErr_t SymbolTableBuildElem(SymbolTableElem_t* elem,
 
 //==========================================================================================
 
+static BackendErr_t ElfBuildSymbolTableElement(RelElem_t* rel_elem, SymbolTable_t* sym_table)
+{
+    assert(sym_table);
+    assert(rel_elem);
+
+    BackendErr_t      error      = BACKEND_SUCCESS;
+    size_t            symtab_ind = 0;
+    SymbolTableElem_t elem       = {};
+
+    if ((error = SymbolTableBuildElem(&elem,
+                                      rel_elem->strtab_index,
+                                      rel_elem->scope,
+                                      rel_elem->bin_code_pos,
+                                      rel_elem->func_size)))
+    {
+        return error;
+    }
+    if ((error = SymbolTablePush(sym_table, &elem, &symtab_ind)))
+    {
+        return error;
+    }
+
+    rel_elem->symtab_index = symtab_ind;
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
 BackendErr_t ElfBuildSymbolTable(BackendCtx_t* backend_ctx, SymbolTable_t* sym_table)
 {
     assert(backend_ctx);
     assert(sym_table);
 
     BackendErr_t error = BACKEND_SUCCESS;
-
-    SymbolTableElem_t elem = {};
-
-    size_t symtab_ind = 0;
     
+    size_t            symtab_ind = 0;
+    SymbolTableElem_t elem       = {};
+
     // first element should be NULL
     if ((error = SymbolTablePush(sym_table, &elem, &symtab_ind)))
     {
@@ -209,30 +237,41 @@ BackendErr_t ElfBuildSymbolTable(BackendCtx_t* backend_ctx, SymbolTable_t* sym_t
 
     RelTable_t* rel_table = &backend_ctx->rel_table;
 
+    // firstly push only locals
     for (size_t i = 0; i < rel_table->size; i++)
     {
         RelElem_t* rel_elem = &rel_table->data[i];
 
-        if (!(rel_elem->type  == REL_FUNC_DECL ||
-              rel_elem->scope == REL_FUNC_EXTERN))
+        if (!(rel_elem->scope != REL_FUNC_LOCAL) &&
+              rel_elem->type  == REL_FUNC_DECL)
         {
             continue;
         }
-        if ((error = SymbolTableBuildElem(&elem,
-                                          rel_elem->strtab_index,
-                                          rel_elem->scope,
-                                          rel_elem->bin_code_pos,
-                                          rel_elem->func_size)))
-        {
-            return error;
-        }
-        if ((error = SymbolTablePush(sym_table, &elem, &symtab_ind)))
+        if ((error = ElfBuildSymbolTableElement(rel_elem, sym_table)))
         {
             return error;
         }
 
-        rel_elem->symtab_index = symtab_ind;
+        SYMBOL_TABLE_DUMP_(sym_table, L"put elem %ls", rel_table->data[i].label);
+    }
 
+    sym_table->last_local_index_plus_one = sym_table->size;
+
+    // now don't push locals
+    for (size_t i = 0; i < rel_table->size; i++)
+    {
+        RelElem_t* rel_elem = &rel_table->data[i];
+
+        if (!((rel_elem->type  == REL_FUNC_DECL && rel_elem->scope == REL_FUNC_EXTERN) ||
+               rel_elem->scope == REL_FUNC_EXTERN))
+        {
+            continue;
+        }
+        if ((error = ElfBuildSymbolTableElement(rel_elem, sym_table)))
+        {
+            return error;
+        }
+        
         SYMBOL_TABLE_DUMP_(sym_table, L"put elem %ls", rel_table->data[i].label);
     }
 

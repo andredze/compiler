@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
     }
 
     BackendCtx_t backend_ctx = {};
+    ElfCtx_t     elf_ctx     = {};
 
     do
     {
@@ -53,7 +54,16 @@ int main(int argc, char* argv[])
         if (EmitProgram(&backend_ctx))
             break;
 
-        if (BuildElf(&backend_ctx))
+        if (ElfCtxCtor(&elf_ctx, &backend_ctx))
+            break;
+
+        if (ElfBuild(&backend_ctx, &elf_ctx))
+            break;
+
+        if (BackendOpenElfFile(&backend_ctx))
+            break;
+
+        if (ElfWrite(backend_ctx.elf_file, &elf_ctx, backend_ctx.bin_code.buffer))
             break;
     }
     while (0);
@@ -71,6 +81,7 @@ int main(int argc, char* argv[])
 #endif /* TREE_DEBUG */
 
     BackendCtxDtor(&backend_ctx);
+    ElfCtxDtor    (&elf_ctx);
 
     DPRINT_FUNC_LEAVE_MSG();
     return EXIT_SUCCESS;

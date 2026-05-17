@@ -2,7 +2,7 @@
 
 //==========================================================================================
 
-static BackendErr_t BackendOpenElfFile(BackendCtx_t* backend_ctx)
+BackendErr_t BackendOpenElfFile(BackendCtx_t* backend_ctx)
 {
     DPRINT_FUNC_ENTER_MSG();
     assert(backend_ctx);
@@ -14,7 +14,7 @@ static BackendErr_t BackendOpenElfFile(BackendCtx_t* backend_ctx)
 
     WDPRINTF(L"Opening file %s\n\n", elf_file_path);
 
-    FILE* elf_fp = fopen(elf_file_path, "w");
+    FILE* elf_fp = fopen(elf_file_path, "wb");
 
     if (elf_fp == NULL)
     {
@@ -32,6 +32,7 @@ static BackendErr_t BackendOpenElfFile(BackendCtx_t* backend_ctx)
 
 BackendErr_t ElfCtxCtor(ElfCtx_t* elf_ctx, BackendCtx_t* backend_ctx)
 {
+    assert(backend_ctx);
     assert(elf_ctx);
 
     BackendErr_t error = BACKEND_SUCCESS;
@@ -41,6 +42,10 @@ BackendErr_t ElfCtxCtor(ElfCtx_t* elf_ctx, BackendCtx_t* backend_ctx)
         return error;
     }
     if ((error = SymbolTableCtor(&elf_ctx->sym_table, backend_ctx->rel_table.size + 1)))
+    {
+        return error;
+    }
+    if ((error = RelocationTableCtor(&elf_ctx->reloc_table, backend_ctx->rel_table.size + 1)))
     {
         return error;
     }
@@ -54,42 +59,276 @@ void ElfCtxDtor(ElfCtx_t* elf_ctx)
 {
     assert(elf_ctx);
 
-    StringTableDtor(&elf_ctx->str_table);
-    SymbolTableDtor(&elf_ctx->sym_table);
+    StringTableDtor    (&elf_ctx->str_table);
+    SymbolTableDtor    (&elf_ctx->sym_table);
+    RelocationTableDtor(&elf_ctx->reloc_table);
 }
 
 //==========================================================================================
 
-BackendErr_t BuildElf(BackendCtx_t* backend_ctx)
+static size_t GetAlignedAddress(size_t address, size_t alignment)
+{
+    size_t mod = address % alignment;
+    
+    return (mod == 0) ? address : (address + (alignment - mod));
+}
+
+//==========================================================================================
+
+static void ElfCountSectionsOffsets(ElfCtx_t* elf_ctx)
+{
+    assert(elf_ctx);
+
+    ElfSectionsOffsets_t* offsets = &elf_ctx->offsets;
+
+    offsets->text = sizeof(Elf64_Ehdr);
+    
+    // must be 8-bytes aligned
+    offsets->reloc = GetAlignedAddress(offsets->text + offsets->text_size, SH_ADDR_ALIGN_RELA_TEXT_INDEX); 
+    
+    offsets->reloc_size = elf_ctx->reloc_table.size * sizeof(elf_ctx->reloc_table.data[0]);
+
+    // must be 8-bytes aligned
+    offsets->symtab = GetAlignedAddress(offsets->reloc + offsets->reloc_size, SH_ADDR_ALIGN_SYMTAB_INDEX);
+    
+    offsets->symtab_size = elf_ctx->sym_table.size * sizeof(elf_ctx->sym_table.data[0]);
+
+    offsets->strtab = offsets->symtab + offsets->symtab_size;
+
+    offsets->strtab_size = elf_ctx->str_table.size * sizeof(elf_ctx->str_table.data[0]);
+
+    offsets->shstrtab = offsets->strtab + offsets->strtab_size;
+
+    offsets->shstrtab_size = sizeof(SH_STR_TAB);
+
+    offsets->section_header = offsets->shstrtab + offsets->shstrtab_size;
+}
+
+//==========================================================================================
+
+inline
+void ElfSectionHeaderSet(SectionHeader_t* section_header,
+                         Elf64_Word	      sh_name,
+                         Elf64_Word	      sh_type,
+                         Elf64_Word	      sh_flags,
+                         Elf64_Word	      sh_offset,
+                         Elf64_Word	      sh_size,
+                         Elf64_Word	      sh_link,
+                         Elf64_Word	      sh_info,
+                         Elf64_Word	      sh_addralign,
+                         Elf64_Word	      sh_entsize)
+{
+    assert(section_header);
+
+    section_header->sh_name      = sh_name;
+    section_header->sh_type      = sh_type;
+    section_header->sh_flags     = sh_flags;
+    section_header->sh_addr      = SH_VIRTUAL_ADDRESS_NULL;
+    section_header->sh_offset    = sh_offset;
+    section_header->sh_size      = sh_size;
+    section_header->sh_link      = sh_link;
+    section_header->sh_info      = sh_info;
+    section_header->sh_addralign = sh_addralign;
+    section_header->sh_entsize   = sh_entsize;
+}
+
+//==========================================================================================
+
+BackendErr_t ElfBuildSectionHeaderTable(ElfCtx_t* elf_ctx)
+{
+    assert(elf_ctx);
+
+    // NULL
+    elf_ctx->section_header_table[0] = {};
+
+    // .text
+    ElfSectionHeaderSet(&elf_ctx->section_header_table[SH_TEXT_INDEX],
+                        SH_STRTAB_TEXT_NAME_START,
+                        SHT_PROGBITS,
+                        SHF_EXECINSTR | SHF_ALLOC,
+                        elf_ctx->offsets.text,
+                        elf_ctx->offsets.text_size,
+                        SH_NO_LINK,
+                        SH_NO_INFO,
+                        SH_ADDR_ALIGN_TEXT_INDEX,
+                        SH_NO_FIXED_ENT_SIZE);
+    // .rela.text
+    ElfSectionHeaderSet(&elf_ctx->section_header_table[SH_RELA_TEXT_INDEX],
+                        SH_STRTAB_RELA_TEXT_NAME_START,
+                        SHT_RELA,
+                        SHF_NOFLAGS,
+                        elf_ctx->offsets.reloc,
+                        elf_ctx->offsets.reloc_size,
+                        SH_SYMTAB_INDEX,
+                        SH_TEXT_INDEX,
+                        SH_ADDR_ALIGN_RELA_TEXT_INDEX,
+                        sizeof(RelocationTableElem_t));
+    // .symtab
+    ElfSectionHeaderSet(&elf_ctx->section_header_table[SH_SYMTAB_INDEX],
+                        SH_STRTAB_SYMTAB_NAME_START,
+                        SHT_SYMTAB,
+                        SHF_NOFLAGS,
+                        elf_ctx->offsets.symtab,
+                        elf_ctx->offsets.symtab_size,
+                        SH_STRTAB_INDEX,
+                        elf_ctx->sym_table.last_local_index_plus_one,
+                        SH_ADDR_ALIGN_SYMTAB_INDEX,
+                        sizeof(SymbolTableElem_t));
+    // .strtab
+    ElfSectionHeaderSet(&elf_ctx->section_header_table[SH_STRTAB_INDEX],
+                        SH_STRTAB_STRTAB_NAME_START,
+                        SHT_STRTAB,
+                        SHF_NOFLAGS,
+                        elf_ctx->offsets.strtab,
+                        elf_ctx->offsets.strtab_size,
+                        SH_NO_LINK,
+                        SH_NO_INFO,
+                        SH_ADDR_ALIGN_STRTAB_INDEX,
+                        SH_NO_FIXED_ENT_SIZE);
+    // .shstrtab
+    ElfSectionHeaderSet(&elf_ctx->section_header_table[SH_SH_STRTAB_INDEX],
+                        SH_STRTAB_SH_STRTAB_NAME_START,
+                        SHT_STRTAB,
+                        SHF_NOFLAGS,
+                        elf_ctx->offsets.sh_strtab,
+                        elf_ctx->offsets.sh_strtab_size,
+                        SH_NO_LINK,
+                        SH_NO_INFO,
+                        SH_ADDR_ALIGN_SH_STRTAB_INDEX,
+                        SH_NO_FIXED_ENT_SIZE);
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+BackendErr_t ElfBuild(BackendCtx_t* backend_ctx, ElfCtx_t* elf_ctx)
 {
     assert(backend_ctx);
-
-    ElfCtx_t elf_ctx = {};
+    assert(elf_ctx);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
-    if ((error = ElfCtxCtor(&elf_ctx, backend_ctx)))
+    if ((error = ElfBuildStringTable(backend_ctx, &elf_ctx->str_table)))
     {
-        ElfCtxDtor(&elf_ctx);
         return error;
     }
-    if ((error = BackendOpenElfFile(backend_ctx)))
+    if ((error = ElfBuildSymbolTable(backend_ctx, &elf_ctx->sym_table)))
     {
-        ElfCtxDtor(&elf_ctx);
         return error;
     }
-    if ((error = ElfBuildStringTable(backend_ctx, &elf_ctx.str_table)))
+    if ((error = ElfBuildRelocationTable(backend_ctx, &elf_ctx->reloc_table)))
     {
-        ElfCtxDtor(&elf_ctx);
-        return error;
-    }
-    if ((error = ElfBuildSymbolTable(backend_ctx, &elf_ctx.sym_table)))
-    {
-        ElfCtxDtor(&elf_ctx);
         return error;
     }
 
-    ElfCtxDtor(&elf_ctx);
+    elf_ctx->offsets.text_size = BinCodeGetCurrentPos(&backend_ctx->bin_code);
+
+    ElfCountSectionsOffsets(elf_ctx);
+    
+    if ((error = ElfBuildHeader(&elf_ctx->header, elf_ctx->offsets.section_header)))
+    {
+        return error;
+    }
+    if ((error = ElfBuildSectionHeaderTable(elf_ctx)))
+    {
+        return error;
+    }
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static size_t fwrite_padding(FILE* file, size_t padding_bytes_count)
+{
+    assert(file);
+
+    if (padding_bytes_count >= MAX_PADDING)
+    {
+        return (size_t)-1;
+    }
+
+    void* padding = (void*) calloc(padding_bytes_count, 1);
+    
+    if (padding == NULL)
+    {
+        return (size_t)-1;
+    }
+
+    size_t returned = fwrite(padding, padding_bytes_count, 1, file);
+
+    free(padding);
+
+    return returned;
+}
+
+//==========================================================================================
+
+BackendErr_t ElfWrite(FILE* elf_file, ElfCtx_t* elf_ctx, uint8_t* text)
+{
+    assert(elf_file);
+    assert(elf_ctx);
+    assert(text);
+
+    if (fwrite((void*) &elf_ctx->header, sizeof(elf_ctx->header), 1, elf_file) != 1)
+    {
+        WPRINTERR(L"Failed writing elf->header");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
+    if (fwrite((void*) text, elf_ctx->offsets.text_size, 1, elf_file) != 1)
+    {
+        WPRINTERR(L"Failed writing text");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
+
+    size_t padding = elf_ctx->offsets.reloc - (elf_ctx->offsets.text + 
+                                               elf_ctx->offsets.text_size);
+
+    if (fwrite_padding(elf_file, padding) != padding)
+    {
+        WPRINTERR(L"Failed writing text padding");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
+    
+    if (fwrite((void*) &elf_ctx->reloc_table.data, elf_ctx->offsets.reloc_size, 
+                1, elf_file) != 1)
+    {
+        WPRINTERR(L"Failed writing rela text");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
+
+    padding = elf_ctx->offsets.symtab - (elf_ctx->offsets.reloc + elf_ctx->offsets.reloc_size);
+
+    if (fwrite_padding(elf_file, padding) != padding)
+    {
+        WPRINTERR(L"Failed writing rela text padding");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
+
+    if (fwrite((void*) &elf_ctx->sym_table.data, elf_ctx->offsets.symtab_size, 
+                1, elf_file) != 1)
+    {
+        WPRINTERR(L"Failed writing symtab");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
+    if (fwrite((void*) &elf_ctx->str_table.data, elf_ctx->offsets.strtab_size, 
+                1, elf_file) != 1)
+    {
+        WPRINTERR(L"Failed writing strtab");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
+    if (fwrite((void*) SH_STR_TAB, elf_ctx->offsets.shstrtab_size, 1, elf_file) != 1)
+    {
+        WPRINTERR(L"Failed writing shstrtab");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
+    if (fwrite((void*) &elf_ctx->section_header_table, sizeof(elf_ctx->section_header_table), 
+                1, elf_file) != 1)
+    {
+        WPRINTERR(L"Failed writing section header table");
+        return BACKEND_FAILED_FWRITE_TO_ELF;
+    }
 
     return BACKEND_SUCCESS;
 }

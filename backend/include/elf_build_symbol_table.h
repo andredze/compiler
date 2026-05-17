@@ -11,6 +11,8 @@
 
 typedef struct SymbolTable
 {
+    size_t     last_local_index_plus_one;
+
     size_t     capacity;
     size_t     size;
 
