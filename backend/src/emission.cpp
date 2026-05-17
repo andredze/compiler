@@ -53,6 +53,14 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         return error;
     }
 
+    if ((error = RelTableCountFuncSizes(&backend_ctx->rel_table, 
+                                        BinCodeGetCurrentPos(&backend_ctx->bin_code))))
+    {
+        return error;
+    }
+
+    REL_TABLE_DUMP_(L"counted funcs size");
+
     DPRINT_FUNC_LEAVE_MSG();
     return BACKEND_SUCCESS;
 }

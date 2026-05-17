@@ -44,6 +44,7 @@ BACKEND_SOURCES := backend/src/main.cpp 			 		\
                    backend/src/bin_code_buffer.cpp 	 		\
                    backend/src/elf_build.cpp 		 		\
                    backend/src/elf_build_string_table.cpp 	\
+                   backend/src/elf_build_symbol_table.cpp 	\
                    backend/src/encoding_x86.cpp 	 		\
                    backend/src/assembly_nasm.cpp 	 		\
                    common/lang_ctx/lang_funcs.cpp 	 		\

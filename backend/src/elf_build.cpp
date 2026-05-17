@@ -30,28 +30,66 @@ static BackendErr_t BackendOpenElfFile(BackendCtx_t* backend_ctx)
 
 //==========================================================================================
 
+BackendErr_t ElfCtxCtor(ElfCtx_t* elf_ctx, BackendCtx_t* backend_ctx)
+{
+    assert(elf_ctx);
+
+    BackendErr_t error = BACKEND_SUCCESS;
+
+    if ((error = StringTableCtor(&elf_ctx->str_table, STRING_TABLE_INIT_CAPACITY)))
+    {
+        return error;
+    }
+    if ((error = SymbolTableCtor(&elf_ctx->sym_table, backend_ctx->rel_table.size + 1)))
+    {
+        return error;
+    }
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+void ElfCtxDtor(ElfCtx_t* elf_ctx)
+{
+    assert(elf_ctx);
+
+    StringTableDtor(&elf_ctx->str_table);
+    SymbolTableDtor(&elf_ctx->sym_table);
+}
+
+//==========================================================================================
+
 BackendErr_t BuildElf(BackendCtx_t* backend_ctx)
 {
     assert(backend_ctx);
 
+    ElfCtx_t elf_ctx = {};
+
     BackendErr_t error = BACKEND_SUCCESS;
 
+    if ((error = ElfCtxCtor(&elf_ctx, backend_ctx)))
+    {
+        ElfCtxDtor(&elf_ctx);
+        return error;
+    }
     if ((error = BackendOpenElfFile(backend_ctx)))
     {
+        ElfCtxDtor(&elf_ctx);
         return error;
     }
-    if ((error = StringTableCtor(&backend_ctx->str_table, STRING_TABLE_INIT_CAPACITY)))
+    if ((error = ElfBuildStringTable(backend_ctx, &elf_ctx.str_table)))
     {
-        StringTableDtor(&backend_ctx->str_table);
+        ElfCtxDtor(&elf_ctx);
         return error;
     }
-    if ((error = ElfBuildStringTable(backend_ctx)))
+    if ((error = ElfBuildSymbolTable(backend_ctx, &elf_ctx.sym_table)))
     {
-        StringTableDtor(&backend_ctx->str_table);
+        ElfCtxDtor(&elf_ctx);
         return error;
     }
 
-    StringTableDtor(&backend_ctx->str_table);
+    ElfCtxDtor(&elf_ctx);
 
     return BACKEND_SUCCESS;
 }

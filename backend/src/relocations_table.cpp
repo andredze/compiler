@@ -201,6 +201,49 @@ int CountLabelRelAddr(size_t label_pos, size_t pos_before_instr_using_label)
 
 //==========================================================================================
 
+BackendErr_t RelTableCountFuncSizes(RelTable_t* rel_table, size_t section_text_size)
+{
+    assert(rel_table);
+
+    RelElem_t* prev_elem = NULL;
+    RelElem_t* curr_elem = NULL;
+
+    size_t i = 0;
+
+    for (; i < rel_table->size - 1; i++)
+    {
+        if (rel_table->data[i].type == REL_FUNC_DECL)
+        {
+            prev_elem = &rel_table->data[i];
+            break;
+        }
+    }
+
+    for (; i < rel_table->size; i++)
+    {
+        if (rel_table->data[i].type == REL_FUNC_DECL)
+        {
+            curr_elem = &rel_table->data[i];
+            prev_elem->func_size = curr_elem->bin_code_pos - prev_elem->bin_code_pos;
+            prev_elem = curr_elem;
+        }
+    }
+
+    // for main
+    rel_table->data[rel_table->size - 1].func_size = section_text_size - 
+                                                     rel_table->data[rel_table->size - 1].bin_code_pos;
+
+    if (wcscmp(rel_table->data[rel_table->size - 1].label, MAIN_ENTRY_LABEL) != 0)
+    {
+        WPRINTERR(L"Last function in rel_table should be main");
+        return BACKEND_REL_TABLE_MAIN_NOT_LAST;
+    }
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
 LangErr_t RelTableDump(LangCtx_t*     lang_ctx, 
                        RelTable_t*    rel_table, 
                        const char*    func,
@@ -242,19 +285,23 @@ LangErr_t RelTableDump(LangCtx_t*     lang_ctx,
 
     RelElem_t* rel_data = NULL;
 
-    fwprintf(fp, L"index  {        label,        bin_code_pos,   hex,       scope,           type      }\n");
+    fwprintf(fp, L"index  {        label,        bin_code_pos,   hex,       scope,           type,        func_size, %10ls, %10ls}\n",
+                 L"strtab_ind", L"symtab_ind");
 
     for (size_t i = 0; i < rel_table->size; i++)
     {
         rel_data = &rel_table->data[i];
 
-        fwprintf(fp, L"[ %-2d]: {%20ls,      %3zu    , %#6x, %15s, %14s }\n",
+        fwprintf(fp, L"[ %-2d]: {%20ls,      %3zu    , %#6x, %15s, %14s, %3zu,  %10zu, %10zu}\n",
                      i,
                      rel_data->label,
                      rel_data->bin_code_pos,
                      rel_data->bin_code_pos,
                      REL_FUNC_SCOPE_NAME[rel_data->scope],
-                     REL_FUNC_TYPE_NAME[rel_data->type]);
+                     REL_FUNC_TYPE_NAME[rel_data->type],
+                     rel_data->func_size,
+                     rel_data->strtab_index,
+                     rel_data->symtab_index);
     }
 
     fwprintf(fp, L"---------------------------------------"

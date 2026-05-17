@@ -25,7 +25,6 @@ typedef BackendErr_t (*EmitFunction_t) (BackendCtx_t* backend_ctx, TreeNode_t* n
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const wchar_t * const MAIN_ENTRY_LABEL    = L"main"; 
 const int             UNDEFINED_FUNC_ADDR = 0;
 
 const wchar_t * const KW_INPUT_FUNC_NAME  = L"скажи_мне_кто_ты";

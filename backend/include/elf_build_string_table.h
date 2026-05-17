@@ -34,6 +34,25 @@ size_t CountHash(const wchar_t* string);
 
 //------------------------------------------------------------------//
 
+const size_t MAX_CHAR_BUFFER_SIZE = 256;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+typedef struct StringTable
+{
+    size_t   capacity;
+    size_t   size;
+
+    uint8_t* data;
+}
+StringTable_t;
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+const size_t STRING_TABLE_INIT_CAPACITY = 256;
+
+//------------------------------------------------------------------//
+
 #ifdef BACKEND_DEBUG
     #define STRING_POOL_TABLE_DUMP_(str_pool, fmt, ...)       \
             BEGIN                                             \
@@ -46,8 +65,9 @@ size_t CountHash(const wchar_t* string);
                 return BACKEND_LANG_ERROR;                    \
             }                                                 \
             if (StringTableDump(backend_ctx,                  \
-                               __func__, __FILE__, __LINE__,  \
-                               fmt, ##__VA_ARGS__))           \
+                                str_table,                    \
+                                __func__, __FILE__, __LINE__, \
+                                fmt, ##__VA_ARGS__))          \
             {                                                 \
                 return BACKEND_LANG_ERROR;                    \
             }                                                 \
@@ -67,6 +87,7 @@ BackendErr_t StringPoolDump(BackendCtx_t*  backend_ctx,
                             ...);
 
 BackendErr_t StringTableDump(BackendCtx_t*  backend_ctx, 
+                             StringTable_t* str_table,
                              const char*    func,
                              const char*    file,
                              int            line,
@@ -91,10 +112,6 @@ void         StringPoolDtor          (StringPool_t* str_pool);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const size_t MAX_CHAR_BUFFER_SIZE = 256;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
 BackendErr_t StringTableCtor       (StringTable_t* string_table, size_t init_cap);
 
 BackendErr_t StringTableWriteString(StringTable_t* str_table, 
@@ -107,7 +124,7 @@ void         StringTableDtor       (StringTable_t* string_table);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-BackendErr_t ElfBuildStringTable(BackendCtx_t* backend_ctx);
+BackendErr_t ElfBuildStringTable(BackendCtx_t* backend_ctx, StringTable_t* str_table);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

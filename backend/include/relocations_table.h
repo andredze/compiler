@@ -1,4 +1,4 @@
-#ifndef RELOCATIONS_TABLE_H
+    #ifndef RELOCATIONS_TABLE_H
 #define RELOCATIONS_TABLE_H
 
 //——————————————————————————————————————————————————————————————————————————————————————————
@@ -7,6 +7,10 @@
 #include "backend_err.h"
 #include "lang_ctx.h"
 #include "common.h"
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+const wchar_t * const MAIN_ENTRY_LABEL = L"main"; 
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -56,6 +60,8 @@ typedef struct RelElem
 
     size_t          strtab_index;
     size_t          symtab_index;
+
+    size_t          func_size;
 }
 RelElem_t;
 
@@ -135,6 +141,8 @@ BackendErr_t RelTablePopLabelBinCodePos(RelTable_t* rel_table,
 BackendErr_t RelTableGetLabelBinCodePosByIdIndex(RelTable_t* rel_table, 
                                                  size_t      id_table_index, 
                                                  size_t*     bin_code_pos_dst);
+
+BackendErr_t RelTableCountFuncSizes(RelTable_t* rel_table, size_t section_text_size);
 
 int CountLabelRelAddr(size_t label_pos, size_t pos_before_instr_using_label);
 

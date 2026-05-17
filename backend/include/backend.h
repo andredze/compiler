@@ -14,24 +14,10 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+const int    TEXT_SECTION_NUMBER    = 1;
 const size_t TYPE_INT_SIZE_IN_BYTES = 4;
 
 //——————————————————————————————————————————————————————————————————————————————————————————
-
-typedef struct StringTable
-{
-    size_t   capacity;
-    size_t   size;
-
-    uint8_t* data;
-}
-StringTable_t;
-
-//——————————————————————————————————————————————————————————————————————————————————————————
-
-const size_t STRING_TABLE_INIT_CAPACITY = 256;
-
-//------------------------------------------------------------------//
 
 typedef struct BackendCtx
 {
@@ -52,8 +38,6 @@ typedef struct BackendCtx
     TreeNode_t*   main_node;
 
     RelTable_t    rel_table;
-
-    StringTable_t str_table;
 }
 BackendCtx_t;
 

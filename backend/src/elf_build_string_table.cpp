@@ -93,6 +93,7 @@ BackendErr_t StringPoolGetStrTabIndex(StringPool_t*  str_pool,
             wcscmp(string, str_pool->data[i].w_string) == 0)
         {
             *str_tab_index_dst = str_pool->data[i].strtab_index;
+            return BACKEND_SUCCESS;
         }
     }
 
@@ -281,6 +282,7 @@ BackendErr_t StringPoolDump(BackendCtx_t*  backend_ctx,
 //==========================================================================================
 
 BackendErr_t StringTableDump(BackendCtx_t*  backend_ctx, 
+                             StringTable_t* str_table,
                              const char*    func,
                              const char*    file,
                              int            line,
@@ -288,10 +290,9 @@ BackendErr_t StringTableDump(BackendCtx_t*  backend_ctx,
                              ...)
 {
     assert(backend_ctx);
+    assert(str_table);
 
     FILE* fp = backend_ctx->lang_ctx.tree.debug.fp;
-
-    StringTable_t* str_table = &backend_ctx->str_table;
 
     va_list args = {};
 
@@ -421,6 +422,9 @@ static BackendErr_t StringTablePutRelElem(StringTable_t* str_table,
     {
         return error;
     }
+
+    rel_elem->strtab_index = strtab_index;
+
     if ((error = StringPoolPushString(str_pool, w_string, hash, strtab_index)))
     {
         return error;
@@ -431,14 +435,14 @@ static BackendErr_t StringTablePutRelElem(StringTable_t* str_table,
 
 //==========================================================================================
 
-BackendErr_t ElfBuildStringTable(BackendCtx_t* backend_ctx)
+BackendErr_t ElfBuildStringTable(BackendCtx_t* backend_ctx, StringTable_t* str_table)
 {
     assert(backend_ctx);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
     // first should be a NULL-term
-    if ((error = StringTableWriteSymbol(&backend_ctx->str_table, '\0')))
+    if ((error = StringTableWriteSymbol(str_table, '\0')))
     {
         return error;
     }
@@ -457,7 +461,7 @@ BackendErr_t ElfBuildStringTable(BackendCtx_t* backend_ctx)
 
     for (size_t i = 0; i < rel_table->size; i++)
     {
-        if ((error = StringTablePutRelElem(&backend_ctx->str_table,
+        if ((error = StringTablePutRelElem(str_table,
                                            &str_pool,
                                            &rel_table->data[i])))
         {
@@ -468,6 +472,8 @@ BackendErr_t ElfBuildStringTable(BackendCtx_t* backend_ctx)
         STRING_POOL_TABLE_DUMP_(&str_pool, L"put elem %ls", rel_table->data[i].label);
     }
 
+    REL_TABLE_DUMP_(L"put strtab_indexes");
+    
     StringPoolDtor(&str_pool);
 
     return BACKEND_SUCCESS;
