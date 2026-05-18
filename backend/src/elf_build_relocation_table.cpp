@@ -130,7 +130,7 @@ BackendErr_t RelocationTableDump(BackendCtx_t*      backend_ctx,
 
 //==========================================================================================
 
-/*
+/* RelocationTableElem_t structure:
 typedef struct
 {
   Elf64_Addr	r_offset;		// Address 

@@ -297,7 +297,7 @@ BackendErr_t ElfWriteBuffer(FILE* elf_file, ElfCtx_t* elf_ctx)
     return BACKEND_SUCCESS;
 }
 
-//==========================================================================================
+//=============================================================offsets=============================
 
 BackendErr_t ElfCopyContextToBuffer(ElfCtx_t* elf_ctx)
 {

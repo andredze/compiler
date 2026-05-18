@@ -143,7 +143,7 @@ BackendErr_t SymbolTableDump(BackendCtx_t*  backend_ctx,
 
 //==========================================================================================
 
-/*
+/* SymbolTableElem_t structure:
 typedef struct
 {
   Elf64_Word	st_name;		// Symbol name (string tbl index)
