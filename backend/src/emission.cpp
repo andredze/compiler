@@ -78,6 +78,42 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
 
 //==========================================================================================
 
+static BackendErr_t AlignStackIfNeeded(BackendCtx_t* backend_ctx)
+{
+    assert(backend_ctx);
+
+    if ((backend_ctx->current_func_stack_alignment & 0b1) == 0b1)
+    {
+        ASM_COMMENT_(L"align the stack (curr_size = %d)", 
+                     backend_ctx->current_func_stack_alignment * 8);
+
+        SUB_REG_IMM_(REG_RSP, 8);
+        backend_ctx->did_an_alignment = 1;
+    }
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
+static BackendErr_t ReturnStackAlignmentIfNeeded(BackendCtx_t* backend_ctx)
+{
+    assert(backend_ctx);
+
+    if (backend_ctx->did_an_alignment)
+    {
+        ASM_COMMENT_(L"return the stack alignment (curr_size = %d)", 
+                     backend_ctx->current_func_stack_alignment * 8);
+
+        ADD_REG_IMM_(REG_RSP, 8);
+        backend_ctx->did_an_alignment = 0;
+    }
+
+    return BACKEND_SUCCESS;
+}
+
+//==========================================================================================
+
 BackendErr_t EmitExit(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
@@ -145,7 +181,11 @@ static BackendErr_t EmitMain(BackendCtx_t* backend_ctx, TreeNode_t* node)
         return error;
     }
 
+    backend_ctx->current_func_stack_alignment = 1;
+
     ASM_COMMENT_(L"stack frame for main variables");
+
+    backend_ctx->current_func_stack_alignment = 1;
 
     PUSH_REG_(REG_RBP);
     MOV_REG_REG_(REG_RBP, REG_RSP);
@@ -311,6 +351,8 @@ static BackendErr_t EmitFunctionDeclaration(BackendCtx_t* backend_ctx, TreeNode_
         return error;
     }
 
+    backend_ctx->current_func_stack_alignment = 1;
+
     PUSH_REG_(REG_RBP);
 
     MOV_REG_REG_(REG_RBP, REG_RSP);
@@ -344,20 +386,16 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
     
     size_t stack_frame_size = 0;
 
-    int have_to_align = 0;
-
     if ((error = BackendGetArgsStackSize(backend_ctx, 
                                          node->data.value.id.id_index, 
-                                         &stack_frame_size,
-                                         &have_to_align)))
+                                         &stack_frame_size)))
     {
         return error;
     }
 
-    if (have_to_align)
+    if ((error = AlignStackIfNeeded(backend_ctx)))
     {
-        ASM_COMMENT_(L"align stack by 0x10");
-        SUB_REG_IMM_(REG_RSP, 0x8);
+        return error;
     }
 
     if (node->left)
@@ -393,6 +431,11 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
     CALL_REL_(rel_addr, BackendGetIdName(backend_ctx, node));
 
     // return stack to its state
+    if ((error = ReturnStackAlignmentIfNeeded(backend_ctx)))
+    {
+        return error;
+    }
+
     ADD_REG_IMM_(REG_RSP, (int) stack_frame_size);
 
     return BACKEND_SUCCESS;

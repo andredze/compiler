@@ -168,9 +168,11 @@
         GENERATE_CODE_(InstructionCreateRegNone, OPCODE_IDIV_REG, reg)
 
 #define PUSH_REG_(reg) \
+        backend_ctx->current_func_stack_alignment++; \
         GENERATE_CODE_(InstructionCreateRegNone, OPCODE_PUSH_REG, reg)
 
 #define POP_REG_(reg) \
+        backend_ctx->current_func_stack_alignment--; \
         GENERATE_CODE_(InstructionCreateRegNone, OPCODE_POP_REG, reg)
 
 #define CALL_REL_(rel, label) \
@@ -198,9 +200,11 @@
         GENERATE_CODE_(InstructionCreateRegImm, OPCODE_CMP_REG_IMM, reg, imm)
 
 #define ADD_REG_IMM_(reg, imm) \
+        backend_ctx->current_func_stack_alignment -= (reg == REG_RSP) ? (imm >> 3) : 0; \
         GENERATE_CODE_(InstructionCreateRegImm, OPCODE_ADD_REG_IMM, reg, imm)
 
 #define SUB_REG_IMM_(reg, imm) \
+        backend_ctx->current_func_stack_alignment += (reg == REG_RSP) ? (imm >> 3) : 0; \
         GENERATE_CODE_(InstructionCreateRegImm, OPCODE_SUB_REG_IMM, reg, imm)
 
 #define CQO_() \

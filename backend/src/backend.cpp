@@ -150,9 +150,10 @@ BackendErr_t BackendGetVarsStackSize(BackendCtx_t* backend_ctx, size_t func_inde
 
 //==========================================================================================
 
-BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst, int* have_to_align)
+BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_index, size_t* dst)
 {
     assert(backend_ctx);
+    assert(dst);
 
     BackendErr_t error   = BACKEND_SUCCESS;
     IdData_t*    id_data = NULL;    
@@ -168,11 +169,7 @@ BackendErr_t BackendGetArgsStackSize(BackendCtx_t* backend_ctx, size_t func_inde
         return BACKEND_WRONG_ID_TABLE_INDEX;
     }
 
-    size_t frame_size = id_data->n_params * STACK_ELEMENT_SIZE;
-
-    *have_to_align = frame_size & 0xF;
-
-    *dst = GetAlignedUp(frame_size);
+    *dst = id_data->n_params * STACK_ELEMENT_SIZE;
 
     return BACKEND_SUCCESS;
 }
