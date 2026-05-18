@@ -55,3 +55,43 @@ int func()
 {
 	return 0;
 }
+
+#include "lib.c"
+
+int main(int args, char* argv[])
+{
+    int radius = 0;
+    
+    int x_0 = VIDEO_RAM_LENGTH / 2;
+    int y_0 = VIDEO_RAM_LENGTH / 2;
+
+    if (args > 1)
+    {
+        sscanf(argv[1], "%d", &radius);
+    }
+
+    fprintf(stderr, "radius %d\n", radius);
+
+    for (int y = 0; y < VIDEO_RAM_LENGTH; y++)
+    {
+        for (int x = 0; x < VIDEO_RAM_LENGTH; x++)
+        {
+            fprintf(stderr, "              y     x %d %d\n", y, x);
+            fprintf(stderr, "from center y-y0 x-x0 %d %d\n", y-y_0, x-x_0);
+            fprintf(stderr, "squared     y-y0 x-x0 %d %d\n", (y-y_0) * (y-y_0), (x-x_0) * (x-x_0));
+            fprintf(stderr, "            r_squared %d\n"   , radius * radius);
+            fprintf(stderr, "            condition %d\n"   , ((x - x_0) * (x - x_0) + (y - y_0) * (y - y_0)) <= radius * radius);
+
+            if (((x - x_0) * (x - x_0) + (y - y_0) * (y - y_0)) <= radius * radius)
+            {
+                Поставь(x, y, '@');
+            }
+        }
+    }
+
+    Нарисуй();
+
+    return 0;
+}
+
+//------------------------------------------------------------------//

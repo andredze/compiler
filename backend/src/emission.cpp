@@ -19,7 +19,8 @@ static BackendErr_t EmitNumber              (BackendCtx_t* backend_ctx, TreeNode
 static BackendErr_t EmitVariable            (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitFunctionDeclaration (BackendCtx_t* backend_ctx, TreeNode_t* node);
 static BackendErr_t EmitFunctionCall        (BackendCtx_t* backend_ctx, TreeNode_t* node);
-static BackendErr_t EmitFunctionArguments   (BackendCtx_t* backend_ctx, TreeNode_t* node);
+static BackendErr_t EmitFunctionArguments   (BackendCtx_t* backend_ctx, TreeNode_t* node,
+                                             int is_extern_function);
 
 static BackendErr_t EmitAndPushLabel(BackendCtx_t* backend_ctx,
                                      wchar_t*      label,
@@ -250,7 +251,7 @@ static BackendErr_t EmitNode(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
             if (emit_func == NULL)
             {
-                WPRINTERR(L"Error: keyword %ls doesn't support assembling",
+                WPRINTERR(L"Error: keyword %ls doesn't support emission",
                           kw_case.name);
 
                 return BACKEND_CANT_EMIT_KEYWORD;
@@ -361,7 +362,7 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
 
     if (node->left)
     {
-        if ((error = EmitFunctionArguments(backend_ctx, node->left)))
+        if ((error = EmitFunctionArguments(backend_ctx, node->left, 0)))
         {
             return error;
         }
@@ -399,7 +400,8 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
 
 //==========================================================================================
 
-static BackendErr_t EmitFunctionSingleArgument(BackendCtx_t* backend_ctx, TreeNode_t* node)
+static BackendErr_t EmitFunctionSingleArgument(BackendCtx_t* backend_ctx, TreeNode_t* node,
+                                               int is_extern_function)
 {
     assert(backend_ctx);
     assert(node);
@@ -411,14 +413,26 @@ static BackendErr_t EmitFunctionSingleArgument(BackendCtx_t* backend_ctx, TreeNo
         return error;
     }
 
-    PUSH_REG_(REG_RAX);
+    size_t reg_index = backend_ctx->current_args_count;
+
+    if (is_extern_function && reg_index <= CALL_ARGS_REGS_COUNT)
+    {   
+        MOV_REG_REG_(CALL_REGS_TABLE[reg_index], REG_RAX);
+    }
+    else
+    {
+        PUSH_REG_(REG_RAX);
+    }
+
+    backend_ctx->current_args_count++;
 
     return BACKEND_SUCCESS;
 }
 
 //==========================================================================================
 
-static BackendErr_t EmitFunctionArguments(BackendCtx_t* backend_ctx, TreeNode_t* node)
+static BackendErr_t EmitFunctionArguments(BackendCtx_t* backend_ctx, TreeNode_t* node,
+                                          int is_extern_function)
 {
     assert(backend_ctx);
     assert(node);
@@ -433,21 +447,35 @@ static BackendErr_t EmitFunctionArguments(BackendCtx_t* backend_ctx, TreeNode_t*
 
     if (IS_KEYWORD_(node, KW_PARAMS_SEPARATOR))
     {
-        // right node is always a single argument
-        if ((error = EmitFunctionSingleArgument(backend_ctx, node->right)))
+        // right order
+        if (is_extern_function)
         {
-            return error;
+            // keep doing recursive calls for left subtree
+            if ((error = EmitFunctionArguments(backend_ctx, node->left,
+                                               is_extern_function)))
+                return error;
+            // right node is always a single argument
+            if ((error = EmitFunctionSingleArgument(backend_ctx, node->right,
+                                                    is_extern_function)))
+                return error;
         }
-        // keep doing recursive calls for left subtree
-        if ((error = EmitFunctionArguments(backend_ctx, node->left)))
+        else
         {
-            return error;
+            // right node is always a single argument
+            if ((error = EmitFunctionSingleArgument(backend_ctx, node->right,
+                                                    is_extern_function)))
+                return error;
+            // keep doing recursive calls for left subtree
+            if ((error = EmitFunctionArguments(backend_ctx, node->left,
+                                               is_extern_function)))
+                return error;
         }
     }
     else
     {
         // stop recursion
-        if ((error = EmitFunctionSingleArgument(backend_ctx, node)))
+        if ((error = EmitFunctionSingleArgument(backend_ctx, node,
+                                                is_extern_function)))
         {
             return error;
         }
@@ -897,7 +925,7 @@ static BackendErr_t EmitConditionNoFixup(BackendCtx_t* backend_ctx,
     assert(backend_ctx);
     assert(node);
 
-    EMIT_VERIFY_(OPCODE_JMP_REL <= jcc_opcode && jcc_opcode <= OPCODE_JBE_REL);
+    EMIT_VERIFY_(OPCODE_JMP_REL <= jcc_opcode && jcc_opcode <= OPCODE_JLE_REL);
 
     BackendErr_t error = BACKEND_SUCCESS;
 
@@ -1023,7 +1051,7 @@ BackendErr_t EmitCmdSeparator(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
 //==========================================================================================
 
-BackendErr_t EmitUnaryOperation(BackendCtx_t* backend_ctx, TreeNode_t* node)
+BackendErr_t EmitLibFuncCall(BackendCtx_t* backend_ctx, TreeNode_t* node)
 {
     assert(backend_ctx);
     assert(node);
@@ -1034,16 +1062,20 @@ BackendErr_t EmitUnaryOperation(BackendCtx_t* backend_ctx, TreeNode_t* node)
                  IS_KEYWORD_(node, KW_POINT ));
     
     EMIT_VERIFY_(node->left == NULL);
-    EMIT_VERIFY_(node->right);
 
     BackendErr_t error = BACKEND_SUCCESS;
+    
+    backend_ctx->current_args_count = 0;
 
-    if ((error = EmitNode(backend_ctx, node->right)))
+    if (node->right)
     {
-        return error;
+        if ((error = EmitFunctionArguments(backend_ctx, node->right, 1)))
+        {
+            return error;
+        }
     }
 
-    MOV_REG_REG_(REG_RDI, REG_RAX);
+    backend_ctx->current_args_count = 0;
 
     const wchar_t* func_name = NULL;
 

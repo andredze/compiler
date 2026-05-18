@@ -39,8 +39,7 @@ typedef struct KeywordCase
 
 #ifdef REVERSE
 
-LangErr_t SrcNode(LangCtx_t* lang_ctx, TreeNode_t* node);
-
+LangErr_t SrcNode           (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t SrcCmdSeparator   (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t SrcAssignment     (LangCtx_t* lang_ctx, TreeNode_t* node);
 LangErr_t SrcWhile          (LangCtx_t* lang_ctx, TreeNode_t* node);
@@ -101,7 +100,7 @@ const KeywordCase_t KEYWORD_CASES_TABLE[] =
     SET_KW_CASE_(KW_MUL                 ,   1,   L"усилить в"                   , L"_MATH_MUL_"      , EmitMathExprOperation  , SrcMathOperation  ),
     SET_KW_CASE_(KW_DIV                 ,   1,   L"расщепить на"                , L"_MATH_DIV_"      , EmitMathExprOperation  , SrcMathOperation  ),
     SET_KW_CASE_(KW_POW                 ,   1,   L"расплодить в"                , L"_MATH_POW_"      , NULL                   , SrcMathOperation  ),
-    SET_KW_CASE_(KW_OUTPUT              ,   1,   L"заставь их услышать"         , L"_OUTPUT_"        , EmitUnaryOperation     , SrcUnaryOperator  ),
+    SET_KW_CASE_(KW_OUTPUT              ,   1,   L"заставь их услышать"         , L"_OUTPUT_"        , EmitLibFuncCall        , SrcUnaryOperator  ),
     SET_KW_CASE_(KW_INPUT               ,   1,   L"скажи мне кто ты,"           , L"_INPUT_"         , EmitInput              , SrcUnaryOperator  ),
     SET_KW_CASE_(KW_ABORT               ,   1,   L"аборт"                       , L"_ABORT_"         , EmitExit               , SrcAbort          ),
     SET_KW_CASE_(KW_VARIABLE_DECL       ,   1,   L"голос в голове"              , L""                , NULL                   , NULL              ),
@@ -111,9 +110,9 @@ const KeywordCase_t KEYWORD_CASES_TABLE[] =
     SET_KW_CASE_(KW_BIGGER              ,   1,   L"больше"                      , L"_LOG_MORE_"      , NULL                   , SrcCompareOperator),
     SET_KW_CASE_(KW_SMALLER_EQUAL       ,   1,   L"меньше-равен"                , L"_LOG_LESS_EQUAL_", NULL                   , SrcCompareOperator),
     SET_KW_CASE_(KW_SMALLER             ,   1,   L"меньше"                      , L"_LOG_LESS_"      , NULL                   , SrcCompareOperator),
-    SET_KW_CASE_(KW_SQRT                ,   1,   L"исток"                       , L"_MATH_SQRT_"     , EmitUnaryOperation     , SrcUnaryOperator  ),
-    SET_KW_CASE_(KW_DRAW                ,   1,   L"рисуй"                       , L"_DRAW_"          , EmitUnaryOperation     , SrcUnaryOperator  ),
-    SET_KW_CASE_(KW_POINT               ,   1,   L"поставь точку"               , L"_POINT_"         , EmitUnaryOperation     , SrcUnaryOperator  )
+    SET_KW_CASE_(KW_SQRT                ,   1,   L"исток"                       , L"_MATH_SQRT_"     , EmitLibFuncCall        , SrcUnaryOperator  ),
+    SET_KW_CASE_(KW_DRAW                ,   1,   L"рисуй"                       , L"_DRAW_"          , EmitLibFuncCall        , SrcUnaryOperator  ),
+    SET_KW_CASE_(KW_POINT               ,   1,   L"поставь точку"               , L"_POINT_"         , EmitLibFuncCall        , SrcUnaryOperator  )
 };
 
 //==========================================================================================

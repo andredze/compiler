@@ -58,8 +58,8 @@ static TreeNode_t* ParseFunctionCall        (FrontendCtx_t* frontend_ctx);
 static TreeNode_t* ParseFunctionArguments   (FrontendCtx_t* frontend_ctx, 
                                              int*           args_count_p);
 
-static TreeNode_t* ParseUnaryOperatorCall   (FrontendCtx_t* frontend_ctx);
-static TreeNode_t* ParseUnaryOperator       (FrontendCtx_t* frontend_ctx);
+static TreeNode_t* ParseLibFuncCall         (FrontendCtx_t* frontend_ctx);
+static TreeNode_t* ParseLibFuncKeyword      (FrontendCtx_t* frontend_ctx);
 
 static void        SetIdentifierTokenType   (LangCtx_t*     lang_ctx,
                                              TreeNode_t*    cur_token,
@@ -403,6 +403,7 @@ static TreeNode_t* ParseFunctionBlock(FrontendCtx_t* frontend_ctx)
 
     if (block_end == NULL || !IS_KEYWORD_(block_end, KW_FUNCTION_BLOCK_END))
     {
+
         SYNTAX_ERROR_(L"Expected function block end");
         return NULL;
     }
@@ -986,7 +987,7 @@ static TreeNode_t* ParseFactor(FrontendCtx_t* frontend_ctx)
     if (cur_token != NULL) // expression with brackets parsed successfully
         return cur_token;
 
-    cur_token = ParseUnaryOperatorCall(frontend_ctx);
+    cur_token = ParseLibFuncCall(frontend_ctx);
     //TODO - error check
 
     if (cur_token != NULL) // unary op call parsed successfully
@@ -1241,22 +1242,48 @@ static TreeNode_t* ParseFunctionArguments(FrontendCtx_t* frontend_ctx, int* args
 
 //==========================================================================================
 
-static TreeNode_t* ParseUnaryOperatorCall(FrontendCtx_t* frontend_ctx)
+static TreeNode_t* ParseLibFuncCall(FrontendCtx_t* frontend_ctx)
 {
     assert(frontend_ctx);
 
-    TreeNode_t* cur_token = ParseUnaryOperator(frontend_ctx);
+    TreeNode_t* cur_token = ParseLibFuncKeyword(frontend_ctx);
 
     if (cur_token == NULL)
         return NULL;
 
-    cur_token->right = ParseExpression(frontend_ctx);
+    int args_count = 0;
+
+    cur_token->right = ParseFunctionArguments(frontend_ctx, &args_count);
 
     PARSER_DUMP_(cur_token, L"unary operator call");
 
-    if (cur_token->right == NULL)
+    int expected_args_count = 0;
+
+    switch (cur_token->data.value.keyword)
     {
-        SYNTAX_ERROR_("After unary op there should be an expression");
+        case KW_OUTPUT: expected_args_count = 1; break;
+        case KW_SQRT:   expected_args_count = 1; break;
+        case KW_DRAW:   expected_args_count = 0; break;
+        case KW_POINT:  expected_args_count = 3; break;
+        case KW_RETURN: expected_args_count = 1; break;
+        case KW_INPUT:
+            expected_args_count = 1; 
+            if (!(IS_VARIABLE_(cur_token->right)))
+            {
+                SYNTAX_ERROR_(L"Input lib func call argument is not a variable");
+                return NULL;
+            }
+            break;
+
+        default:
+            SYNTAX_ERROR_(L"Current token is not a lib func call");
+            return NULL;
+    }
+
+    if (expected_args_count != args_count)
+    {
+        SYNTAX_ERROR_(L"Lib func call wrong args count %d (expected %d)", 
+                      args_count, expected_args_count);
         return NULL;
     }
 
@@ -1265,7 +1292,7 @@ static TreeNode_t* ParseUnaryOperatorCall(FrontendCtx_t* frontend_ctx)
 
 //==========================================================================================
 
-static TreeNode_t* ParseUnaryOperator(FrontendCtx_t* frontend_ctx)
+static TreeNode_t* ParseLibFuncKeyword(FrontendCtx_t* frontend_ctx)
 {
     assert(frontend_ctx);
 
@@ -1278,9 +1305,10 @@ static TreeNode_t* ParseUnaryOperator(FrontendCtx_t* frontend_ctx)
         (cur_token->data.value.keyword == KW_INPUT ) |
         (cur_token->data.value.keyword == KW_SQRT  ) |
         (cur_token->data.value.keyword == KW_DRAW  ) |
-        (cur_token->data.value.keyword == KW_RETURN))
+        (cur_token->data.value.keyword == KW_RETURN) |
+        (cur_token->data.value.keyword == KW_POINT ))
     {
-        PARSER_DUMP_(cur_token, L"unary operator");
+        PARSER_DUMP_(cur_token, L"lib func call keyword");
         frontend_ctx->cur_token_index++;
         return cur_token;
     }

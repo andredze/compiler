@@ -37,6 +37,8 @@ typedef struct BackendCtx
     TreeNode_t*   main_node;
 
     RelTable_t    rel_table;
+
+    size_t        current_args_count;
 }
 BackendCtx_t;
 

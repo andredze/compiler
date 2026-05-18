@@ -4,6 +4,7 @@
 //——————————————————————————————————————————————————————————————————————————————————————————
 
 #include "backend.h"
+#include "instruction.h"
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -11,13 +12,14 @@ BackendErr_t EmitProgram            (BackendCtx_t* backend_ctx);
 BackendErr_t EmitIf                 (BackendCtx_t* backend_ctx, TreeNode_t* node);
 BackendErr_t EmitAssignment         (BackendCtx_t* backend_ctx, TreeNode_t* node);
 BackendErr_t EmitMathExprOperation  (BackendCtx_t* backend_ctx, TreeNode_t* node);
-BackendErr_t EmitUnaryOperation     (BackendCtx_t* backend_ctx, TreeNode_t* node);
+BackendErr_t EmitLibFuncCall        (BackendCtx_t* backend_ctx, TreeNode_t* node);
 BackendErr_t EmitInput              (BackendCtx_t* backend_ctx, TreeNode_t* node);
 // BackendErr_t EmitElse               (BackendCtx_t* backend_ctx, TreeNode_t* node);
 BackendErr_t EmitWhile              (BackendCtx_t* backend_ctx, TreeNode_t* node);
 BackendErr_t EmitCmdSeparator       (BackendCtx_t* backend_ctx, TreeNode_t* node);
 BackendErr_t EmitExit               (BackendCtx_t* backend_ctx, TreeNode_t* node);
 BackendErr_t EmitReturn             (BackendCtx_t* backend_ctx, TreeNode_t* node);
+BackendErr_t EmitPoint              (BackendCtx_t* backend_ctx, TreeNode_t* node);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
@@ -30,6 +32,15 @@ const wchar_t * const KW_OUTPUT_FUNC_NAME = L"ЗаставьИхУслышать
 const wchar_t * const KW_SQRT_FUNC_NAME   = L"Исток";
 const wchar_t * const KW_DRAW_FUNC_NAME   = L"Нарисуй";
 const wchar_t * const KW_POINT_FUNC_NAME  = L"Поставь";
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
+const Register_t CALL_REGS_TABLE[] = {
+    REG_RDI, REG_RSI, REG_RDX, 
+    REG_RCX, REG_R8,  REG_R9
+};
+
+const size_t CALL_ARGS_REGS_COUNT = sizeof(CALL_REGS_TABLE) / sizeof(CALL_REGS_TABLE[0]);
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
