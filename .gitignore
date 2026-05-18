@@ -9,10 +9,12 @@ run
 
 exec/*
 
+# examples
 !psy/fact.psy
+!psy/fact_recursive.psy
+!psy/circle.psy
 !psy/linear.psy
 !psy/quad.psy
-!psy/fact_recursive.psy
 
 fact.cpp
 example.cpp
