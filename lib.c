@@ -93,7 +93,11 @@ void Нарисуй(void)
 
 void Поставь(int x, int y, int symbol)
 {
+
+#ifdef DEBUG
     fprintf(stderr, "point y x %d %d %c\n", y, x, (char) symbol);
+#endif /* DEBUG */
+
     VIDEO_RAM[y][x] = (char) symbol;
 }
 

@@ -157,10 +157,19 @@ Number                 ::= ['0'-'9']+ | ['0'-'9']+ '.' ['0'-'9']+
 
 ## Абстрактное Синтаксическое Дерево (AST)
 
-
 ```
 { "func":
     {"params": }
     {"=": }
 }
 ```
+
+## Источники
+// intel manual ISA (https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
+// OSDev (https://wiki.osdev.org/X86-64_Instruction_Encoding)
+// + objdump reverse
+// OSDev ELF (https://wiki.osdev.org/ELF)
+// man (https://man7.org/linux/man-pages/man5/elf.5.html)
+// ELF header file <elf.h>
+// LinuxFoundation (https://refspecs.linuxfoundation.org/elf/gabi4+/contents.html)
+// + readelf reverse
