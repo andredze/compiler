@@ -27,11 +27,15 @@ typedef BackendErr_t (*EmitFunction_t) (BackendCtx_t* backend_ctx, TreeNode_t* n
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
-const wchar_t * const KW_INPUT_FUNC_NAME  = L"СкажиМнеКтоТы";
-const wchar_t * const KW_OUTPUT_FUNC_NAME = L"ЗаставьИхУслышать";
-const wchar_t * const KW_SQRT_FUNC_NAME   = L"Исток";
-const wchar_t * const KW_DRAW_FUNC_NAME   = L"Нарисуй";
-const wchar_t * const KW_POINT_FUNC_NAME  = L"Поставь";
+const wchar_t * const KW_INPUT_FUNC_NAME        = L"СкажиМнеКтоТы";
+const wchar_t * const KW_OUTPUT_FUNC_NAME       = L"ЗаставьИхУслышать";
+const wchar_t * const KW_SQRT_FUNC_NAME         = L"Исток";
+const wchar_t * const KW_DRAW_FUNC_NAME         = L"Нарисуй";
+const wchar_t * const KW_POINT_FUNC_NAME        = L"Поставь";
+const wchar_t * const KW_INIT_SCREEN_FUNC_NAME  = L"ИнициализируйЭкран";
+const wchar_t * const KW_DEL_SCREEN_FUNC_NAME   = L"УдалиЭкран";
+const wchar_t * const KW_DRAW_SCREEN_FUNC_NAME  = L"НарисуйЭкран";
+const wchar_t * const KW_POINT_SCREEN_FUNC_NAME = L"ПоставьНаЭкран";
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 

@@ -58,7 +58,11 @@ typedef enum Keyword
     KW_SMALLER              = 33,
     KW_SQRT                 = 34,
     KW_DRAW                 = 35,
-    KW_POINT                = 36
+    KW_POINT                = 36,
+    KW_INIT_SCREEN          = 37,
+    KW_DEL_SCREEN           = 38,
+    KW_DRAW_SCREEN          = 39,
+    KW_POINT_SCREEN         = 40
 } Keyword_t;
 
 //——————————————————————————————————————————————————————————————————————————————————————————

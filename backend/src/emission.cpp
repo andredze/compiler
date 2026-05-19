@@ -43,14 +43,21 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         L"extern %ls\n"
         L"extern %ls\n"
         L"extern %ls\n"
+        L"extern %ls\n"
+        L"extern %ls\n"
+        L"extern %ls\n"
+        L"extern %ls\n"
         L"extern %ls\n\n",
         MAIN_ENTRY_LABEL,
         KW_INPUT_FUNC_NAME,
         KW_OUTPUT_FUNC_NAME,
         KW_SQRT_FUNC_NAME,
         KW_DRAW_FUNC_NAME,
-        KW_POINT_FUNC_NAME
-    );
+        KW_POINT_FUNC_NAME,
+        KW_INIT_SCREEN_FUNC_NAME,
+        KW_DEL_SCREEN_FUNC_NAME,
+        KW_DRAW_SCREEN_FUNC_NAME,
+        KW_POINT_SCREEN_FUNC_NAME);
 
     if ((error = EmitFunctions(backend_ctx, backend_ctx->lang_ctx.tree.dummy->right)))
     {
@@ -78,35 +85,19 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
 
 //==========================================================================================
 
-static BackendErr_t AlignStackIfNeeded(BackendCtx_t* backend_ctx)
+static BackendErr_t AlignStackIfNeeded(BackendCtx_t* backend_ctx, size_t stack_frame_size)
 {
     assert(backend_ctx);
 
-    if ((backend_ctx->current_func_stack_alignment & 0b1) == 0b1)
+    size_t will_push_regs_count = stack_frame_size / STACK_ELEMENT_SIZE;
+
+    if (((backend_ctx->current_func_stack_alignment + will_push_regs_count) % 2) == 1)
     {
-        ASM_COMMENT_(L"align the stack (curr_size = %d)", 
-                     backend_ctx->current_func_stack_alignment * 8);
+        ASM_COMMENT_(L"align the stack (curr_size = %d, stack_frame_size %zu)", 
+                     backend_ctx->current_func_stack_alignment * 8, will_push_regs_count);
 
         SUB_REG_IMM_(REG_RSP, 8);
         backend_ctx->did_an_alignment = 1;
-    }
-
-    return BACKEND_SUCCESS;
-}
-
-//==========================================================================================
-
-static BackendErr_t ReturnStackAlignmentIfNeeded(BackendCtx_t* backend_ctx)
-{
-    assert(backend_ctx);
-
-    if (backend_ctx->did_an_alignment)
-    {
-        ASM_COMMENT_(L"return the stack alignment (curr_size = %d)", 
-                     backend_ctx->current_func_stack_alignment * 8);
-
-        ADD_REG_IMM_(REG_RSP, 8);
-        backend_ctx->did_an_alignment = 0;
     }
 
     return BACKEND_SUCCESS;
@@ -393,7 +384,7 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
         return error;
     }
 
-    if ((error = AlignStackIfNeeded(backend_ctx)))
+    if ((error = AlignStackIfNeeded(backend_ctx, stack_frame_size)))
     {
         return error;
     }
@@ -431,9 +422,14 @@ static BackendErr_t EmitFunctionCall(BackendCtx_t* backend_ctx, TreeNode_t* node
     CALL_REL_(rel_addr, BackendGetIdName(backend_ctx, node));
 
     // return stack to its state
-    if ((error = ReturnStackAlignmentIfNeeded(backend_ctx)))
+    if (backend_ctx->did_an_alignment)
     {
-        return error;
+        ASM_COMMENT_(L"return the stack alignment (curr_size = %d)", 
+                     backend_ctx->current_func_stack_alignment * 8);
+
+        stack_frame_size += 8;
+
+        backend_ctx->did_an_alignment = 0;
     }
 
     ADD_REG_IMM_(REG_RSP, (int) stack_frame_size);
@@ -1099,10 +1095,14 @@ BackendErr_t EmitLibFuncCall(BackendCtx_t* backend_ctx, TreeNode_t* node)
     assert(backend_ctx);
     assert(node);
 
-    EMIT_VERIFY_(IS_KEYWORD_(node, KW_OUTPUT) ||
-                 IS_KEYWORD_(node, KW_SQRT  ) ||
-                 IS_KEYWORD_(node, KW_DRAW  ) ||
-                 IS_KEYWORD_(node, KW_POINT ));
+    EMIT_VERIFY_(IS_KEYWORD_(node, KW_OUTPUT      ) ||
+                 IS_KEYWORD_(node, KW_SQRT        ) ||
+                 IS_KEYWORD_(node, KW_DRAW        ) ||
+                 IS_KEYWORD_(node, KW_POINT       ) ||
+                 IS_KEYWORD_(node, KW_INIT_SCREEN ) ||
+                 IS_KEYWORD_(node, KW_DEL_SCREEN  ) ||
+                 IS_KEYWORD_(node, KW_DRAW_SCREEN ) ||
+                 IS_KEYWORD_(node, KW_POINT_SCREEN));
     
     EMIT_VERIFY_(node->left == NULL);
 
@@ -1124,10 +1124,14 @@ BackendErr_t EmitLibFuncCall(BackendCtx_t* backend_ctx, TreeNode_t* node)
 
     switch (node->data.value.keyword)
     {
-        case KW_OUTPUT: func_name = KW_OUTPUT_FUNC_NAME; break;
-        case KW_SQRT:   func_name = KW_SQRT_FUNC_NAME;   break;
-        case KW_DRAW:   func_name = KW_DRAW_FUNC_NAME;   break;
-        case KW_POINT:  func_name = KW_POINT_FUNC_NAME;  break;
+        case KW_OUTPUT:        func_name = KW_OUTPUT_FUNC_NAME;       break;
+        case KW_SQRT:          func_name = KW_SQRT_FUNC_NAME;         break;
+        case KW_DRAW:          func_name = KW_DRAW_FUNC_NAME;         break;
+        case KW_POINT:         func_name = KW_POINT_FUNC_NAME;        break;
+        case KW_INIT_SCREEN:   func_name = KW_INIT_SCREEN_FUNC_NAME;  break;
+        case KW_DEL_SCREEN:    func_name = KW_DEL_SCREEN_FUNC_NAME;   break;
+        case KW_DRAW_SCREEN:   func_name = KW_DRAW_SCREEN_FUNC_NAME;  break;
+        case KW_POINT_SCREEN:  func_name = KW_POINT_SCREEN_FUNC_NAME; break;
         default:
             WPRINTERR(L"Keyword %d for unary operation doesn't have a function",
                       node->data.value.keyword);

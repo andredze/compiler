@@ -102,3 +102,88 @@ void Поставь(int x, int y, int symbol)
 }
 
 //------------------------------------------------------------------//
+
+#include <SDL3/SDL.h>
+
+const char * const APP_WINDOW_NAME = "приложуха";
+
+static SDL_Surface* screen_surface = NULL;
+static SDL_Window*  window         = NULL;
+
+//------------------------------------------------------------------/
+
+int ИнициализируйЭкран(int window_width, int window_height)
+{
+    //------------------------------------------------------------------//
+
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    {
+        fprintf(stderr, "Failed to initialize SDL: %s", SDL_GetError());
+        return 1;
+    }
+
+    //------------------------------------------------------------------//
+
+    window = SDL_CreateWindow(APP_WINDOW_NAME,
+                              window_width,
+                              window_height,
+                              0);
+    if (window == NULL)
+    {
+        fprintf(stderr, "Failed creating window. SDL_Error: %s", SDL_GetError());
+        return 1;
+    }
+
+    //------------------------------------------------------------------//
+
+    screen_surface = SDL_GetWindowSurface(window);
+
+    if (screen_surface == NULL)
+    {
+        fprintf(stderr, "Failed getting window surface. SDL_Error: %s", SDL_GetError());
+        return 1;
+    }
+
+    //------------------------------------------------------------------//
+
+    return 0;
+}
+
+//------------------------------------------------------------------//
+
+int ПоставьНаЭкран(int x, int y, int r, int g, int b, int a)
+{
+    if (!SDL_WriteSurfacePixel(screen_surface, x, y, r, g, b, a))
+    {
+        fprintf(stderr, "Failed writing surface pixel. SDL_Error: %s", SDL_GetError());
+        return 1;
+    }
+
+    return 0;
+}
+
+//------------------------------------------------------------------//
+
+int НарисуйЭкран()
+{
+    if (!SDL_UpdateWindowSurface(window))
+    {
+        fprintf(stderr, "Failed updating window surface. SDL_Error: %s", SDL_GetError());
+        return 1;
+    }
+
+    SDL_Delay(10000);
+
+    return 0;
+}
+
+//------------------------------------------------------------------//
+
+void УдалиЭкран()
+{
+    SDL_DestroyWindowSurface(window);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
+//------------------------------------------------------------------//

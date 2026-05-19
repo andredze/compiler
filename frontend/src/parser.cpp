@@ -1261,11 +1261,15 @@ static TreeNode_t* ParseLibFuncCall(FrontendCtx_t* frontend_ctx)
 
     switch (cur_token->data.value.keyword)
     {
-        case KW_OUTPUT: expected_args_count = 1; break;
-        case KW_SQRT:   expected_args_count = 1; break;
-        case KW_DRAW:   expected_args_count = 0; break;
-        case KW_POINT:  expected_args_count = 3; break;
-        case KW_RETURN: expected_args_count = 1; break;
+        case KW_OUTPUT:         expected_args_count = 1; break;
+        case KW_SQRT:           expected_args_count = 1; break;
+        case KW_DRAW:           expected_args_count = 0; break;
+        case KW_POINT:          expected_args_count = 3; break;
+        case KW_RETURN:         expected_args_count = 1; break;
+        case KW_INIT_SCREEN:    expected_args_count = 2; break;
+        case KW_DEL_SCREEN:     expected_args_count = 0; break;
+        case KW_DRAW_SCREEN:    expected_args_count = 0; break;
+        case KW_POINT_SCREEN:   expected_args_count = 6; break;
         case KW_INPUT:
             expected_args_count = 1; 
             if (!(IS_VARIABLE_(cur_token->right)))
@@ -1301,12 +1305,16 @@ static TreeNode_t* ParseLibFuncKeyword(FrontendCtx_t* frontend_ctx)
     if (cur_token == NULL || cur_token->data.type != TYPE_KEYWORD)
         return NULL;
 
-    if ((cur_token->data.value.keyword == KW_OUTPUT) |
-        (cur_token->data.value.keyword == KW_INPUT ) |
-        (cur_token->data.value.keyword == KW_SQRT  ) |
-        (cur_token->data.value.keyword == KW_DRAW  ) |
-        (cur_token->data.value.keyword == KW_RETURN) |
-        (cur_token->data.value.keyword == KW_POINT ))
+    if ((cur_token->data.value.keyword == KW_OUTPUT       ) |
+        (cur_token->data.value.keyword == KW_INPUT        ) |
+        (cur_token->data.value.keyword == KW_SQRT         ) |
+        (cur_token->data.value.keyword == KW_DRAW         ) |
+        (cur_token->data.value.keyword == KW_RETURN       ) |
+        (cur_token->data.value.keyword == KW_POINT        ) |
+        (cur_token->data.value.keyword == KW_INIT_SCREEN  ) |
+        (cur_token->data.value.keyword == KW_DEL_SCREEN   ) |
+        (cur_token->data.value.keyword == KW_DRAW_SCREEN  ) |
+        (cur_token->data.value.keyword == KW_POINT_SCREEN ))
     {
         PARSER_DUMP_(cur_token, L"lib func call keyword");
         frontend_ctx->cur_token_index++;
