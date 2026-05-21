@@ -39,6 +39,33 @@ const wchar_t * const KW_POINT_SCREEN_FUNC_NAME = L"ПоставьНаЭкран
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
+typedef struct ExternFunctionCase
+{
+    Keyword_t       keyword;
+    const wchar_t*  name;
+}
+ExternFunctionCase_t;
+
+//------------------------------------------------------------------//
+
+const ExternFunctionCase_t EXTERN_FUNCS_TABLE[] = {
+    {KW_INPUT       , L"СкажиМнеКтоТы"      },
+    {KW_OUTPUT      , L"ЗаставьИхУслышать"  },
+    {KW_SQRT        , L"Исток"              },
+    {KW_DRAW        , L"Нарисуй"            },
+    {KW_POINT       , L"Поставь"            },
+    {KW_INIT_SCREEN , L"ИнициализируйЭкран" },
+    {KW_DEL_SCREEN  , L"УдалиЭкран"         },
+    {KW_DRAW_SCREEN , L"НарисуйЭкран"       },
+    {KW_POINT_SCREEN, L"ПоставьНаЭкран"     }
+};
+
+//------------------------------------------------------------------//
+
+const size_t EXTERN_FUNCS_COUNT = sizeof(EXTERN_FUNCS_TABLE) / sizeof(EXTERN_FUNCS_TABLE[0]);
+
+//——————————————————————————————————————————————————————————————————————————————————————————
+
 const Register_t CALL_REGS_TABLE[] = {
     REG_RDI, REG_RSI, REG_RDX, 
     REG_RCX, REG_R8,  REG_R9

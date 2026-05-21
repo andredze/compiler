@@ -25,7 +25,7 @@ printf "Компиляция библиотеки: нажмите любую к�
 read -s -n 1 key_press
 
 if [ "$key_press" != "s" ]; then
-    gcc -ggdb3 -static -c lib.c -o elf/lib.o
+    gcc -ggdb3 -c lib.c -o elf/lib.o
 fi
 
 printf "\n"

@@ -39,25 +39,14 @@ BackendErr_t EmitProgram(BackendCtx_t* backend_ctx)
         L"global %ls\n\n"
         L"default rel\n\n"
         L"section .text\n\n"
-        L"extern %ls\n"
-        L"extern %ls\n"
-        L"extern %ls\n"
-        L"extern %ls\n"
-        L"extern %ls\n"
-        L"extern %ls\n"
-        L"extern %ls\n"
-        L"extern %ls\n"
-        L"extern %ls\n\n",
-        MAIN_ENTRY_LABEL,
-        KW_INPUT_FUNC_NAME,
-        KW_OUTPUT_FUNC_NAME,
-        KW_SQRT_FUNC_NAME,
-        KW_DRAW_FUNC_NAME,
-        KW_POINT_FUNC_NAME,
-        KW_INIT_SCREEN_FUNC_NAME,
-        KW_DEL_SCREEN_FUNC_NAME,
-        KW_DRAW_SCREEN_FUNC_NAME,
-        KW_POINT_SCREEN_FUNC_NAME);
+    );
+
+    for (size_t i = 0; i < EXTERN_FUNCS_COUNT; i++)
+    {
+        ASM_PRINT_(L"extern %ls\n", EXTERN_FUNCS_TABLE[i].name);
+    }
+
+    ASM_PRINT_(L"\n");    
 
     if ((error = EmitFunctions(backend_ctx, backend_ctx->lang_ctx.tree.dummy->right)))
     {

@@ -172,7 +172,7 @@ int НарисуйЭкран()
         return 1;
     }
 
-    SDL_Delay(10000);
+    SDL_Delay(1000);
 
     return 0;
 }
