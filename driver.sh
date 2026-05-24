@@ -5,7 +5,7 @@ echo -n "Фронтенд: нажмите любую клавишу: [s - про
 read -s -n 1 key_press
 
 if [ "$key_press" != "s" ]; then
-    ./front psy/${file_name}.psy
+    ./front examples/${file_name}.terra
 fi
 
 printf "\n"

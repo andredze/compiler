@@ -16,21 +16,21 @@ typedef struct FrontendCtx
 {
     LangErrorInfo_t error_info;
 
-    wchar_t*      cur_symbol_ptr;
-    wchar_t*      buffer;
+    wchar_t*        cur_symbol_ptr;
+    wchar_t*        buffer;
 
-    size_t        buffer_size;
-    size_t        current_line;
+    size_t          buffer_size;
+    size_t          current_line;
 
-    Stack_t       tokens;
-    size_t        cur_token_index;
+    Stack_t         tokens;
+    size_t          cur_token_index;
 
-    FILE*         output_file;
+    FILE*           output_file;
 
-    bool          is_in_func;
-    int           in_func_vars_count;
+    bool            is_in_func;
+    int             in_func_vars_count;
 
-    LangCtx_t     lang_ctx;
+    LangCtx_t       lang_ctx;
 
 } FrontendCtx_t;
 

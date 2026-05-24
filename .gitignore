@@ -5,7 +5,7 @@
 run
 *.o
 *.txt
-*.psy
+*.terra
 
 elf/*
 exec/*
@@ -14,13 +14,16 @@ test.cpp
 test
 todo
 
+driver.cpp
+
 # examples
-!psy/fact.psy
-!psy/fact_recursive.psy
-!psy/circle.psy
-!psy/circle_sdl.psy
-!psy/linear.psy
-!psy/quad.psy
+!examples/fib.terra
+!examples/fact.terra
+!examples/fact_recursive.terra
+!examples/circle.terra
+!examples/circle_sdl.terra
+!examples/linear.terra
+!examples/quad.terra
 
 fact.cpp
 example.cpp

@@ -123,7 +123,8 @@ ElfCtx_t;
 
 //------------------------------------------------------------------//
 
-const char * const ELF_DIR_NAME = "elf";
+const char * const ELF_DIR_NAME  = "elf";
+const char * const EXEC_DIR_NAME = "exec";
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 
